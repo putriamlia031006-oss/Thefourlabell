@@ -140,25 +140,57 @@ $query = mysqli_query(
 
         }
 
+        .hero-banner{
+    width: 100%;
+    height: 300px;
+    background-image: url('assets/lavender2.jpg'); /* ganti dengan gambar banner kamu */
+    background-size: cover;
+    background-position: center;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+}
+
+        .hero-overlay{
+    background: rgba(0,0,0,0.5); /* efek gelap biar teks jelas */
+    width: 100%;
+    height: 100%;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.hero-overlay h1{
+    font-size: 42px;
+    font-weight: bold;
+}
+
+.hero-overlay p{
+    font-size: 18px;
+    margin-top: 10px;
+}
+
     </style>
 
 </head>
 
 <body>
 
-<div class="hero">
-
-    <h1>Konveksi Custom & Ready Stock</h1>
-
-    <p>
-        Pesan pakaian custom sesuai desain impianmu
-    </p>
-
-    <a href="produk.php" class="btn-custom">
+<div class="hero-banner">
+    <div class="hero-overlay">
+        <h1>Katalog Produk</h1>
+        <p>Konveksi Custom & Ready Stock</p>
+        <a href="produk.php" class="btn-custom">
         Lihat Produk
     </a>
-
+    </div>
 </div>
+    
 
 
 <div class="container">

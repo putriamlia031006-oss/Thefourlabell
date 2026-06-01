@@ -1,97 +1,123 @@
 <?php
-
 session_start();
-
 require "koneksi.php";
 
-$idUser=$_SESSION['user']['idUser'];
+$idUser = $_SESSION['user']['idUser'];
 
-$cari=mysqli_query(
+/* =========================
+   AMBIL DATA PELANGGAN
+========================= */
+$q = mysqli_query($koneksi,
+"SELECT * FROM pelanggan WHERE idUser='$idUser'");
+$pelanggan = mysqli_fetch_assoc($q);
 
-$koneksi,
+/* =========================
+   AMBIL DATA FORM
+========================= */
+$jenis   = $_POST['jenis'];
+$ukuran  = $_POST['ukuran'];
+$qty     = $_POST['qty'];
+$catatan = $_POST['catatan'];
 
-"SELECT *
-FROM pelanggan
-WHERE idUser='$idUser'"
+/* =========================
+   HARGA PER JENIS
+========================= */
+$hargaList = [
+    "Hoodie" => 150000,
+    "Varsity" => 250000,
+    "Polo Shirt" => 175000,
+    "T-Shirt" => 90000
+];
 
-);
+$hargaSatuan = $hargaList[$jenis] ?? 0;
 
-$pelanggan=
-mysqli_fetch_assoc($cari);
+/* =========================
+   TOTAL & DP
+========================= */
+$total = $hargaSatuan * $qty;
+$dp    = $total * 0.5;
 
-$namaFile="";
-
-if($_FILES['desain']['name']!=""){
-
-$namaFile=
-
-time()."_".
-$_FILES['desain']['name'];
-
-move_uploaded_file(
-
-$_FILES['desain']['tmp_name'],
-
-"upload/".$namaFile
-
-);
-
+/* =========================
+   UPLOAD DESAIN
+========================= */
+$file = "";
+if (!empty($_FILES['desain']['name'])) {
+    $file = time() . "_" . $_FILES['desain']['name'];
+    move_uploaded_file($_FILES['desain']['tmp_name'], "desain/" . $file);
 }
 
-mysqli_query(
+/* =========================
+   SIMPAN PESANAN
+   (status awal = DP)
+========================= */
+mysqli_query($koneksi,
+"INSERT INTO pesanan (
+    idPelanggan,
+    tanggal,
+    status,
+    jenisPesanan,
+    total
+) VALUES (
+    '{$pelanggan['idPelanggan']}',
+    NOW(),
+    'DP', 
+    'custom',
+    '$total'
+)");
 
-$koneksi,
+$idPesanan = mysqli_insert_id($koneksi);
 
-"INSERT INTO pesanan
-(idPelanggan,tanggal,status,jenisPesanan,total)
+/* =========================
+   DETAIL PESANAN
+========================= */
+mysqli_query($koneksi,
+"INSERT INTO detail_pesanan (
+    idPesanan,
+    jenis,
+    ukuran,
+    desain,
+    qty,
+    customText
+) VALUES (
+    '$idPesanan',
+    '$jenis',
+    '$ukuran',
+    '$file',
+    '$qty',
+    '$catatan'
+)");
 
-VALUES(
+/* =========================
+   PEMBAYARAN DP
+========================= */
+mysqli_query($koneksi,
+"INSERT INTO pembayaran (
+    idPesanan,
+    jumlah,
+    metode,
+    status,
+    tipe
+) VALUES (
+    '$idPesanan',
+    '$dp',
+    'Transfer BCA',
+    'Menunggu Verifikasi',
+    'DP'
+)");
 
-'$pelanggan[idPelanggan]',
+/* =========================
+   INVOICE
+========================= */
+$invoice = "INV-" . date("Ymd") . "-" . $idPesanan;
 
-NOW(),
+mysqli_query($koneksi,
+"UPDATE pesanan 
+SET nomorInvoice='$invoice'
+WHERE idPesanan='$idPesanan'");
 
-'Menunggu',
-
-'custom',
-
-0
-
-)"
-
-);
-
-$idPesanan=
-mysqli_insert_id($koneksi);
-
-mysqli_query(
-
-$koneksi,
-
-"INSERT INTO detail_pesanan
-
-(idPesanan,jenis,ukuran,desain,qty,customText)
-
-VALUES(
-
-'$idPesanan',
-
-'$_POST[jenis]',
-
-'$_POST[ukuran]',
-
-'$namaFile',
-
-'$_POST[qty]',
-
-'$_POST[catatan]'
-
-)"
-
-);
-
-header(
-"location:pesanan-saya.php"
-);
-
+/* =========================
+   REDIRECT (WAJIB ID)
+========================= */
+header("Location: bayar-dp.php?id=$idPesanan");
+exit;
 ?>

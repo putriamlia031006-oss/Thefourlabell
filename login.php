@@ -6,6 +6,16 @@ require "koneksi.php";
 
 $error = "";
 
+$cek = mysqli_query($koneksi,
+
+"SELECT COUNT(*) as total
+FROM pesanan
+WHERE idPelanggan='$idPelanggan'");
+
+$data = mysqli_fetch_assoc($cek);
+
+$jumlahOrder = $data['total'];
+
 if(isset($_POST['login'])){
 
     $email = $_POST['email'];
