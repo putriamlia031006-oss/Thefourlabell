@@ -1,13 +1,14 @@
 -- phpMyAdmin SQL Dump
--- version 5.1.1
+-- version 4.8.5
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jun 02, 2026 at 02:50 AM
--- Server version: 10.4.21-MariaDB
--- PHP Version: 7.3.31
+-- Generation Time: Jun 02, 2026 at 11:28 AM
+-- Server version: 10.1.38-MariaDB
+-- PHP Version: 7.3.2
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+SET AUTOCOMMIT = 0;
 START TRANSACTION;
 SET time_zone = "+00:00";
 
@@ -43,6 +44,30 @@ INSERT INTO `admin` (`idAdmin`, `idUser`, `jabatan`) VALUES
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `detail_custom`
+--
+
+CREATE TABLE `detail_custom` (
+  `idCustom` int(11) NOT NULL,
+  `idPesanan` int(11) NOT NULL,
+  `jenis` varchar(100) NOT NULL,
+  `ukuran` varchar(20) NOT NULL,
+  `qty` int(11) NOT NULL,
+  `catatan` text,
+  `desain` varchar(255) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+--
+-- Dumping data for table `detail_custom`
+--
+
+INSERT INTO `detail_custom` (`idCustom`, `idPesanan`, `jenis`, `ukuran`, `qty`, `catatan`, `desain`) VALUES
+(2, 20, 'T-Shirt', 'L', 10, 'tulisan dibelakang', '1780388508_1780334455_ej6P2o1HHVCeuhR5ovDJ.jpg'),
+(3, 21, 'Varsity', 'M', 100, 'logo dilengan', '1780389012_1780334455_ej6P2o1HHVCeuhR5ovDJ.jpg');
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `detail_pesanan`
 --
 
@@ -54,7 +79,7 @@ CREATE TABLE `detail_pesanan` (
   `ukuran` varchar(20) DEFAULT NULL,
   `desain` varchar(255) DEFAULT NULL,
   `qty` int(11) DEFAULT NULL,
-  `customText` text DEFAULT NULL
+  `customText` text
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
@@ -62,7 +87,6 @@ CREATE TABLE `detail_pesanan` (
 --
 
 INSERT INTO `detail_pesanan` (`idDetail`, `idPesanan`, `idProduk`, `jenis`, `ukuran`, `desain`, `qty`, `customText`) VALUES
-(1, 1, NULL, 'Varsity', ';', '1780330488_bahanl.jpg', 200, 'apapin\r\n'),
 (2, 2, 4, NULL, NULL, NULL, 1, NULL),
 (3, 3, 4, NULL, NULL, NULL, 1, NULL),
 (4, 4, NULL, 'Varsity', 'xl', '1780334455_ej6P2o1HHVCeuhR5ovDJ.jpg', 220, 'bagus'),
@@ -75,7 +99,9 @@ INSERT INTO `detail_pesanan` (`idDetail`, `idPesanan`, `idProduk`, `jenis`, `uku
 (11, 11, NULL, 'polo', 'l', '1780335556_lavender2.jpg', 1, 'aege'),
 (12, 12, NULL, 'Varsity', 'n', '1780356143_JTHtz8t98ElnrXBM8PIB.jpg', 4, 'apapun'),
 (13, 13, NULL, 'polo', 's', '1780356295_qBaC8k8RJmK0z0QjTFaH.jpg', 2, 'alsd'),
-(14, 14, NULL, 'Polo Shirt', 's', '1780356580_qBaC8k8RJmK0z0QjTFaH.jpg', 2, 'alsd');
+(14, 14, NULL, 'Polo Shirt', 's', '1780356580_qBaC8k8RJmK0z0QjTFaH.jpg', 2, 'alsd'),
+(15, 15, 4, NULL, NULL, NULL, 1, NULL),
+(16, 16, 4, NULL, NULL, NULL, 2, NULL);
 
 -- --------------------------------------------------------
 
@@ -122,7 +148,7 @@ CREATE TABLE `pelanggan` (
   `idPelanggan` int(11) NOT NULL,
   `idUser` int(11) DEFAULT NULL,
   `noHp` varchar(20) DEFAULT NULL,
-  `alamat` text DEFAULT NULL
+  `alamat` text
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
@@ -130,7 +156,9 @@ CREATE TABLE `pelanggan` (
 --
 
 INSERT INTO `pelanggan` (`idPelanggan`, `idUser`, `noHp`, `alamat`) VALUES
-(1, 2, '081211437354', '\r\n            curug');
+(1, 2, '081211437354', '\r\n            curug'),
+(2, 4, '081234567890', '\r\n        Tangerang    '),
+(3, 5, '089123456789', 'Tangerang');
 
 -- --------------------------------------------------------
 
@@ -145,7 +173,7 @@ CREATE TABLE `pembayaran` (
   `metode` varchar(50) DEFAULT NULL,
   `status` varchar(50) DEFAULT NULL,
   `bukti` varchar(255) DEFAULT NULL,
-  `dp` double DEFAULT 0
+  `dp` double DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
@@ -170,7 +198,15 @@ INSERT INTO `pembayaran` (`idPembayaran`, `idPesanan`, `jumlah`, `metode`, `stat
 (15, 12, 500000, 'Transfer BCA', 'DP', NULL, 0),
 (16, 13, 0, 'Transfer BCA', 'DP', NULL, 0),
 (17, 14, 175000, 'Transfer BCA', 'DP - Menunggu Verifikasi', '1780356590_lavender.jpeg', 0),
-(18, 14, 175000, 'Transfer BCA', 'Pending', '1780356604_kanja.jpg', 0);
+(18, 14, 175000, 'Transfer BCA', 'Pending', '1780356604_kanja.jpg', 0),
+(19, 15, 125000, 'Transfer BCA', 'DP Masuk', NULL, 125000),
+(20, 15, 125000, 'Transfer BCA', 'Pending', '1780375207_1780334455_ej6P2o1HHVCeuhR5ovDJ.jpg', 0),
+(21, 16, 200000, 'Transfer BCA', 'DP Masuk', NULL, 200000),
+(22, 16, 200000, 'Tunai', 'Tunai', '', 0),
+(23, 12, 500000, 'Transfer BCA', 'Pending', '1780378706_1780335124_lavender.jpeg', 0),
+(26, 20, 400000, 'Transfer BCA', 'Pending', '1780388524_1780335152_lavender.jpeg', 0),
+(27, 20, 400000, 'Transfer BCA', 'Pending', '1780388553_1780334455_ej6P2o1HHVCeuhR5ovDJ.jpg', 0),
+(28, 21, 10010000, 'Transfer BCA', 'Pending', '1780389036_1780335152_lavender.jpeg', 0);
 
 -- --------------------------------------------------------
 
@@ -182,12 +218,13 @@ CREATE TABLE `pesanan` (
   `idPesanan` int(11) NOT NULL,
   `idPelanggan` int(11) DEFAULT NULL,
   `tanggal` date DEFAULT NULL,
+  `deadlineSelesai` date DEFAULT NULL,
   `status` varchar(50) DEFAULT NULL,
   `jenisPesanan` enum('siap_pakai','custom') DEFAULT NULL,
   `total` double DEFAULT NULL,
   `nomorInvoice` varchar(100) DEFAULT NULL,
-  `ongkir` double DEFAULT 0,
-  `alamat_kirim` text DEFAULT NULL,
+  `ongkir` double DEFAULT '0',
+  `alamat_kirim` text,
   `jasa_kirim` varchar(100) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -195,21 +232,24 @@ CREATE TABLE `pesanan` (
 -- Dumping data for table `pesanan`
 --
 
-INSERT INTO `pesanan` (`idPesanan`, `idPelanggan`, `tanggal`, `status`, `jenisPesanan`, `total`, `nomorInvoice`, `ongkir`, `alamat_kirim`, `jasa_kirim`) VALUES
-(1, 1, '2026-06-01', 'Menunggu', 'custom', 0, 'INV-20260601-1', 0, NULL, NULL),
-(2, 1, '2026-06-01', 'Lunas', 'siap_pakai', 250000, 'INV-20260601-2', 0, NULL, NULL),
-(3, 1, '2026-06-02', 'Diproses', 'siap_pakai', 250000, 'INV-20260601-3', 0, NULL, NULL),
-(4, 1, '2026-06-02', 'Menunggu', 'custom', 0, 'INV-20260601-4', 0, NULL, NULL),
-(5, 1, '2026-06-02', 'Menunggu', 'custom', 0, 'INV-20260601-5', 0, NULL, NULL),
-(6, 1, '2026-06-02', 'Menunggu', 'custom', 150000, 'INV-20260601-6', 0, NULL, NULL),
-(7, 1, '2026-06-02', 'Menunggu', 'custom', 150000, 'INV-20260601-7', 0, NULL, NULL),
-(8, 1, '2026-06-02', 'Menunggu', 'custom', 0, 'INV-20260601-8', 0, NULL, NULL),
-(9, 1, '2026-06-02', 'Lunas', 'custom', 33000000, 'INV-20260601-9', 0, NULL, NULL),
-(10, 1, '2026-06-02', 'Menunggu', 'custom', 174000, 'INV-20260601-10', 0, NULL, NULL),
-(11, 1, '2026-06-02', 'Menunggu', 'custom', 174000, 'INV-20260601-11', 0, NULL, NULL),
-(12, 1, '2026-06-02', 'Menunggu', 'custom', 1000000, 'INV-20260602-12', 0, NULL, NULL),
-(13, 1, '2026-06-02', 'Menunggu', 'custom', 0, 'INV-20260602-13', 0, NULL, NULL),
-(14, 1, '2026-06-02', 'Lunas', 'custom', 350000, 'INV-20260602-14', 0, NULL, NULL);
+INSERT INTO `pesanan` (`idPesanan`, `idPelanggan`, `tanggal`, `deadlineSelesai`, `status`, `jenisPesanan`, `total`, `nomorInvoice`, `ongkir`, `alamat_kirim`, `jasa_kirim`) VALUES
+(2, 1, '2026-06-01', NULL, 'Lunas', 'siap_pakai', 250000, 'INV-20260601-2', 0, NULL, NULL),
+(3, 1, '2026-06-02', NULL, 'Diproses', 'siap_pakai', 250000, 'INV-20260601-3', 0, NULL, NULL),
+(4, 1, '2026-06-02', NULL, 'Menunggu', 'custom', 0, 'INV-20260601-4', 0, NULL, NULL),
+(5, 1, '2026-06-02', NULL, 'Menunggu', 'custom', 0, 'INV-20260601-5', 0, NULL, NULL),
+(6, 1, '2026-06-02', NULL, 'Menunggu', 'custom', 150000, 'INV-20260601-6', 0, NULL, NULL),
+(7, 1, '2026-06-02', NULL, 'Menunggu', 'custom', 150000, 'INV-20260601-7', 0, NULL, NULL),
+(8, 1, '2026-06-02', NULL, 'Menunggu', 'custom', 0, 'INV-20260601-8', 0, NULL, NULL),
+(9, 1, '2026-06-02', NULL, 'Lunas', 'custom', 33000000, 'INV-20260601-9', 0, NULL, NULL),
+(10, 1, '2026-06-02', NULL, 'Menunggu', 'custom', 174000, 'INV-20260601-10', 0, NULL, NULL),
+(11, 1, '2026-06-02', NULL, 'Menunggu', 'custom', 174000, 'INV-20260601-11', 0, NULL, NULL),
+(12, 1, '2026-06-02', NULL, 'Lunas', 'custom', 1000000, 'INV-20260602-12', 0, NULL, NULL),
+(13, 1, '2026-06-02', NULL, 'Menunggu', 'custom', 0, 'INV-20260602-13', 0, NULL, NULL),
+(14, 1, '2026-06-02', NULL, 'Lunas', 'custom', 350000, 'INV-20260602-14', 0, NULL, NULL),
+(15, 1, '2026-06-02', NULL, 'Menunggu Verifikasi Pembayaran', 'siap_pakai', 250000, 'INV-20260602-15', 0, NULL, NULL),
+(16, 1, '2026-06-02', NULL, 'Menunggu Pembayaran Tunai', 'siap_pakai', 400000, 'INV-20260602-16', 0, NULL, NULL),
+(20, 3, '2026-06-02', '2026-07-02', 'Lunas', 'custom', 800000, 'INV-CUS-20260602-20', 0, NULL, NULL),
+(21, 3, '2026-06-02', '2026-07-02', 'Menunggu Verifikasi Pembayaran', 'custom', 20020000, 'INV-CUS-20260602-21', 20000, 'Tangerang', 'JNE');
 
 -- --------------------------------------------------------
 
@@ -222,7 +262,7 @@ CREATE TABLE `produk` (
   `namaProduk` varchar(100) DEFAULT NULL,
   `harga` double DEFAULT NULL,
   `gambar` varchar(255) DEFAULT NULL,
-  `deskripsi` text DEFAULT NULL,
+  `deskripsi` text,
   `idKategori` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -251,7 +291,7 @@ CREATE TABLE `stok_produk` (
 --
 
 INSERT INTO `stok_produk` (`idStok`, `idProduk`, `jumlahStok`, `satuan`) VALUES
-(4, 4, 140, 'pcs');
+(4, 4, 137, 'pcs');
 
 -- --------------------------------------------------------
 
@@ -272,9 +312,11 @@ CREATE TABLE `user` (
 --
 
 INSERT INTO `user` (`idUser`, `nama`, `email`, `password`, `role`) VALUES
-(1, 'putri amalia ramadani', '1224160102@global.ac.id', 'putri', 'admin'),
+(1, 'putri amalia ramadani', '1224160102@global.ac.id', '8b6d9f5dd2385331a05b2e2d8a94f5a0', 'admin'),
 (2, 'Putri Amalia Ramadani', 'putri.amlia031006@gmail.com', '$2y$10$/FNE0glxsBMkThiEJkUZSuDItebn6grVXxBlRjmT/Fz67qKjCl6Q2', 'pelanggan'),
-(3, 'putri', 'mizum1265@gmail.com', 'putriadmin', 'admin');
+(3, 'putri', 'mizum1265@gmail.com', '$2y$10$b7FrDi05OSOO2ETF5HsFAeLuC7RDlRAash918zqmketLs0Q0bUNie', 'admin'),
+(4, 'khanza afifah karina putri', 'khanza@gmail.com', '$2y$10$uq.5PcBJ/m91uiwg1vF3AeXpWxHflNwPGoazjd7rT1f.r.cgPqZFS', 'pelanggan'),
+(5, 'putri sofiatun muzofar', 'sofi@gmail.com', '$2y$10$ZZSAUy.1c0ZDMZDOFup98.HGAEC3LSmzXvtZ0NHyqchtvd7Jzixrq', 'pelanggan');
 
 --
 -- Indexes for dumped tables
@@ -286,6 +328,12 @@ INSERT INTO `user` (`idUser`, `nama`, `email`, `password`, `role`) VALUES
 ALTER TABLE `admin`
   ADD PRIMARY KEY (`idAdmin`),
   ADD KEY `idUser` (`idUser`);
+
+--
+-- Indexes for table `detail_custom`
+--
+ALTER TABLE `detail_custom`
+  ADD PRIMARY KEY (`idCustom`);
 
 --
 -- Indexes for table `detail_pesanan`
@@ -361,10 +409,16 @@ ALTER TABLE `admin`
   MODIFY `idAdmin` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
+-- AUTO_INCREMENT for table `detail_custom`
+--
+ALTER TABLE `detail_custom`
+  MODIFY `idCustom` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
 -- AUTO_INCREMENT for table `detail_pesanan`
 --
 ALTER TABLE `detail_pesanan`
-  MODIFY `idDetail` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
+  MODIFY `idDetail` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
 
 --
 -- AUTO_INCREMENT for table `kategori`
@@ -382,19 +436,19 @@ ALTER TABLE `kwitansi`
 -- AUTO_INCREMENT for table `pelanggan`
 --
 ALTER TABLE `pelanggan`
-  MODIFY `idPelanggan` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `idPelanggan` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `pembayaran`
 --
 ALTER TABLE `pembayaran`
-  MODIFY `idPembayaran` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
+  MODIFY `idPembayaran` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=29;
 
 --
 -- AUTO_INCREMENT for table `pesanan`
 --
 ALTER TABLE `pesanan`
-  MODIFY `idPesanan` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
+  MODIFY `idPesanan` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
 
 --
 -- AUTO_INCREMENT for table `produk`
@@ -412,7 +466,7 @@ ALTER TABLE `stok_produk`
 -- AUTO_INCREMENT for table `user`
 --
 ALTER TABLE `user`
-  MODIFY `idUser` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `idUser` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- Constraints for dumped tables
