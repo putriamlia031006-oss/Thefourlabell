@@ -6,34 +6,35 @@ if (!isset($_SESSION['user'])) {
     exit;
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+
 <title>Custom Order - The Four Label</title>
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
 <style>
-*{
+* {
     box-sizing: border-box;
 }
 
-body{
+body {
     margin: 0;
     background: #f8f4ff;
     font-family: 'Segoe UI', sans-serif;
     color: #333;
 }
 
-/* NAVBAR SPACE */
-.page-wrapper{
+.page-wrapper {
     padding-bottom: 50px;
 }
 
 /* HERO */
-.hero{
+.hero {
     background: linear-gradient(135deg, #a56de2, #c7a6f7);
     color: white;
     padding: 70px 20px 60px;
@@ -43,7 +44,7 @@ body{
     overflow: hidden;
 }
 
-.hero::before{
+.hero::before {
     content: "";
     position: absolute;
     width: 220px;
@@ -54,7 +55,7 @@ body{
     left: -60px;
 }
 
-.hero::after{
+.hero::after {
     content: "";
     position: absolute;
     width: 280px;
@@ -65,12 +66,12 @@ body{
     right: -80px;
 }
 
-.hero-content{
+.hero-content {
     position: relative;
     z-index: 2;
 }
 
-.hero-badge{
+.hero-badge {
     display: inline-block;
     padding: 10px 18px;
     border-radius: 999px;
@@ -81,25 +82,25 @@ body{
     font-weight: 500;
 }
 
-.hero h1{
+.hero h1 {
     font-size: 52px;
     font-weight: 800;
     margin-bottom: 14px;
 }
 
-.hero p{
+.hero p {
     font-size: 18px;
     margin: 0;
     opacity: 0.95;
 }
 
 /* CONTENT */
-.content-section{
+.content-section {
     margin-top: 35px;
 }
 
 .info-card,
-.form-card{
+.form-card {
     background: white;
     border: none;
     border-radius: 24px;
@@ -108,24 +109,24 @@ body{
 }
 
 /* INFO CARD */
-.info-card{
+.info-card {
     padding: 28px 24px;
 }
 
-.info-title{
+.info-title {
     color: #7e42bc;
     font-weight: 700;
     margin-bottom: 22px;
 }
 
-.step-item{
+.step-item {
     display: flex;
     gap: 14px;
     margin-bottom: 18px;
     align-items: flex-start;
 }
 
-.step-number{
+.step-number {
     width: 38px;
     height: 38px;
     border-radius: 12px;
@@ -138,12 +139,12 @@ body{
     flex-shrink: 0;
 }
 
-.step-item h6{
+.step-item h6 {
     margin: 0 0 4px;
     font-weight: 600;
 }
 
-.step-item p{
+.step-item p {
     margin: 0;
     color: #777;
     font-size: 14px;
@@ -151,39 +152,39 @@ body{
 }
 
 /* FORM CARD */
-.form-card{
+.form-card {
     overflow: hidden;
 }
 
-.form-header{
+.form-header {
     background: linear-gradient(135deg, #b784ea, #8d59d9);
     color: white;
     padding: 24px 28px;
 }
 
-.form-header h4{
+.form-header h4 {
     margin: 0 0 6px;
     font-weight: 700;
 }
 
-.form-header p{
+.form-header p {
     margin: 0;
     font-size: 14px;
     opacity: 0.95;
 }
 
-.form-body{
+.form-body {
     padding: 28px;
 }
 
-.label-title{
+.label-title {
     font-weight: 600;
     margin-bottom: 8px;
     color: #444;
 }
 
 .form-control,
-.form-select{
+.form-select {
     border-radius: 14px;
     padding: 12px 14px;
     border: 1px solid #ddd;
@@ -191,14 +192,14 @@ body{
 }
 
 .form-control:focus,
-.form-select:focus{
+.form-select:focus {
     border-color: #b784ea;
     box-shadow: 0 0 0 4px rgba(183,132,234,0.18);
     background: white;
 }
 
 /* NOTE */
-.note-box{
+.note-box {
     background: #f6eeff;
     border: 1px solid #e4d2ff;
     color: #6e41a8;
@@ -208,8 +209,19 @@ body{
     font-size: 14px;
 }
 
+.deadline-preview {
+    display: none;
+    background: #fff8e7;
+    border: 1px solid #ffe3a3;
+    color: #7c5a14;
+    padding: 14px 16px;
+    border-radius: 14px;
+    margin-bottom: 20px;
+    font-size: 14px;
+}
+
 /* UPLOAD */
-.upload-box{
+.upload-box {
     border: 2px dashed #ceb0f6;
     background: #faf6ff;
     border-radius: 18px;
@@ -217,19 +229,19 @@ body{
     text-align: center;
 }
 
-.upload-box .icon{
+.upload-box .icon {
     font-size: 34px;
     margin-bottom: 8px;
 }
 
-.upload-box p{
+.upload-box p {
     margin: 8px 0 0;
     color: #777;
     font-size: 13px;
 }
 
 /* PREVIEW */
-.preview-box{
+.preview-box {
     display: none;
     margin-top: 16px;
     padding: 16px;
@@ -238,13 +250,13 @@ body{
     border: 1px solid #eadbff;
 }
 
-.preview-box h6{
+.preview-box h6 {
     color: #7e42bc;
     font-weight: 600;
     margin-bottom: 12px;
 }
 
-.preview-box img{
+.preview-box img {
     width: 180px;
     height: 180px;
     object-fit: cover;
@@ -253,7 +265,7 @@ body{
 }
 
 /* BUTTON */
-.btn-lavender{
+.btn-lavender {
     background: linear-gradient(135deg, #b784ea, #8d59d9);
     color: white;
     border: none;
@@ -263,13 +275,13 @@ body{
     transition: 0.2s;
 }
 
-.btn-lavender:hover{
+.btn-lavender:hover {
     background: linear-gradient(135deg, #a96ee5, #7d47cd);
     color: white;
     transform: translateY(-1px);
 }
 
-.btn-reset{
+.btn-reset {
     background: white;
     color: #8d59d9;
     border: 1px solid #d8c0f7;
@@ -279,36 +291,36 @@ body{
     transition: 0.2s;
 }
 
-.btn-reset:hover{
+.btn-reset:hover {
     background: #f7f0ff;
     color: #7d47cd;
 }
 
 /* RESPONSIVE */
-@media (max-width: 991px){
-    .hero h1{
+@media (max-width: 991px) {
+    .hero h1 {
         font-size: 42px;
     }
 
-    .info-card{
+    .info-card {
         margin-bottom: 20px;
     }
 }
 
-@media (max-width: 576px){
-    .hero{
+@media (max-width: 576px) {
+    .hero {
         padding: 55px 18px 48px;
     }
 
-    .hero h1{
+    .hero h1 {
         font-size: 34px;
     }
 
-    .hero p{
+    .hero p {
         font-size: 16px;
     }
 
-    .form-body{
+    .form-body {
         padding: 22px;
     }
 }
@@ -343,7 +355,7 @@ body{
                         <div class="step-number">1</div>
                         <div>
                             <h6>Pilih jenis pakaian</h6>
-                            <p>Pilihh produk custom seperti hoodie, varsity, polo shirt, atau t-shirt.</p>
+                            <p>Pilih produk custom seperti hoodie, varsity, polo shirt, atau t-shirt.</p>
                         </div>
                     </div>
 
@@ -358,13 +370,21 @@ body{
                     <div class="step-item">
                         <div class="step-number">3</div>
                         <div>
+                            <h6>Deadline otomatis</h6>
+                            <p>Setiap 100 pcs membutuhkan waktu produksi 1 bulan.</p>
+                        </div>
+                    </div>
+
+                    <div class="step-item">
+                        <div class="step-number">4</div>
+                        <div>
                             <h6>Upload desain</h6>
                             <p>Upload gambar desain yang ingin dicetak atau dijadikan referensi.</p>
                         </div>
                     </div>
 
                     <div class="step-item mb-0">
-                        <div class="step-number">4</div>
+                        <div class="step-number">5</div>
                         <div>
                             <h6>Tunggu konfirmasi</h6>
                             <p>Pesananmu akan diproses admin setelah detail custom diperiksa.</p>
@@ -385,7 +405,13 @@ body{
                     <div class="form-body">
 
                         <div class="note-box">
-                            Pastikan file desain yang diupload jelas agar proses custom lebih mudah dan cepat.
+                            Deadline selesai dihitung otomatis berdasarkan jumlah pesanan:
+                            <b>per 100 pcs = 1 bulan produksi</b>.
+                        </div>
+
+                        <div class="deadline-preview" id="deadlinePreview">
+                            Estimasi deadline selesai:
+                            <b id="deadlineText"></b>
                         </div>
 
                         <form action="proses-custom.php" method="POST" enctype="multipart/form-data">
@@ -421,10 +447,12 @@ body{
                                     <input
                                         type="number"
                                         name="qty"
+                                        id="qty"
                                         class="form-control"
                                         placeholder="Masukkan jumlah pesanan"
                                         min="1"
-                                        required>
+                                        required
+                                        oninput="hitungDeadline()">
                                 </div>
                             </div>
 
@@ -464,7 +492,7 @@ body{
                             <!-- BUTTON -->
                             <div class="row g-2">
                                 <div class="col-md-4">
-                                    <button type="reset" class="btn btn-reset w-100" onclick="resetPreview()">
+                                    <button type="reset" class="btn btn-reset w-100" onclick="resetFormCustom()">
                                         Reset
                                     </button>
                                 </div>
@@ -504,9 +532,38 @@ input.addEventListener("change", function () {
     }
 });
 
-function resetPreview() {
+function resetFormCustom() {
     previewImage.src = "";
     previewBox.style.display = "none";
+
+    document.getElementById("deadlinePreview").style.display = "none";
+    document.getElementById("deadlineText").innerText = "";
+}
+
+function hitungDeadline() {
+    const qty = parseInt(document.getElementById("qty").value);
+    const deadlinePreview = document.getElementById("deadlinePreview");
+    const deadlineText = document.getElementById("deadlineText");
+
+    if (!qty || qty < 1) {
+        deadlinePreview.style.display = "none";
+        deadlineText.innerText = "";
+        return;
+    }
+
+    const bulanDeadline = Math.ceil(qty / 100);
+
+    let tanggal = new Date();
+    tanggal.setMonth(tanggal.getMonth() + bulanDeadline);
+
+    const tanggalFormat = tanggal.toLocaleDateString("id-ID", {
+        day: "2-digit",
+        month: "long",
+        year: "numeric"
+    });
+
+    deadlineText.innerText = tanggalFormat + " (" + bulanDeadline + " bulan produksi)";
+    deadlinePreview.style.display = "block";
 }
 </script>
 
