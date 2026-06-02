@@ -148,7 +148,7 @@ body{
     height: 320px;
 
     /* GANTI gambar banner kamu di sini */
-    background-image: url('assets/cover4.jpg');
+    background-image: url('assets/cover8.jpg');
 
     background-size: cover;
     background-position: center;
