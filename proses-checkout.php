@@ -15,7 +15,7 @@ if (!isset($_SESSION['cart']) || count($_SESSION['cart']) == 0) {
     die("Keranjang kosong");
 }
 
-/* AMBIL PELANGGAN */
+/* AMBIL DATA PELANGGAN */
 $cari = mysqli_query(
     $koneksi,
     "SELECT * FROM pelanggan WHERE idUser='$idUser'"
@@ -28,14 +28,71 @@ if (!$cari) {
 $pelanggan = mysqli_fetch_assoc($cari);
 
 if (!$pelanggan) {
-    die("Data pelanggan tidak ditemukan. Silakan lengkapi data pelanggan terlebih dahulu.");
+    die("Data pelanggan tidak ditemukan.");
 }
 
-/* TOTAL */
-$total = isset($_POST['total']) ? $_POST['total'] : 0;
+$idPelanggan = $pelanggan['idPelanggan'];
 
 /* =========================
-   1. CEK STOK DI stok_produk
+   HITUNG TOTAL DARI CART
+========================= */
+$totalAwal = 0;
+
+foreach ($_SESSION['cart'] as $cart) {
+
+    $idProduk = $cart['idProduk'];
+    $qty = $cart['qty'];
+
+    $qProduk = mysqli_query(
+        $koneksi,
+        "SELECT harga FROM produk WHERE idProduk='$idProduk'"
+    );
+
+    if (!$qProduk) {
+        die("Query produk error: " . mysqli_error($koneksi));
+    }
+
+    $produk = mysqli_fetch_assoc($qProduk);
+
+    if (!$produk) {
+        die("Produk tidak ditemukan.");
+    }
+
+    $subtotal = $produk['harga'] * $qty;
+    $totalAwal += $subtotal;
+}
+
+/* =========================
+   CEK JUMLAH TRANSAKSI CUSTOMER
+   Kalau sudah 5 transaksi, diskon 20%
+========================= */
+$qTransaksi = mysqli_query(
+    $koneksi,
+    "SELECT COUNT(*) AS totalTransaksi
+     FROM pesanan
+     WHERE idPelanggan='$idPelanggan'
+     AND status != 'Batal'"
+);
+
+if (!$qTransaksi) {
+    die("Query transaksi error: " . mysqli_error($koneksi));
+}
+
+$dataTransaksi = mysqli_fetch_assoc($qTransaksi);
+$jumlahTransaksi = $dataTransaksi['totalTransaksi'];
+
+$diskonPersen = 0;
+$nominalDiskon = 0;
+$total = $totalAwal;
+
+if ($jumlahTransaksi >= 5) {
+    $diskonPersen = 20;
+    $nominalDiskon = $totalAwal * 0.2;
+    $total = $totalAwal - $nominalDiskon;
+}
+
+/* =========================
+   CEK STOK DI stok_produk
 ========================= */
 foreach ($_SESSION['cart'] as $cart) {
 
@@ -65,7 +122,7 @@ foreach ($_SESSION['cart'] as $cart) {
 }
 
 /* =========================
-   2. SIMPAN PESANAN
+   SIMPAN PESANAN
 ========================= */
 $simpanPesanan = mysqli_query(
     $koneksi,
@@ -76,7 +133,7 @@ $simpanPesanan = mysqli_query(
         jenisPesanan,
         total
     ) VALUES (
-        '$pelanggan[idPelanggan]',
+        '$idPelanggan',
         CURDATE(),
         'Menunggu',
         'siap_pakai',
@@ -91,14 +148,13 @@ if (!$simpanPesanan) {
 $idPesanan = mysqli_insert_id($koneksi);
 
 /* =========================
-   3. SIMPAN DETAIL + KURANGI STOK
+   SIMPAN DETAIL + KURANGI STOK
 ========================= */
 foreach ($_SESSION['cart'] as $cart) {
 
     $idProduk = $cart['idProduk'];
     $qty = $cart['qty'];
 
-    /* AMBIL STOK */
     $cek = mysqli_query(
         $koneksi,
         "SELECT jumlahStok 
@@ -116,7 +172,6 @@ foreach ($_SESSION['cart'] as $cart) {
         die("Stok produk tidak ditemukan saat update.");
     }
 
-    /* INSERT DETAIL PESANAN */
     $simpanDetail = mysqli_query(
         $koneksi,
         "INSERT INTO detail_pesanan (
@@ -134,7 +189,6 @@ foreach ($_SESSION['cart'] as $cart) {
         die("Gagal menyimpan detail pesanan: " . mysqli_error($koneksi));
     }
 
-    /* UPDATE STOK */
     $stokBaru = $stokData['jumlahStok'] - $qty;
 
     $updateStok = mysqli_query(
@@ -150,12 +204,12 @@ foreach ($_SESSION['cart'] as $cart) {
 }
 
 /* =========================
-   4. DP
+   DP 50% DARI TOTAL SETELAH DISKON
 ========================= */
 $dp = $total * 0.5;
 
 /* =========================
-   5. PEMBAYARAN
+   SIMPAN PEMBAYARAN AWAL
 ========================= */
 $simpanPembayaran = mysqli_query(
     $koneksi,
@@ -179,7 +233,7 @@ if (!$simpanPembayaran) {
 }
 
 /* =========================
-   6. INVOICE
+   INVOICE
 ========================= */
 $invoice = "INV-" . date("Ymd") . "-" . $idPesanan;
 
@@ -195,13 +249,21 @@ if (!$updateInvoice) {
 }
 
 /* =========================
-   7. CLEAR CART
+   SIMPAN INFO DISKON KE SESSION
+   untuk ditampilkan di halaman pembayaran
 ========================= */
+$_SESSION['info_diskon'] = [
+    'jumlahTransaksi' => $jumlahTransaksi,
+    'diskonPersen' => $diskonPersen,
+    'totalAwal' => $totalAwal,
+    'nominalDiskon' => $nominalDiskon,
+    'totalAkhir' => $total
+];
+
+/* CLEAR CART */
 unset($_SESSION['cart']);
 
-/* =========================
-   8. REDIRECT
-========================= */
+/* REDIRECT */
 header("Location: upload-pembayaran.php?id=$idPesanan");
 exit;
 ?>

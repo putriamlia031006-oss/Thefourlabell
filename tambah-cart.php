@@ -1,40 +1,83 @@
 <?php
 session_start();
 
-/* validasi id produk */
-$idProduk = isset($_GET['id']) ? $_GET['id'] : null;
+require "koneksi.php";
 
-if (!$idProduk) {
-    exit("ID produk tidak valid");
+if (!isset($_POST['idProduk']) || !isset($_POST['qty'])) {
+    header("Location: produk.php");
+    exit;
 }
 
-/* inisialisasi cart */
+$idProduk = $_POST['idProduk'];
+$qty = $_POST['qty'];
+
+if ($qty < 1) {
+    $qty = 1;
+}
+
+/* CEK PRODUK */
+$qProduk = mysqli_query(
+    $koneksi,
+    "SELECT 
+        p.*,
+        s.jumlahStok
+    FROM produk p
+    LEFT JOIN stok_produk s
+        ON p.idProduk = s.idProduk
+    WHERE p.idProduk='$idProduk'"
+);
+
+if (!$qProduk) {
+    die("Query produk error: " . mysqli_error($koneksi));
+}
+
+$produk = mysqli_fetch_assoc($qProduk);
+
+if (!$produk) {
+    die("Produk tidak ditemukan.");
+}
+
+$stok = isset($produk['jumlahStok']) ? $produk['jumlahStok'] : 0;
+
+if ($qty > $stok) {
+    die("Jumlah melebihi stok yang tersedia.");
+}
+
+/* BUAT SESSION CART JIKA BELUM ADA */
 if (!isset($_SESSION['cart'])) {
     $_SESSION['cart'] = [];
 }
 
-$found = false;
+/* CEK APA PRODUK SUDAH ADA DI CART */
+$produkSudahAda = false;
 
-/* cek apakah produk sudah ada di cart */
 foreach ($_SESSION['cart'] as $key => $item) {
 
     if ($item['idProduk'] == $idProduk) {
 
-        $_SESSION['cart'][$key]['qty'] += 1;
-        $found = true;
+        $qtyBaru = $_SESSION['cart'][$key]['qty'] + $qty;
+
+        if ($qtyBaru > $stok) {
+            die("Jumlah di keranjang melebihi stok yang tersedia.");
+        }
+
+        $_SESSION['cart'][$key]['qty'] = $qtyBaru;
+        $produkSudahAda = true;
         break;
     }
 }
 
-/* jika belum ada, tambah baru */
-if (!$found) {
+/* KALAU PRODUK BELUM ADA, MASUKKAN */
+if (!$produkSudahAda) {
     $_SESSION['cart'][] = [
-        'idProduk' => $idProduk,
-        'qty' => 1
+        'idProduk' => $produk['idProduk'],
+        'namaProduk' => $produk['namaProduk'],
+        'harga' => $produk['harga'],
+        'gambar' => $produk['gambar'],
+        'qty' => $qty
     ];
 }
 
-/* redirect (lebih UX daripada echo angka) */
 header("Location: cart.php");
 exit;
 ?>
