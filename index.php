@@ -62,7 +62,7 @@ body {
             rgba(83, 35, 128, 0.72),
             rgba(181, 126, 220, 0.50)
         ),
-        url('assets/lavender2.jpg');
+        url('assets/cover2.jpg');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -289,17 +289,19 @@ body {
 }
 
 .produk-img-wrap {
-    height: 240px;
+    height: 320px;
     background: #f4ecff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     overflow: hidden;
-    position: relative;
 }
 
 .produk-img-wrap img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: 0.35s ease;
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
 }
 
 .card-produk:hover .produk-img-wrap img {
