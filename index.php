@@ -209,7 +209,7 @@ $query = mysqli_query(
 
                 <img
                 src="image/<?= $row['gambar']; ?>"
-                height="240">
+                width="240">
 
                 <div class="mt-3">
 
