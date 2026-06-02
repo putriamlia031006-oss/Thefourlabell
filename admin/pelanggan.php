@@ -1,5 +1,5 @@
 <?php
-session_start();
+require "auth.php";
 require "../koneksi.php";
 
 /* AMBIL DATA PELANGGAN + TOTAL TRANSAKSI */
@@ -32,6 +32,29 @@ $query = mysqli_query(
 if (!$query) {
     die("Query pelanggan error: " . mysqli_error($koneksi));
 }
+
+/* RINGKASAN */
+$totalPelanggan = 0;
+$totalSemuaTransaksi = 0;
+$totalSemuaBelanja = 0;
+
+$summary = mysqli_query(
+    $koneksi,
+    "SELECT 
+        COUNT(DISTINCT pelanggan.idPelanggan) AS totalPelanggan,
+        COUNT(pesanan.idPesanan) AS totalTransaksi,
+        COALESCE(SUM(pesanan.total), 0) AS totalBelanja
+    FROM pelanggan
+    LEFT JOIN pesanan
+        ON pelanggan.idPelanggan = pesanan.idPelanggan"
+);
+
+if ($summary) {
+    $s = mysqli_fetch_assoc($summary);
+    $totalPelanggan = $s['totalPelanggan'];
+    $totalSemuaTransaksi = $s['totalTransaksi'];
+    $totalSemuaBelanja = $s['totalBelanja'];
+}
 ?>
 
 <!DOCTYPE html>
@@ -56,11 +79,31 @@ body {
     color: #33223f;
 }
 
+/* LAYOUT ADMIN */
+.admin-layout {
+    display: flex;
+}
+
+/* SIDEBAR FIXED */
+.sidebar-wrapper {
+    width: 16.666667%;
+    min-width: 240px;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+}
+
+/* CONTENT */
 .main-content {
+    margin-left: 16.666667%;
+    width: 83.333333%;
     padding: 32px;
     min-height: 100vh;
 }
 
+/* HEADER */
 .page-header {
     background: linear-gradient(135deg, #b57edc, #8e44ad);
     color: white;
@@ -97,6 +140,7 @@ body {
     opacity: 0.92;
 }
 
+/* CARD */
 .card-box {
     background: white;
     border: none;
@@ -106,6 +150,41 @@ body {
     border: 1px solid #eadcff;
 }
 
+.summary-card {
+    background: white;
+    border-radius: 20px;
+    padding: 20px;
+    border: 1px solid #eadcff;
+    box-shadow: 0 8px 22px rgba(142, 68, 173, 0.10);
+    margin-bottom: 22px;
+}
+
+.summary-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 16px;
+    background: #f1e3ff;
+    color: #8e44ad;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    margin-bottom: 12px;
+}
+
+.summary-card p {
+    margin: 0;
+    color: #777;
+    font-size: 14px;
+}
+
+.summary-card h3 {
+    margin: 6px 0 0;
+    color: #7b3fb2;
+    font-weight: 800;
+}
+
+/* TABLE */
 .table {
     margin-bottom: 0;
 }
@@ -147,6 +226,7 @@ body {
     font-weight: 800;
     font-size: 13px;
     display: inline-block;
+    white-space: nowrap;
 }
 
 .badge-transaksi {
@@ -188,42 +268,22 @@ body {
     padding: 30px;
 }
 
-.summary-card {
-    background: white;
-    border-radius: 20px;
-    padding: 20px;
-    border: 1px solid #eadcff;
-    box-shadow: 0 8px 22px rgba(142, 68, 173, 0.10);
-    margin-bottom: 22px;
-}
-
-.summary-icon {
-    width: 48px;
-    height: 48px;
-    border-radius: 16px;
-    background: #f1e3ff;
-    color: #8e44ad;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 22px;
-    margin-bottom: 12px;
-}
-
-.summary-card p {
-    margin: 0;
-    color: #777;
-    font-size: 14px;
-}
-
-.summary-card h3 {
-    margin: 6px 0 0;
-    color: #7b3fb2;
-    font-weight: 800;
-}
-
+/* RESPONSIVE */
 @media (max-width: 768px) {
+    .admin-layout {
+        display: block;
+    }
+
+    .sidebar-wrapper {
+        position: relative;
+        width: 100%;
+        min-width: 100%;
+        height: auto;
+    }
+
     .main-content {
+        margin-left: 0;
+        width: 100%;
         padding: 20px;
     }
 
@@ -236,182 +296,156 @@ body {
 
 <body>
 
-<div class="container-fluid">
-    <div class="row">
+<div class="admin-layout">
 
-        <!-- SIDEBAR -->
-        <div class="col-md-2 p-0">
-            <?php include "sidebar.php"; ?>
+    <!-- SIDEBAR -->
+    <div class="sidebar-wrapper">
+        <?php include "sidebar.php"; ?>
+    </div>
+
+    <!-- CONTENT -->
+    <div class="main-content">
+
+        <div class="page-header">
+            <h3>👥 Data Pelanggan</h3>
+            <p>Kelola data pelanggan, total transaksi, dan total belanja pelanggan The Four Label.</p>
         </div>
 
-        <!-- CONTENT -->
-        <div class="col-md-10 main-content">
+        <!-- RINGKASAN -->
+        <div class="row g-3">
 
-            <div class="page-header">
-                <h3>👥 Data Pelanggan</h3>
-                <p>Kelola data pelanggan, total transaksi, dan total belanja pelanggan The Four Label.</p>
+            <div class="col-md-4">
+                <div class="summary-card">
+                    <div class="summary-icon">👥</div>
+                    <p>Total Pelanggan</p>
+                    <h3><?= $totalPelanggan; ?></h3>
+                </div>
             </div>
 
-            <?php
-            $totalPelanggan = 0;
-            $totalSemuaTransaksi = 0;
-            $totalSemuaBelanja = 0;
-
-            $summary = mysqli_query(
-                $koneksi,
-                "SELECT 
-                    COUNT(DISTINCT pelanggan.idPelanggan) AS totalPelanggan,
-                    COUNT(pesanan.idPesanan) AS totalTransaksi,
-                    COALESCE(SUM(pesanan.total), 0) AS totalBelanja
-                FROM pelanggan
-                LEFT JOIN pesanan
-                    ON pelanggan.idPelanggan = pesanan.idPelanggan"
-            );
-
-            if ($summary) {
-                $s = mysqli_fetch_assoc($summary);
-                $totalPelanggan = $s['totalPelanggan'];
-                $totalSemuaTransaksi = $s['totalTransaksi'];
-                $totalSemuaBelanja = $s['totalBelanja'];
-            }
-            ?>
-
-            <!-- RINGKASAN -->
-            <div class="row g-3">
-
-                <div class="col-md-4">
-                    <div class="summary-card">
-                        <div class="summary-icon">👥</div>
-                        <p>Total Pelanggan</p>
-                        <h3><?= $totalPelanggan; ?></h3>
-                    </div>
+            <div class="col-md-4">
+                <div class="summary-card">
+                    <div class="summary-icon">🧾</div>
+                    <p>Total Transaksi</p>
+                    <h3><?= $totalSemuaTransaksi; ?></h3>
                 </div>
-
-                <div class="col-md-4">
-                    <div class="summary-card">
-                        <div class="summary-icon">🧾</div>
-                        <p>Total Transaksi</p>
-                        <h3><?= $totalSemuaTransaksi; ?></h3>
-                    </div>
-                </div>
-
-                <div class="col-md-4">
-                    <div class="summary-card">
-                        <div class="summary-icon">💰</div>
-                        <p>Total Belanja</p>
-                        <h3>Rp <?= number_format($totalSemuaBelanja, 0, ',', '.'); ?></h3>
-                    </div>
-                </div>
-
             </div>
 
-            <div class="card-box">
+            <div class="col-md-4">
+                <div class="summary-card">
+                    <div class="summary-icon">💰</div>
+                    <p>Total Belanja</p>
+                    <h3>Rp <?= number_format($totalSemuaBelanja, 0, ',', '.'); ?></h3>
+                </div>
+            </div>
 
-                <div class="table-responsive">
-                    <table class="table align-middle">
-                        <thead>
-                            <tr>
-                                <th>No</th>
-                                <th>ID Pelanggan</th>
-                                <th>Nama</th>
-                                <th>Email</th>
-                                <th>No HP</th>
-                                <th>Alamat</th>
-                                <th>Total Transaksi</th>
-                                <th>Total Belanja</th>
-                                <th>Diskon</th>
-                                <th>ID User</th>
-                            </tr>
-                        </thead>
+        </div>
 
-                        <tbody>
-                            <?php if (mysqli_num_rows($query) > 0) { ?>
+        <div class="card-box">
 
-                                <?php 
-                                $no = 1;
-                                while ($row = mysqli_fetch_assoc($query)) { 
-                                ?>
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead>
+                        <tr>
+                            <th>No</th>
+                            <th>ID Pelanggan</th>
+                            <th>Nama</th>
+                            <th>Email</th>
+                            <th>No HP</th>
+                            <th>Alamat</th>
+                            <th>Total Transaksi</th>
+                            <th>Total Belanja</th>
+                            <th>Diskon</th>
+                            <th>ID User</th>
+                        </tr>
+                    </thead>
 
-                                    <tr>
-                                        <td><?= $no++; ?></td>
+                    <tbody>
+                        <?php if (mysqli_num_rows($query) > 0) { ?>
 
-                                        <td>
-                                            <span class="badge-id">
-                                                #<?= htmlspecialchars($row['idPelanggan']); ?>
-                                            </span>
-                                        </td>
-
-                                        <td>
-                                            <div class="nama">
-                                                <?= $row['nama'] ? htmlspecialchars($row['nama']) : "Nama belum tersedia"; ?>
-                                            </div>
-                                        </td>
-
-                                        <td>
-                                            <div class="email">
-                                                <?= $row['email'] ? htmlspecialchars($row['email']) : "-"; ?>
-                                            </div>
-                                        </td>
-
-                                        <td>
-                                            <?= $row['noHp'] ? htmlspecialchars($row['noHp']) : "-"; ?>
-                                        </td>
-
-                                        <td>
-                                            <div class="alamat">
-                                                <?= $row['alamat'] ? htmlspecialchars($row['alamat']) : "-"; ?>
-                                            </div>
-                                        </td>
-
-                                        <td>
-                                            <span class="badge-transaksi">
-                                                <?= $row['totalTransaksi']; ?> transaksi
-                                            </span>
-                                        </td>
-
-                                        <td>
-                                            <strong class="total-belanja">
-                                                Rp <?= number_format($row['totalBelanja'], 0, ',', '.'); ?>
-                                            </strong>
-                                        </td>
-
-                                        <td>
-                                            <?php if ($row['totalTransaksi'] >= 5) { ?>
-                                                <span class="badge-diskon">
-                                                    Diskon 20%
-                                                </span>
-                                            <?php } else { ?>
-                                                <span class="badge-id">
-                                                    <?= $row['totalTransaksi']; ?>/5
-                                                </span>
-                                            <?php } ?>
-                                        </td>
-
-                                        <td>
-                                            <?= $row['idUser'] ? htmlspecialchars($row['idUser']) : "-"; ?>
-                                        </td>
-                                    </tr>
-
-                                <?php } ?>
-
-                            <?php } else { ?>
+                            <?php 
+                            $no = 1;
+                            while ($row = mysqli_fetch_assoc($query)) { 
+                            ?>
 
                                 <tr>
-                                    <td colspan="10" class="empty-data">
-                                        Belum ada data pelanggan.
+                                    <td><?= $no++; ?></td>
+
+                                    <td>
+                                        <span class="badge-id">
+                                            #<?= htmlspecialchars($row['idPelanggan']); ?>
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        <div class="nama">
+                                            <?= $row['nama'] ? htmlspecialchars($row['nama']) : "Nama belum tersedia"; ?>
+                                        </div>
+                                    </td>
+
+                                    <td>
+                                        <div class="email">
+                                            <?= $row['email'] ? htmlspecialchars($row['email']) : "-"; ?>
+                                        </div>
+                                    </td>
+
+                                    <td>
+                                        <?= $row['noHp'] ? htmlspecialchars($row['noHp']) : "-"; ?>
+                                    </td>
+
+                                    <td>
+                                        <div class="alamat">
+                                            <?= $row['alamat'] ? htmlspecialchars($row['alamat']) : "-"; ?>
+                                        </div>
+                                    </td>
+
+                                    <td>
+                                        <span class="badge-transaksi">
+                                            <?= $row['totalTransaksi']; ?> transaksi
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        <strong class="total-belanja">
+                                            Rp <?= number_format($row['totalBelanja'], 0, ',', '.'); ?>
+                                        </strong>
+                                    </td>
+
+                                    <td>
+                                        <?php if ($row['totalTransaksi'] >= 5) { ?>
+                                            <span class="badge-diskon">
+                                                Diskon 20%
+                                            </span>
+                                        <?php } else { ?>
+                                            <span class="badge-id">
+                                                <?= $row['totalTransaksi']; ?>/5
+                                            </span>
+                                        <?php } ?>
+                                    </td>
+
+                                    <td>
+                                        <?= $row['idUser'] ? htmlspecialchars($row['idUser']) : "-"; ?>
                                     </td>
                                 </tr>
 
                             <?php } ?>
-                        </tbody>
-                    </table>
-                </div>
 
+                        <?php } else { ?>
+
+                            <tr>
+                                <td colspan="10" class="empty-data">
+                                    Belum ada data pelanggan.
+                                </td>
+                            </tr>
+
+                        <?php } ?>
+                    </tbody>
+                </table>
             </div>
 
         </div>
 
     </div>
+
 </div>
 
 </body>
