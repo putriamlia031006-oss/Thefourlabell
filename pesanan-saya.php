@@ -1,142 +1,523 @@
 <?php
 session_start();
 require "koneksi.php";
+
+/* CEK LOGIN */
+if (!isset($_SESSION['user'])) {
+    header("Location: login.php");
+    exit;
+}
+
 include "navbar.php";
 
 $idUser = $_SESSION['user']['idUser'];
 
-$query = mysqli_query($koneksi,
-"SELECT *
- FROM pesanan p
- JOIN pelanggan pl ON p.idPelanggan = pl.idPelanggan
- WHERE pl.idUser = '$idUser'
- ORDER BY p.idPesanan DESC");
+/* AMBIL DATA PESANAN + TOTAL PEMBAYARAN */
+$query = mysqli_query($koneksi, "
+    SELECT 
+        p.*,
+        pl.idUser,
+        COALESCE(SUM(pb.jumlah), 0) AS totalBayar
+    FROM pesanan p
+    JOIN pelanggan pl 
+        ON p.idPelanggan = pl.idPelanggan
+    LEFT JOIN pembayaran pb
+        ON p.idPesanan = pb.idPesanan
+    WHERE pl.idUser = '$idUser'
+    GROUP BY p.idPesanan
+    ORDER BY p.idPesanan DESC
+");
+
+if (!$query) {
+    die("Query pesanan error: " . mysqli_error($koneksi));
+}
+
+function formatTanggal($tanggal) {
+    if ($tanggal == "" || $tanggal == NULL || $tanggal == "0000-00-00") {
+        return "-";
+    }
+
+    return date("d M Y", strtotime($tanggal));
+}
+
+function badgeStatusPesanan($status) {
+    $statusLower = strtolower($status);
+
+    if ($statusLower == "menunggu") {
+        return "badge-menunggu";
+    } elseif ($statusLower == "menunggu verifikasi pembayaran") {
+        return "badge-verifikasi";
+    } elseif ($statusLower == "diproses" || $statusLower == "proses") {
+        return "badge-proses";
+    } elseif ($statusLower == "selesai") {
+        return "badge-selesai";
+    } elseif ($statusLower == "batal") {
+        return "badge-batal";
+    } elseif ($statusLower == "menunggu pembayaran tunai") {
+        return "badge-tunai";
+    } else {
+        return "badge-menunggu";
+    }
+}
 ?>
 
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<title>Pesanan Saya</title>
+<title>Pesanan Saya - The Four Label</title>
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
 <style>
-body{
-    background:#f4f6fb;
-    font-family:Segoe UI;
+body {
+    background: linear-gradient(135deg, #fbf7ff, #efe1ff);
+    font-family: 'Segoe UI', Arial, sans-serif;
+    color: #33223f;
 }
 
-.page-title{
-    font-weight:700;
-    color:#5b3cc4;
+.page-wrapper {
+    padding: 45px 0 70px;
 }
 
-.order-card{
-    border:none;
-    border-radius:16px;
-    box-shadow:0 6px 20px rgba(0,0,0,.08);
-    transition:.2s;
+.header-page {
+    background: linear-gradient(135deg, #b57edc, #8e44ad);
+    color: white;
+    border-radius: 28px;
+    padding: 32px;
+    margin-bottom: 28px;
+    box-shadow: 0 14px 35px rgba(142, 68, 173, 0.18);
+    position: relative;
+    overflow: hidden;
 }
 
-.order-card:hover{
-    transform:translateY(-2px);
+.header-page::before {
+    content: "";
+    position: absolute;
+    width: 170px;
+    height: 170px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.13);
+    top: -60px;
+    right: -40px;
 }
 
-.label{
-    font-size:12px;
-    color:#888;
+.header-page h3 {
+    position: relative;
+    z-index: 2;
+    font-weight: 850;
+    margin-bottom: 8px;
 }
 
-.value{
-    font-weight:600;
-    color:#333;
+.header-page p {
+    position: relative;
+    z-index: 2;
+    margin: 0;
+    opacity: 0.95;
+}
+
+.order-card {
+    border: none;
+    border-radius: 24px;
+    box-shadow: 0 12px 32px rgba(142, 68, 173, 0.12);
+    border: 1px solid #eadcff;
+    overflow: hidden;
+    margin-bottom: 20px;
+    transition: 0.25s ease;
+}
+
+.order-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 18px 38px rgba(142, 68, 173, 0.17);
+}
+
+.order-top {
+    background: #faf5ff;
+    border-bottom: 1px solid #eadcff;
+    padding: 18px 22px;
+}
+
+.invoice {
+    font-weight: 850;
+    color: #6f2da8;
+    font-size: 17px;
+}
+
+.order-date {
+    color: #777;
+    font-size: 14px;
+}
+
+.order-body {
+    padding: 22px;
+}
+
+.label {
+    font-size: 12px;
+    color: #888;
+    margin-bottom: 5px;
+    font-weight: 650;
+}
+
+.value {
+    font-weight: 750;
+    color: #333;
+}
+
+.price {
+    color: #7b3fb2;
+    font-weight: 850;
+}
+
+.badge-custom {
+    padding: 8px 13px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 800;
+    display: inline-block;
+}
+
+.badge-menunggu {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.badge-verifikasi {
+    background: #dbeafe;
+    color: #1d4ed8;
+}
+
+.badge-proses {
+    background: #f1e3ff;
+    color: #7b3fb2;
+}
+
+.badge-selesai {
+    background: #dcfce7;
+    color: #15803d;
+}
+
+.badge-batal {
+    background: #fee2e2;
+    color: #b91c1c;
+}
+
+.badge-tunai {
+    background: #e0f2fe;
+    color: #0369a1;
+}
+
+.badge-lunas {
+    background: #dcfce7;
+    color: #15803d;
+}
+
+.badge-belum {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.payment-box {
+    background: #faf5ff;
+    border: 1px solid #eadcff;
+    border-radius: 18px;
+    padding: 16px;
+}
+
+.payment-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 8px;
+    color: #5c4b6d;
+    font-size: 14px;
+}
+
+.payment-row:last-child {
+    margin-bottom: 0;
+}
+
+.payment-row strong {
+    color: #33223f;
+}
+
+.btn-lavender {
+    background: linear-gradient(135deg, #b57edc, #8e44ad);
+    color: white;
+    border: none;
+    border-radius: 14px;
+    padding: 10px 16px;
+    font-weight: 800;
+    text-decoration: none;
+    display: inline-block;
+    transition: 0.25s;
+}
+
+.btn-lavender:hover {
+    background: linear-gradient(135deg, #a76bd4, #7b3fb2);
+    color: white;
+    transform: translateY(-2px);
+}
+
+.btn-outline-lavender {
+    border: 1px solid #d9c0f0;
+    color: #8e44ad;
+    background: white;
+    border-radius: 14px;
+    padding: 10px 16px;
+    font-weight: 800;
+    text-decoration: none;
+    display: inline-block;
+    transition: 0.25s;
+}
+
+.btn-outline-lavender:hover {
+    background: #f4eaff;
+    color: #7b3fb2;
+}
+
+.empty-box {
+    background: white;
+    border-radius: 26px;
+    padding: 45px 30px;
+    text-align: center;
+    border: 1px solid #eadcff;
+    box-shadow: 0 12px 32px rgba(142, 68, 173, 0.12);
+}
+
+.empty-icon {
+    font-size: 52px;
+    margin-bottom: 14px;
+}
+
+.empty-box h4 {
+    color: #6f2da8;
+    font-weight: 850;
+    margin-bottom: 8px;
+}
+
+.empty-box p {
+    color: #777;
+    margin-bottom: 18px;
+}
+
+.deadline-warning {
+    color: #b45309;
+    font-size: 13px;
+    margin-top: 4px;
+}
+
+.deadline-safe {
+    color: #15803d;
+    font-size: 13px;
+    margin-top: 4px;
+}
+
+@media (max-width: 768px) {
+    .header-page {
+        padding: 26px;
+    }
+
+    .order-body {
+        padding: 18px;
+    }
+
+    .payment-box {
+        margin-top: 12px;
+    }
 }
 </style>
 </head>
 
 <body>
 
-<div class="container py-5">
+<div class="container page-wrapper">
 
-<h3 class="page-title mb-4">Pesanan Saya</h3>
+    <div class="header-page">
+        <h3>Pesanan Saya</h3>
+        <p>Lihat status pesanan, deadline selesai, dan pembayaran kamu di sini.</p>
+    </div>
 
-<?php while($row = mysqli_fetch_assoc($query)) { ?>
+    <?php if (mysqli_num_rows($query) == 0) { ?>
 
-<?php
-/* =====================
-   HITUNG PEMBAYARAN
-===================== */
-$qBayar = mysqli_query($koneksi,
-"SELECT SUM(jumlah) as totalBayar
-FROM pembayaran
-WHERE idPesanan='{$row['idPesanan']}'");
+        <div class="empty-box">
+            <div class="empty-icon">🛍️</div>
+            <h4>Belum ada pesanan</h4>
+            <p>Kamu belum melakukan pemesanan produk atau custom order.</p>
+            <a href="produk.php" class="btn-lavender">
+                Lihat Produk
+            </a>
+        </div>
 
-$bayar = mysqli_fetch_assoc($qBayar);
+    <?php } ?>
 
-$totalBayar = $bayar['totalBayar'] ?? 0;
-$totalPesanan = $row['total'] ?? 0;
+    <?php while ($row = mysqli_fetch_assoc($query)) { ?>
 
-$sisa = $totalPesanan - $totalBayar;
+        <?php
+        $totalBayar = $row['totalBayar'] ?? 0;
+        $totalPesanan = $row['total'] ?? 0;
+        $sisa = $totalPesanan - $totalBayar;
 
-$isLunas = ($totalBayar >= $totalPesanan);
-?>
+        if ($sisa < 0) {
+            $sisa = 0;
+        }
 
-<!-- CARD -->
-<div class="card order-card mb-3">
-    <div class="card-body">
+        $isLunas = ($totalBayar >= $totalPesanan);
 
-        <div class="row g-3 align-items-center">
+        $invoice = $row['nomorInvoice'];
+        if ($invoice == "" || $invoice == NULL) {
+            $invoice = "#" . $row['idPesanan'];
+        }
 
-            <!-- Invoice -->
-            <div class="col-md-3">
-                <div class="label">Invoice</div>
-                <div class="value"><?= $row['nomorInvoice']; ?></div>
-            </div>
+        $jenisPesanan = $row['jenisPesanan'];
+        if ($jenisPesanan == "siap_pakai") {
+            $jenisPesananText = "Siap Pakai";
+        } elseif ($jenisPesanan == "custom") {
+            $jenisPesananText = "Custom";
+        } else {
+            $jenisPesananText = $jenisPesanan;
+        }
 
-            <!-- Jenis -->
-            <div class="col-md-3">
-                <div class="label">Jenis Pesanan</div>
-                <div class="value"><?= $row['jenisPesanan']; ?></div>
-            </div>
+        $deadline = $row['deadlineSelesai'] ?? null;
 
-            <!-- Total -->
-            <div class="col-md-3">
-                <div class="label">Total</div>
-                <div class="value">
-                    Rp <?= number_format($row['total']); ?>
+        $deadlineText = "-";
+        $deadlineInfo = "";
+
+        if ($deadline != "" && $deadline != NULL && $deadline != "0000-00-00") {
+            $deadlineText = formatTanggal($deadline);
+
+            $hariIni = date("Y-m-d");
+
+            if ($deadline < $hariIni && strtolower($row['status']) != "selesai") {
+                $deadlineInfo = "<div class='deadline-warning'>Deadline sudah lewat</div>";
+            } else {
+                $deadlineInfo = "<div class='deadline-safe'>Estimasi selesai sesuai jadwal</div>";
+            }
+        }
+        ?>
+
+        <div class="card order-card">
+
+            <div class="order-top">
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                    <div>
+                        <div class="label">Invoice</div>
+                        <div class="invoice">
+                            <?= htmlspecialchars($invoice); ?>
+                        </div>
+                    </div>
+
+                    <div class="text-md-end">
+                        <div class="label">Tanggal Pesan</div>
+                        <div class="order-date">
+                            <?= formatTanggal($row['tanggal']); ?>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <!-- Status -->
-            <div class="col-md-3">
-                <div class="label">Status Pembayaran</div>
+            <div class="order-body">
 
-                <?php if ($isLunas) { ?>
-                    <span class="badge bg-success mt-1">Lunas</span>
-                <?php } else { ?>
-                    <span class="badge bg-warning text-dark mt-1">
-                        DP / Belum Lunas
-                    </span>
+                <div class="row g-3 align-items-start">
 
-                    <div class="mt-2">
-                        <a href="bayar-sisa.php?id=<?= $row['idPesanan']; ?>"
-                           class="btn btn-sm btn-warning">
-                            Bayar Sisa Rp <?= number_format($sisa); ?>
-                        </a>
+                    <div class="col-md-2">
+                        <div class="label">Jenis Pesanan</div>
+                        <div class="value">
+                            <?= htmlspecialchars($jenisPesananText); ?>
+                        </div>
                     </div>
-                <?php } ?>
+
+                    <div class="col-md-2">
+                        <div class="label">Deadline Selesai</div>
+                        <div class="value">
+                            <?= htmlspecialchars($deadlineText); ?>
+                        </div>
+                        <?= $deadlineInfo; ?>
+                    </div>
+
+                    <div class="col-md-2">
+                        <div class="label">Status Pesanan</div>
+                        <span class="badge-custom <?= badgeStatusPesanan($row['status']); ?>">
+                            <?= htmlspecialchars($row['status']); ?>
+                        </span>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="payment-box">
+
+                            <div class="payment-row">
+                                <span>Total</span>
+                                <strong>Rp <?= number_format($totalPesanan, 0, ',', '.'); ?></strong>
+                            </div>
+
+                            <div class="payment-row">
+                                <span>Dibayar</span>
+                                <strong>Rp <?= number_format($totalBayar, 0, ',', '.'); ?></strong>
+                            </div>
+
+                            <div class="payment-row">
+                                <span>Sisa</span>
+                                <strong>Rp <?= number_format($sisa, 0, ',', '.'); ?></strong>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="label">Status Pembayaran</div>
+
+                        <?php if ($isLunas) { ?>
+
+                            <span class="badge-custom badge-lunas">
+                                Lunas
+                            </span>
+
+                        <?php } else { ?>
+
+                            <span class="badge-custom badge-belum">
+                                DP / Belum Lunas
+                            </span>
+
+                        <?php } ?>
+
+                        <div class="d-flex flex-wrap gap-2 mt-3">
+
+                            <?php if ($totalBayar <= 0) { ?>
+
+                                <a
+                                    href="upload-pembayaran.php?id=<?= $row['idPesanan']; ?>"
+                                    class="btn-lavender">
+                                    Upload Pembayaran
+                                </a>
+
+                            <?php } elseif (!$isLunas) { ?>
+
+                                <a
+                                    href="bayar-sisa.php?id=<?= $row['idPesanan']; ?>"
+                                    class="btn-lavender">
+                                    Bayar Sisa
+                                </a>
+
+                            <?php } ?>
+
+                            <a
+                                href="detail-pesanan.php?id=<?= $row['idPesanan']; ?>"
+                                class="btn-outline-lavender">
+                                Detail
+                            </a>
+
+                        </div>
+                    </div>
+
+                </div>
 
             </div>
 
         </div>
 
-    </div>
-</div>
-
-<?php } ?>
+    <?php } ?>
 
 </div>
 
