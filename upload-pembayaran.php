@@ -1,7 +1,78 @@
 <?php
 require "koneksi.php";
 
+/* =========================
+   AMBIL DATA PESANAN
+========================= */
 $idPesanan = $_GET['id'];
+
+$q = mysqli_query(
+    $koneksi,
+    "SELECT total FROM pesanan WHERE idPesanan='$idPesanan'"
+);
+
+$data = mysqli_fetch_assoc($q);
+
+$total = $data['total'];
+$minDP = $total * 0.5;
+
+/* =========================
+   PROSES UPLOAD
+========================= */
+if (isset($_POST['jumlah'])) {
+
+    $jumlah = $_POST['jumlah'];
+    $metode = $_POST['metode'];
+
+    /* VALIDASI DP */
+    if ($jumlah < $minDP) {
+        $error = "Minimal pembayaran adalah 50% (Rp " . number_format($minDP) . ")";
+    } else {
+
+        /* UPLOAD FILE */
+        $file = "";
+
+        if (!empty($_FILES['bukti']['name'])) {
+
+            $file = time() . "_" . $_FILES['bukti']['name'];
+
+            move_uploaded_file(
+                $_FILES['bukti']['tmp_name'],
+                "upload/" . $file
+            );
+        }
+
+        /* SIMPAN PEMBAYARAN */
+        mysqli_query(
+            $koneksi,
+            "INSERT INTO pembayaran (
+                idPesanan,
+                jumlah,
+                metode,
+                status,
+                bukti
+            ) VALUES (
+                '$idPesanan',
+                '$jumlah',
+                '$metode',
+                'Pending',
+                '$file'
+            )"
+        );
+
+        /* UPDATE STATUS PESANAN */
+        mysqli_query(
+            $koneksi,
+            "UPDATE pesanan 
+             SET status='Menunggu Verifikasi Pembayaran'
+             WHERE idPesanan='$idPesanan'"
+        );
+
+        /* REDIRECT setelah sukses */
+        header("Location: pesanan-saya.php");
+        exit;
+    }
+}
 ?>
 
 <!DOCTYPE html>
@@ -55,77 +126,49 @@ body{
 <div class="card card-box">
 <div class="card-body p-4">
 
-<h4 class="title mb-4">Upload Pembayaran</h4>
+<h4 class="title mb-3">Upload Pembayaran</h4>
 
+<!-- ERROR -->
+<?php if (!empty($error)) { ?>
+    <div class="alert alert-danger text-center">
+        <?= $error; ?>
+    </div>
+<?php } ?>
+
+<!-- INFO DP -->
+<div class="alert alert-info">
+    Total Pesanan: <b>Rp <?= number_format($total); ?></b><br>
+    Minimal DP (50%): <b>Rp <?= number_format($minDP); ?></b>
+</div>
+
+<!-- FORM -->
 <form method="POST" enctype="multipart/form-data">
 
-<!-- JUMLAH -->
-<div class="mb-3">
-    <label class="form-label">Jumlah Transfer</label>
-    <input type="number" name="jumlah" class="form-control" required>
-</div>
+    <div class="mb-3">
+        <label class="form-label">Jumlah Transfer</label>
+        <input type="number" name="jumlah" class="form-control" required>
+    </div>
 
-<!-- METODE -->
-<div class="mb-3">
-    <label class="form-label">Metode Pembayaran</label>
-    <select name="metode" class="form-select" required>
-        <option value="Transfer BCA">Transfer BCA</option>
-    </select>
-</div>
+    <div class="mb-3">
+        <label class="form-label">Metode Pembayaran</label>
+        <select name="metode" class="form-select" required>
+            <option value="Transfer BCA">Transfer BCA</option>
+        </select>
+    </div>
 
-<!-- BUKTI -->
-<div class="mb-3">
-    <label class="form-label">Upload Bukti Transfer</label>
-    <input type="file" name="bukti" class="form-control" required>
-</div>
+    <div class="mb-3">
+        <label class="form-label">Upload Bukti Transfer</label>
+        <input type="file" name="bukti" class="form-control" required>
+    </div>
 
-<button type="submit" class="btn btn-lavender w-100">
-    Upload Pembayaran
-</button>
+    <button type="submit" class="btn btn-lavender w-100">
+        Upload Pembayaran
+    </button>
 
 </form>
-
-<?php
-if (isset($_POST['jumlah'])) {
-
-    $file = "";
-
-    if (!empty($_FILES['bukti']['name'])) {
-
-        $file = time() . "_" . $_FILES['bukti']['name'];
-
-        move_uploaded_file(
-            $_FILES['bukti']['tmp_name'],
-            "upload/" . $file
-        );
-    }
-
-    mysqli_query(
-        $koneksi,
-        "INSERT INTO pembayaran (
-            idPesanan,
-            jumlah,
-            metode,
-            status,
-            bukti
-        ) VALUES (
-            '$idPesanan',
-            '$_POST[jumlah]',
-            '$_POST[metode]',
-            'Pending',
-            '$file'
-        )"
-    );
-
-    echo "<div class='alert alert-success mt-3 text-center'>
-            Menunggu Verifikasi Admin
-          </div>";
-}
-?>
 
 </div>
 </div>
 
 </body>
 </html>
-
