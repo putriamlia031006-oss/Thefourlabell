@@ -127,6 +127,7 @@ body{
 
     <select name="metode" class="form-select" required>
         <option value="bca_transfer">Transfer Bank BCA</option>
+        <option value="cash">Cash</option>
     </select>
 
     <small class="text-muted">

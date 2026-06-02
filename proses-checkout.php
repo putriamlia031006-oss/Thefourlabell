@@ -26,6 +26,8 @@ $pelanggan = mysqli_fetch_assoc($cari);
 /* total */
 $total = $_POST['total'];
 
+$metode = $_POST['metode'];
+
 /* =========================
    1. CEK STOK DI stok_produk
 ========================= */
@@ -36,7 +38,7 @@ foreach ($_SESSION['cart'] as $cart) {
 
     $cek = mysqli_query(
         $koneksi,
-        "SELECT stok FROM stok_produk WHERE idProduk='$idProduk'"
+        "SELECT jumlahStok FROM stok_produk WHERE idProduk='$idProduk'"
     );
 
     $stokData = mysqli_fetch_assoc($cek);
@@ -45,7 +47,7 @@ foreach ($_SESSION['cart'] as $cart) {
         die("Stok produk tidak ditemukan");
     }
 
-    if ($qty > $stokData['stok']) {
+    if ($qty > $stokData['jumlahStok']) {
         die("Stok tidak cukup untuk salah satu produk");
     }
 }
@@ -83,7 +85,7 @@ foreach ($_SESSION['cart'] as $cart) {
     /* ambil stok */
     $cek = mysqli_query(
         $koneksi,
-        "SELECT stok FROM stok_produk WHERE idProduk='$idProduk'"
+        "SELECT jumlahStok FROM stok_produk WHERE idProduk='$idProduk'"
     );
 
     $stokData = mysqli_fetch_assoc($cek);
@@ -103,12 +105,12 @@ foreach ($_SESSION['cart'] as $cart) {
     );
 
     /* UPDATE stok di tabel stok_produk */
-    $stokBaru = $stokData['stok'] - $qty;
+    $stokBaru = $stokData['jumlahStok'] - $qty;
 
     mysqli_query(
         $koneksi,
         "UPDATE stok_produk 
-         SET stok='$stokBaru' 
+         SET jumlahStok='$stokBaru' 
          WHERE idProduk='$idProduk'"
     );
 }
@@ -121,23 +123,51 @@ $dp = $total * 0.5;
 /* =========================
    5. PEMBAYARAN
 ========================= */
-mysqli_query(
-    $koneksi,
-    "INSERT INTO pembayaran (
-        idPesanan,
-        jumlah,
-        dp,
-        metode,
-        status
-    ) VALUES (
-        '$idPesanan',
-        '$dp',
-        '$dp',
-        'Transfer',
-        'DP Masuk'
-    )"
-);
+/* =========================
+   5. PEMBAYARAN
+========================= */
 
+if ($metode == "cash") {
+
+    mysqli_query(
+        $koneksi,
+        "INSERT INTO pembayaran (
+            idPesanan,
+            jumlah,
+            dp,
+            metode,
+            status
+        ) VALUES (
+            '$idPesanan',
+            '$total',
+            '$total',
+            'Cash',
+            'Lunas'
+        )"
+    );
+
+} else {
+
+    $dp = $total * 0.5;
+
+    mysqli_query(
+        $koneksi,
+        "INSERT INTO pembayaran (
+            idPesanan,
+            jumlah,
+            dp,
+            metode,
+            status
+        ) VALUES (
+            '$idPesanan',
+            '$dp',
+            '$dp',
+            'Transfer',
+            'DP Masuk'
+        )"
+    );
+
+}
 /* =========================
    6. INVOICE
 ========================= */
@@ -158,6 +188,15 @@ unset($_SESSION['cart']);
 /* =========================
    8. REDIRECT
 ========================= */
-header("Location: upload-pembayaran.php?id=$idPesanan");
+if ($metode == "cash") {
+
+    header("Location: invoice.php?id=$idPesanan");
+
+} else {
+
+    header("Location: upload-pembayaran.php?id=$idPesanan");
+
+}
+
 exit;
 ?>
