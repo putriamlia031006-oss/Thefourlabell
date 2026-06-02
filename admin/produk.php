@@ -189,7 +189,7 @@ body{
                             <td>
 
                                 <img
-                                src="../upload/<?= $row['gambar']; ?>"
+                                src="../image/<?= $row['gambar']; ?>"
 
                                 width="70"
 
