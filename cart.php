@@ -117,7 +117,10 @@ $total += $sub;
     <td><?= $cart['qty']; ?></td>
     <td>Rp <?= number_format($sub); ?></td>
     <td>
-        <a href="hapus-cart.php?index=<?= $index; ?>" class="btn btn-danger btn-sm">
+        <a 
+            href="hapus-cart.php?index=<?= $index; ?>" 
+            class="btn btn-danger btn-sm"
+            onclick="return confirm('Yakin ingin menghapus produk ini dari keranjang?')">
             Hapus
         </a>
     </td>
