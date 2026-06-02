@@ -58,7 +58,7 @@ body{
 
     <div class="mb-3">
         <label>Jumlah Bayar (DP)</label>
-        <input type="number" name="jumlah" value="<?= $dp; ?>" class="form-control" readonly>
+        <input type="number" name="jumlah" value="<?= $dp; ?>" class="form-control">
     </div>
 
     <div class="mb-3">
