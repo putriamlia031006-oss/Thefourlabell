@@ -75,12 +75,6 @@ $totalPendapatan = mysqli_fetch_assoc($qPendapatan)['total'];
 if ($totalPendapatan == NULL) {
     $totalPendapatan = 0;
 }
-
-$qPembayaran = mysqli_query($koneksi, "SELECT SUM(jumlah) AS total FROM pembayaran");
-$totalPembayaran = mysqli_fetch_assoc($qPembayaran)['total'];
-if ($totalPembayaran == NULL) {
-    $totalPembayaran = 0;
-}
 ?>
 
 <!DOCTYPE html>
@@ -132,9 +126,20 @@ if ($totalPembayaran == NULL) {
             padding: 10px 18px;
             border-radius: 14px;
             font-weight: bold;
+            margin-left: 8px;
         }
 
         .btn-cetak:hover {
+            background: #f3e8ff;
+            color: #7b3fb2;
+        }
+
+        .btn-cetak-stok {
+            background: #ffffff;
+            color: #8e44ad;
+        }
+
+        .btn-cetak-pesanan {
             background: #f3e8ff;
             color: #7b3fb2;
         }
@@ -187,6 +192,23 @@ if ($totalPembayaran == NULL) {
             color: #7b3fb2;
             font-weight: bold;
             margin-bottom: 18px;
+        }
+
+        .judul-cetak {
+            display: none;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .judul-cetak h2 {
+            font-weight: bold;
+            color: #7b3fb2;
+            margin-bottom: 5px;
+        }
+
+        .judul-cetak p {
+            margin: 0;
+            color: #555;
         }
 
         .table {
@@ -266,14 +288,38 @@ if ($totalPembayaran == NULL) {
                 background: white;
             }
 
-            .btn-cetak {
-                display: none;
+            .no-print,
+            .header-laporan,
+            .card-ringkasan {
+                display: none !important;
             }
 
-            .header-laporan,
-            .card-ringkasan,
             .box-laporan {
+                display: none;
                 box-shadow: none;
+                border: none;
+                padding: 0;
+                margin: 0;
+            }
+
+            .judul-cetak {
+                display: block;
+            }
+
+            body.print-stok #laporan-stok {
+                display: block !important;
+            }
+
+            body.print-pesanan #laporan-pesanan {
+                display: block !important;
+            }
+
+            body.print-stok #laporan-pesanan {
+                display: none !important;
+            }
+
+            body.print-pesanan #laporan-stok {
+                display: none !important;
             }
 
             .table thead th {
@@ -281,6 +327,14 @@ if ($totalPembayaran == NULL) {
                 color: white !important;
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
+            }
+
+            .table {
+                font-size: 12px;
+            }
+
+            .badge-status {
+                border: 1px solid #999;
             }
         }
     </style>
@@ -301,14 +355,20 @@ if ($totalPembayaran == NULL) {
                 </div>
             </div>
 
-            <button onclick="window.print()" class="btn-cetak">
-                Cetak Laporan
-            </button>
+            <div>
+                <button onclick="cetakStok()" class="btn-cetak btn-cetak-stok">
+                    Cetak Stok
+                </button>
+
+                <button onclick="cetakPesanan()" class="btn-cetak btn-cetak-pesanan">
+                    Cetak Pesanan
+                </button>
+            </div>
         </div>
     </div>
 
     <!-- RINGKASAN -->
-    <div class="row g-3">
+    <div class="row g-3 no-print">
 
         <div class="col-md-3 col-sm-6">
             <div class="card-ringkasan">
@@ -345,7 +405,14 @@ if ($totalPembayaran == NULL) {
     </div>
 
     <!-- LAPORAN STOK -->
-    <div class="box-laporan">
+    <div class="box-laporan" id="laporan-stok">
+
+        <div class="judul-cetak">
+            <h2>THE FOUR LABEL</h2>
+            <p>Laporan Stok Produk</p>
+            <p>Tanggal Cetak: <?= date('d-m-Y'); ?></p>
+        </div>
+
         <h4 class="judul-section">📦 Laporan Stok Produk</h4>
 
         <div class="table-responsive">
@@ -394,7 +461,14 @@ if ($totalPembayaran == NULL) {
     </div>
 
     <!-- LAPORAN PESANAN -->
-    <div class="box-laporan">
+    <div class="box-laporan" id="laporan-pesanan">
+
+        <div class="judul-cetak">
+            <h2>THE FOUR LABEL</h2>
+            <p>Laporan Pesanan</p>
+            <p>Tanggal Cetak: <?= date('d-m-Y'); ?></p>
+        </div>
+
         <h4 class="judul-section">🧾 Laporan Pesanan</h4>
 
         <div class="table-responsive">
@@ -521,6 +595,28 @@ if ($totalPembayaran == NULL) {
     </div>
 
 </div>
+
+<script>
+    function cetakStok() {
+        document.body.classList.remove('print-pesanan');
+        document.body.classList.add('print-stok');
+        window.print();
+
+        setTimeout(function() {
+            document.body.classList.remove('print-stok');
+        }, 500);
+    }
+
+    function cetakPesanan() {
+        document.body.classList.remove('print-stok');
+        document.body.classList.add('print-pesanan');
+        window.print();
+
+        setTimeout(function() {
+            document.body.classList.remove('print-pesanan');
+        }, 500);
+    }
+</script>
 
 </body>
 </html>
