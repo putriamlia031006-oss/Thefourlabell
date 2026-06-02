@@ -2,9 +2,20 @@
 session_start();
 require "koneksi.php";
 
+/* CEK LOGIN */
+if (!isset($_SESSION['user'])) {
+    header("Location: login.php");
+    exit;
+}
+
 $idUser = $_SESSION['user']['idUser'];
 
-/* ambil data pelanggan */
+/* CEK CART */
+if (!isset($_SESSION['cart']) || count($_SESSION['cart']) == 0) {
+    die("Keranjang kosong");
+}
+
+/* ambil pelanggan */
 $cari = mysqli_query(
     $koneksi,
     "SELECT * FROM pelanggan WHERE idUser='$idUser'"
@@ -12,11 +23,36 @@ $cari = mysqli_query(
 
 $pelanggan = mysqli_fetch_assoc($cari);
 
-/* ambil total & hitung DP */
+/* total */
 $total = $_POST['total'];
-$dp = $total * 0.5;
 
-/* simpan pesanan */
+/* =========================
+   1. CEK STOK DI stok_produk
+========================= */
+foreach ($_SESSION['cart'] as $cart) {
+
+    $idProduk = $cart['idProduk'];
+    $qty = $cart['qty'];
+
+    $cek = mysqli_query(
+        $koneksi,
+        "SELECT stok FROM stok_produk WHERE idProduk='$idProduk'"
+    );
+
+    $stokData = mysqli_fetch_assoc($cek);
+
+    if (!$stokData) {
+        die("Stok produk tidak ditemukan");
+    }
+
+    if ($qty > $stokData['stok']) {
+        die("Stok tidak cukup untuk salah satu produk");
+    }
+}
+
+/* =========================
+   2. SIMPAN PESANAN
+========================= */
 mysqli_query(
     $koneksi,
     "INSERT INTO pesanan (
@@ -36,9 +72,23 @@ mysqli_query(
 
 $idPesanan = mysqli_insert_id($koneksi);
 
-/* simpan detail pesanan dari cart */
+/* =========================
+   3. SIMPAN DETAIL + KURANGI STOK
+========================= */
 foreach ($_SESSION['cart'] as $cart) {
 
+    $idProduk = $cart['idProduk'];
+    $qty = $cart['qty'];
+
+    /* ambil stok */
+    $cek = mysqli_query(
+        $koneksi,
+        "SELECT stok FROM stok_produk WHERE idProduk='$idProduk'"
+    );
+
+    $stokData = mysqli_fetch_assoc($cek);
+
+    /* insert detail pesanan */
     mysqli_query(
         $koneksi,
         "INSERT INTO detail_pesanan (
@@ -47,13 +97,30 @@ foreach ($_SESSION['cart'] as $cart) {
             qty
         ) VALUES (
             '$idPesanan',
-            '$cart[idProduk]',
-            '$cart[qty]'
+            '$idProduk',
+            '$qty'
         )"
+    );
+
+    /* UPDATE stok di tabel stok_produk */
+    $stokBaru = $stokData['stok'] - $qty;
+
+    mysqli_query(
+        $koneksi,
+        "UPDATE stok_produk 
+         SET stok='$stokBaru' 
+         WHERE idProduk='$idProduk'"
     );
 }
 
-/* simpan pembayaran (dipindah ke luar loop biar tidak dobel) */
+/* =========================
+   4. DP
+========================= */
+$dp = $total * 0.5;
+
+/* =========================
+   5. PEMBAYARAN
+========================= */
 mysqli_query(
     $koneksi,
     "INSERT INTO pembayaran (
@@ -71,21 +138,26 @@ mysqli_query(
     )"
 );
 
-/* buat invoice */
+/* =========================
+   6. INVOICE
+========================= */
 $invoice = "INV-" . date("Ymd") . "-" . $idPesanan;
 
-/* update invoice */
 mysqli_query(
     $koneksi,
     "UPDATE pesanan 
-    SET nomorInvoice='$invoice'
-    WHERE idPesanan='$idPesanan'"
+     SET nomorInvoice='$invoice'
+     WHERE idPesanan='$idPesanan'"
 );
 
-/* kosongkan cart */
+/* =========================
+   7. CLEAR CART
+========================= */
 unset($_SESSION['cart']);
 
-/* redirect */
+/* =========================
+   8. REDIRECT
+========================= */
 header("Location: upload-pembayaran.php?id=$idPesanan");
 exit;
 ?>

@@ -1,59 +1,117 @@
 <?php
-
+session_start();
 require "../koneksi.php";
 
-$query=mysqli_query(
+/* =========================
+   LAPORAN STOK
+========================= */
+$stok = mysqli_query($koneksi,
 
-$koneksi,
-
-"SELECT *
-
-FROM pembayaran p
-
-JOIN pesanan ps
-
-ON p.idPesanan=
-ps.idPesanan"
-
+"SELECT 
+    produk.namaProduk,
+    stok_produk.jumlahStok,
+    stok_produk.satuan
+FROM stok_produk
+JOIN produk 
+ON stok_produk.idProduk = produk.idProduk"
 );
 
-$total=0;
+/* =========================
+   LAPORAN PESANAN
+========================= */
+$pesanan = mysqli_query($koneksi,
 
-while(
-$row=
-mysqli_fetch_assoc(
-$query
-)
+"SELECT 
+    pesanan.*,
+    pelanggan.nama
+FROM pesanan
+JOIN pelanggan
+ON pesanan.idPelanggan = pelanggan.idPelanggan
+ORDER BY pesanan.idPesanan DESC"
+);
 
-){
+?>
 
-$total +=
-$row['jumlah'];
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Laporan</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
 
-echo "
+<body class="bg-light">
 
-Pesanan :
+<div class="container mt-4">
 
-".$row['idPesanan']."
+<h2>Laporan Sistem Konveksi</h2>
 
-|
+<hr>
 
-".$row['jumlah']."
+<!-- =========================
+     LAPORAN STOK
+========================= -->
+<h4>📦 Laporan Stok Produk</h4>
 
-<br>
+<table class="table table-bordered table-striped">
 
-";
+<thead class="table-dark">
+<tr>
+    <th>Produk</th>
+    <th>Stok</th>
+    <th>Satuan</th>
+</tr>
+</thead>
 
-}
+<tbody>
 
-echo "
+<?php while($s = mysqli_fetch_assoc($stok)) { ?>
+<tr>
+    <td><?= $s['namaProduk']; ?></td>
+    <td><?= $s['jumlahStok']; ?></td>
+    <td><?= $s['satuan']; ?></td>
+</tr>
+<?php } ?>
 
-<h2>
+</tbody>
 
-Total :
+</table>
 
-$total
+<hr>
 
-</h2>
+<!-- =========================
+     LAPORAN PESANAN
+========================= -->
+<h4>🧾 Laporan Pesanan</h4>
 
-";
+<table class="table table-bordered table-striped">
+
+<thead class="table-dark">
+<tr>
+    <th>ID</th>
+    <th>Customer</th>
+    <th>Tanggal</th>
+    <th>Status</th>
+    <th>Total</th>
+</tr>
+</thead>
+
+<tbody>
+
+<?php while($p = mysqli_fetch_assoc($pesanan)) { ?>
+<tr>
+    <td><?= $p['idPesanan']; ?></td>
+    <td><?= $p['nama']; ?></td>
+    <td><?= $p['tanggal']; ?></td>
+    <td><?= $p['status']; ?></td>
+    <td>Rp <?= number_format($p['total']); ?></td>
+</tr>
+<?php } ?>
+
+</tbody>
+
+</table>
+
+</div>
+
+</body>
+</html>

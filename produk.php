@@ -143,38 +143,40 @@ body{
     display:none;
 }
 
-.hero-banner{
+.benner2{
     width: 100%;
-    height: 300px;
-    background-image: url('assets/lavender2.jpg'); /* ganti dengan gambar banner kamu */
+    height: 320px;
+
+    /* GANTI gambar banner kamu di sini */
+    background-image: url('assets/lavender2.jpg');
+
     background-size: cover;
     background-position: center;
+    background-repeat: no-repeat;
+
     position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
 }
 
-.hero-overlay{
-    background: rgba(0,0,0,0.5); /* efek gelap biar teks jelas */
+/* overlay gelap biar teks jelas */
+.benner2::before{
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
     width: 100%;
     height: 100%;
-    color: white;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
+    background: rgba(0,0,0,0.5);
 }
 
-.hero-overlay h1{
-    font-size: 42px;
-    font-weight: bold;
+/* biar teks di atas overlay */
+.hero-content{
+    position: relative;
+    z-index: 2;
 }
 
-.hero-overlay p{
-    font-size: 18px;
-    margin-top: 10px;
+/* optional: biar teks lebih smooth */
+.hero-content h1{
+    letter-spacing: 2px;
 }
 
 .show-toast{display:block;}
@@ -186,10 +188,9 @@ body{
 <body>
 
 <!-- HERO -->
-<div class="hero-banner">
-    <div class="hero-overlay">
-        <h1>Katalog Produk</h1>
-        <p>Konveksi Custom & Ready Stock</p>
+<div class="container-fluid benner2 d-flex align-items-center">
+    <div class="container text-white text-center hero-content">
+        <h1 class="display-1 fw-bold mb-3 text-white">Produk</h1>
     </div>
 </div>
 
