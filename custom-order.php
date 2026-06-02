@@ -343,7 +343,7 @@ body{
                         <div class="step-number">1</div>
                         <div>
                             <h6>Pilih jenis pakaian</h6>
-                            <p>Pilih produk custom seperti hoodie, varsity, polo shirt, atau t-shirt.</p>
+                            <p>Pilihh produk custom seperti hoodie, varsity, polo shirt, atau t-shirt.</p>
                         </div>
                     </div>
 
