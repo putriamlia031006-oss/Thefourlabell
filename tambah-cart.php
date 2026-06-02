@@ -3,17 +3,12 @@ session_start();
 
 require "koneksi.php";
 
-if (!isset($_POST['idProduk']) || !isset($_POST['qty'])) {
-    header("Location: produk.php");
-    exit;
+if (!isset($_GET['id'])) {
+    die("ID Produk tidak ditemukan");
 }
 
-$idProduk = $_POST['idProduk'];
-$qty = $_POST['qty'];
-
-if ($qty < 1) {
-    $qty = 1;
-}
+$idProduk = $_GET['id'];
+$qty = 1;
 
 /* CEK PRODUK */
 $qProduk = mysqli_query(
