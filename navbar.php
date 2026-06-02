@@ -10,6 +10,8 @@ if (isset($_SESSION['cart'])) {
     $jumlahCart = count($_SESSION['cart']);
 }
 
+$currentPage = basename($_SERVER['PHP_SELF']);
+
 ?>
 
 <nav class="navbar navbar-expand-lg navbar-custom sticky-top">
@@ -30,7 +32,6 @@ if (isset($_SESSION['cart'])) {
             aria-label="Toggle navigation">
 
             <span class="navbar-toggler-icon"></span>
-
         </button>
 
         <div class="collapse navbar-collapse" id="menu">
@@ -38,25 +39,25 @@ if (isset($_SESSION['cart'])) {
             <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-1 mt-3 mt-lg-0">
 
                 <li class="nav-item">
-                    <a class="nav-link" href="index.php">
+                    <a class="nav-link <?= $currentPage == 'index.php' ? 'active-link' : ''; ?>" href="index.php">
                         Beranda
                     </a>
                 </li>
 
                 <li class="nav-item">
-                    <a class="nav-link" href="produk.php">
+                    <a class="nav-link <?= $currentPage == 'produk.php' ? 'active-link' : ''; ?>" href="produk.php">
                         Produk
                     </a>
                 </li>
 
                 <li class="nav-item">
-                    <a class="nav-link" href="custom-order.php">
+                    <a class="nav-link <?= $currentPage == 'custom-order.php' ? 'active-link' : ''; ?>" href="custom-order.php">
                         Custom Order
                     </a>
                 </li>
 
                 <li class="nav-item">
-                    <a class="nav-link cart-link" href="cart.php">
+                    <a class="nav-link cart-link <?= $currentPage == 'cart.php' ? 'active-link' : ''; ?>" href="cart.php">
                         Keranjang
 
                         <?php if ($jumlahCart > 0) { ?>
@@ -70,7 +71,7 @@ if (isset($_SESSION['cart'])) {
                 <?php if (isset($_SESSION['user'])) { ?>
 
                     <li class="nav-item">
-                        <a class="nav-link" href="pesanan-saya.php">
+                        <a class="nav-link <?= $currentPage == 'pesanan-saya.php' ? 'active-link' : ''; ?>" href="pesanan-saya.php">
                             Pesanan Saya
                         </a>
                     </li>
@@ -80,15 +81,15 @@ if (isset($_SESSION['cart'])) {
                         <a
                             class="nav-link akun-btn dropdown-toggle"
                             href="#"
+                            id="dropdownAkun"
                             role="button"
                             data-bs-toggle="dropdown"
                             aria-expanded="false">
 
                             <?= isset($_SESSION['user']['nama']) ? htmlspecialchars($_SESSION['user']['nama']) : 'Akun'; ?>
-
                         </a>
 
-                        <ul class="dropdown-menu dropdown-menu-end dropdown-custom">
+                        <ul class="dropdown-menu dropdown-menu-end dropdown-custom" aria-labelledby="dropdownAkun">
 
                             <li>
                                 <a class="dropdown-item" href="pesanan-saya.php">
@@ -96,7 +97,7 @@ if (isset($_SESSION['cart'])) {
                                 </a>
                             </li>
 
-                            <?php if (isset($_SESSION['user']['role']) && $_SESSION['user']['role'] == "admin") { ?>
+                            <?php if (isset($_SESSION['user']['role']) && strtolower(trim($_SESSION['user']['role'])) == "admin") { ?>
                                 <li>
                                     <a class="dropdown-item" href="admin/index.php">
                                         Dashboard Admin
@@ -143,12 +144,22 @@ if (isset($_SESSION['cart'])) {
 
 <style>
 .navbar-custom {
-    background: rgba(255, 255, 255, 0.90);
+    background: rgba(255, 255, 255, 0.94);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
     box-shadow: 0 4px 22px rgba(142, 68, 173, 0.10);
     padding: 13px 0;
-    z-index: 999;
+    z-index: 99999 !important;
+    position: sticky;
+    top: 0;
+}
+
+.navbar {
+    overflow: visible !important;
+}
+
+.navbar-collapse {
+    overflow: visible !important;
 }
 
 .logo {
@@ -185,7 +196,8 @@ if (isset($_SESSION['cart'])) {
     transition: 0.25s ease;
 }
 
-.navbar-nav .nav-link:hover {
+.navbar-nav .nav-link:hover,
+.navbar-nav .active-link {
     color: #7b3fb2 !important;
     background: #f4eaff;
 }
@@ -238,12 +250,21 @@ if (isset($_SESSION['cart'])) {
     padding: 10px 18px !important;
 }
 
+.dropdown {
+    position: relative;
+}
+
+.dropdown-menu {
+    z-index: 100000 !important;
+}
+
 .dropdown-custom {
     border: none;
     border-radius: 18px;
     padding: 10px;
     box-shadow: 0 12px 35px rgba(142, 68, 173, 0.16);
     margin-top: 12px;
+    min-width: 220px;
 }
 
 .dropdown-custom .dropdown-item {
@@ -293,7 +314,36 @@ if (isset($_SESSION['cart'])) {
         text-align: center;
         margin-top: 6px;
     }
+
+    .dropdown-menu {
+        position: static !important;
+        transform: none !important;
+        box-shadow: none;
+        margin-top: 8px;
+        background: #fbf7ff;
+    }
 }
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const dropdownToggle = document.getElementById("dropdownAkun");
+
+    if (dropdownToggle) {
+        dropdownToggle.addEventListener("click", function (e) {
+            e.preventDefault();
+
+            const menu = this.nextElementSibling;
+
+            if (typeof bootstrap !== "undefined") {
+                const dropdown = bootstrap.Dropdown.getOrCreateInstance(this);
+                dropdown.toggle();
+            } else {
+                menu.classList.toggle("show");
+            }
+        });
+    }
+});
+</script>
