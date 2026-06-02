@@ -5,12 +5,15 @@ $currentPage = basename($_SERVER['PHP_SELF']);
 <style>
 .sidebar {
     background: linear-gradient(180deg, #9d7ad6, #7b5cb8);
+    width: 240px;
     height: 100vh;
     padding: 28px 18px;
-    position: sticky;
+    position: fixed;
     top: 0;
+    left: 0;
     overflow-y: auto;
     box-shadow: 6px 0 22px rgba(111, 66, 193, 0.18);
+    z-index: 1000;
 }
 
 .sidebar-title {
@@ -87,6 +90,7 @@ $currentPage = basename($_SERVER['PHP_SELF']);
 @media (max-width: 768px) {
     .sidebar {
         position: relative;
+        width: 100%;
         height: auto;
         min-height: auto;
         border-radius: 0 0 22px 22px;
