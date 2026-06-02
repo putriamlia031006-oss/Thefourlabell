@@ -29,13 +29,21 @@ if (!$pelanggan) {
 $idPelanggan = $pelanggan['idPelanggan'];
 
 /* AMBIL DATA FORM */
-$jenis = $_POST['jenis'];
-$ukuran = $_POST['ukuran'];
-$qty = $_POST['qty'];
-$catatan = $_POST['catatan'];
+$jenis = mysqli_real_escape_string($koneksi, $_POST['jenis']);
+$ukuran = mysqli_real_escape_string($koneksi, $_POST['ukuran']);
+$qty = (int) $_POST['qty'];
+$alamat_kirim = mysqli_real_escape_string($koneksi, $_POST['alamat_kirim']);
+$jasa_kirim = mysqli_real_escape_string($koneksi, $_POST['jasa_kirim']);
+$ongkir = (int) $_POST['ongkir'];
+$catatan = mysqli_real_escape_string($koneksi, $_POST['catatan']);
 
 if ($qty < 1) {
     die("Jumlah pesanan tidak valid.");
+}
+
+/* VALIDASI ONGKIR */
+if ($jasa_kirim == "Ambil di Tempat") {
+    $ongkir = 0;
 }
 
 /* =========================
@@ -85,8 +93,7 @@ if (!empty($_FILES['desain']['name'])) {
 }
 
 /* =========================
-   TOTAL CUSTOM
-   Sesuaikan harga custom kamu di sini
+   HARGA CUSTOM
 ========================= */
 $hargaSatuan = 0;
 
@@ -102,7 +109,37 @@ if ($jenis == "Hoodie") {
     die("Jenis pakaian tidak valid.");
 }
 
-$total = $hargaSatuan * $qty;
+/* =========================
+   HITUNG TOTAL
+========================= */
+$totalProduk = $hargaSatuan * $qty;
+$total = $totalProduk + $ongkir;
+
+/* =========================
+   CEK DISKON 20%
+   Jika pelanggan sudah minimal 5 transaksi
+========================= */
+$qTransaksi = mysqli_query(
+    $koneksi,
+    "SELECT COUNT(*) AS totalTransaksi
+     FROM pesanan
+     WHERE idPelanggan='$idPelanggan'
+     AND status != 'Batal'"
+);
+
+if (!$qTransaksi) {
+    die("Query transaksi error: " . mysqli_error($koneksi));
+}
+
+$dataTransaksi = mysqli_fetch_assoc($qTransaksi);
+$jumlahTransaksi = $dataTransaksi['totalTransaksi'];
+
+$diskon = 0;
+
+if ($jumlahTransaksi >= 5) {
+    $diskon = $totalProduk * 0.20;
+    $total = ($totalProduk - $diskon) + $ongkir;
+}
 
 /* =========================
    SIMPAN PESANAN CUSTOM
@@ -115,14 +152,20 @@ $simpanPesanan = mysqli_query(
         deadlineSelesai,
         status,
         jenisPesanan,
-        total
+        total,
+        alamat_kirim,
+        jasa_kirim,
+        ongkir
     ) VALUES (
         '$idPelanggan',
         CURDATE(),
         '$deadlineSelesai',
         'Menunggu',
         'custom',
-        '$total'
+        '$total',
+        '$alamat_kirim',
+        '$jasa_kirim',
+        '$ongkir'
     )"
 );
 
@@ -150,7 +193,6 @@ if (!$updateInvoice) {
 
 /* =========================
    SIMPAN DETAIL CUSTOM
-   Jika tabel detail_custom belum ada, jalankan SQL di bawah
 ========================= */
 $simpanCustom = mysqli_query(
     $koneksi,

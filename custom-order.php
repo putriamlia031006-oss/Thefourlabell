@@ -363,7 +363,7 @@ body {
                         <div class="step-number">2</div>
                         <div>
                             <h6>Isi detail pesanan</h6>
-                            <p>Masukkan ukuran, jumlah, dan catatan custom agar pesanan lebih jelas.</p>
+                            <p>Masukkan ukuran, jumlah, alamat, pengiriman, dan catatan custom.</p>
                         </div>
                     </div>
 
@@ -456,6 +456,42 @@ body {
                                 </div>
                             </div>
 
+                            <!-- Alamat Pengiriman -->
+                            <div class="mb-3">
+                                <label class="label-title">Alamat Pengiriman</label>
+                                <textarea
+                                    name="alamat_kirim"
+                                    rows="3"
+                                    class="form-control"
+                                    placeholder="Masukkan alamat lengkap pengiriman"
+                                    required></textarea>
+                            </div>
+
+                            <!-- Jasa Kirim & Ongkir -->
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="label-title">Jasa Kirim</label>
+                                    <select name="jasa_kirim" id="jasa_kirim" class="form-select" required onchange="ubahOngkir()">
+                                        <option value="">Pilih Jasa Kirim</option>
+                                        <option value="JNE">JNE</option>
+                                        <option value="J&T">J&T</option>
+                                        <option value="SiCepat">SiCepat</option>
+                                        <option value="Ambil di Tempat">Ambil di Tempat</option>
+                                    </select>
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label class="label-title">Ongkir</label>
+                                    <select name="ongkir" id="ongkir" class="form-select" required>
+                                        <option value="">Pilih Ongkir</option>
+                                        <option value="10000">Jabodetabek - Rp10.000</option>
+                                        <option value="20000">Luar Kota - Rp20.000</option>
+                                        <option value="30000">Luar Pulau - Rp30.000</option>
+                                        <option value="0">Ambil di Tempat - Rp0</option>
+                                    </select>
+                                </div>
+                            </div>
+
                             <!-- Catatan -->
                             <div class="mb-3">
                                 <label class="label-title">Catatan Custom</label>
@@ -538,6 +574,8 @@ function resetFormCustom() {
 
     document.getElementById("deadlinePreview").style.display = "none";
     document.getElementById("deadlineText").innerText = "";
+
+    document.getElementById("ongkir").value = "";
 }
 
 function hitungDeadline() {
@@ -564,6 +602,15 @@ function hitungDeadline() {
 
     deadlineText.innerText = tanggalFormat + " (" + bulanDeadline + " bulan produksi)";
     deadlinePreview.style.display = "block";
+}
+
+function ubahOngkir() {
+    const jasaKirim = document.getElementById("jasa_kirim").value;
+    const ongkir = document.getElementById("ongkir");
+
+    if (jasaKirim === "Ambil di Tempat") {
+        ongkir.value = "0";
+    }
 }
 </script>
 
