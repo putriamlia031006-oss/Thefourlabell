@@ -387,6 +387,13 @@ body {
     margin-bottom: 12px;
 }
 
+.alamat-textarea{
+    height: 120px;
+    padding: 15px;
+    resize: vertical;
+    line-height: 1.5;
+}
+
 @media (max-width: 991px) {
     .summary-box {
         margin-top: 24px;
@@ -420,15 +427,15 @@ body {
                             Pastikan alamat pengiriman sudah benar agar pesanan dapat diproses dengan lancar.
                         </div>
 
-                        <div class="mb-3">
-                            <label class="label">Alamat Pengiriman</label>
-                            <textarea
-                                name="alamat_kirim"
-                                class="form-control"
-                                rows="4"
-                                placeholder="Masukkan alamat lengkap pengiriman"
-                                required><?= isset($pelanggan['alamat']) ? htmlspecialchars($pelanggan['alamat']) : ""; ?></textarea>
-                        </div>
+                    <div class="mb-3">
+                        <label class="label">Alamat Pengiriman</label>
+
+                        <textarea
+                            name="alamat_kirim"
+                            class="form-control alamat-textarea"
+                            placeholder="Masukkan alamat lengkap pengiriman"
+                            required><?= isset($pelanggan['alamat']) ? htmlspecialchars(trim($pelanggan['alamat'])) : ''; ?></textarea>
+                    </div>
 
                         <div class="row">
                             <div class="col-md-6 mb-3">
