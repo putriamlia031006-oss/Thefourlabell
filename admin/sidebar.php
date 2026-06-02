@@ -71,7 +71,6 @@ $currentPage = basename($_SERVER['PHP_SELF']);
     transform: translateX(4px);
 }
 
-/* Biar scrollbar sidebar lebih halus kalau menunya panjang */
 .sidebar::-webkit-scrollbar {
     width: 6px;
 }
@@ -85,7 +84,6 @@ $currentPage = basename($_SERVER['PHP_SELF']);
     background: transparent;
 }
 
-/* Mobile */
 @media (max-width: 768px) {
     .sidebar {
         position: relative;
@@ -105,30 +103,34 @@ $currentPage = basename($_SERVER['PHP_SELF']);
     <div class="sidebar-menu">
 
         <a href="index.php" class="<?= $currentPage == 'index.php' ? 'active' : ''; ?>">
-            Dashboard
+            🏠 Dashboard
         </a>
 
         <a href="produk.php" class="<?= $currentPage == 'produk.php' ? 'active' : ''; ?>">
-            Produk
+            👕 Produk
+        </a>
+
+        <a href="pelanggan.php" class="<?= $currentPage == 'pelanggan.php' ? 'active' : ''; ?>">
+            👥 Data Pelanggan
         </a>
 
         <a href="pesanan.php" class="<?= $currentPage == 'pesanan.php' ? 'active' : ''; ?>">
-            Pesanan
+            📦 Pesanan
         </a>
 
         <a href="stok.php" class="<?= $currentPage == 'stok.php' ? 'active' : ''; ?>">
-            Stok
+            🧵 Stok
         </a>
 
         <a href="laporan.php" class="<?= $currentPage == 'laporan.php' ? 'active' : ''; ?>">
-            Laporan
+            📊 Laporan
         </a>
 
     </div>
 
     <div class="logout">
         <a href="../logout.php">
-            Logout
+            🚪 Logout
         </a>
     </div>
 
