@@ -6,20 +6,9 @@ require "koneksi.php";
 
 $error = "";
 
-$cek = mysqli_query($koneksi,
-
-"SELECT COUNT(*) as total
-FROM pesanan
-WHERE idPelanggan='$idPelanggan'");
-
-$data = mysqli_fetch_assoc($cek);
-
-$jumlahOrder = $data['total'];
-
 if(isset($_POST['login'])){
 
     $email = $_POST['email'];
-
     $password = $_POST['password'];
 
     $query = mysqli_query(
@@ -29,30 +18,36 @@ if(isset($_POST['login'])){
 
     $data = mysqli_fetch_assoc($query);
 
-    if(
-        $data &&
-        password_verify(
-            $password,
-            $data['password']
-        )
-    ){
+    if($data){
 
-        $_SESSION['user'] = $data;
+        if(password_verify($password, $data['password'])){
 
-        if($data['role'] == "admin"){
+            $_SESSION['user'] = $data;
+            $_SESSION['idUser'] = $data['id'];
+            $_SESSION['email'] = $data['email'];
+            $_SESSION['role'] = $data['role'];
 
-    header("Location: admin/index.php");
-    exit;
+            if($data['role'] == "admin"){
 
-}else{
+                header("Location: admin/index.php");
+                exit;
 
-    header("Location: index.php");
-    exit;
+            }else{
 
-}
+                header("Location: index.php");
+                exit;
+
+            }
+
+        }else{
+
+            $error = "Password salah";
+
+        }
+
     }else{
 
-        $error = "Email atau password salah";
+        $error = "Email tidak ditemukan";
 
     }
 
@@ -67,13 +62,11 @@ if(isset($_POST['login'])){
 
 <meta charset="UTF-8">
 
-<meta name="viewport"
-content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
 <title>Login Konveksi</title>
 
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
 <style>
 
@@ -86,13 +79,9 @@ body{
     );
 
     min-height:100vh;
-
     display:flex;
-
     justify-content:center;
-
     align-items:center;
-
     font-family:Arial;
 
 }
@@ -100,26 +89,18 @@ body{
 .login-box{
 
     background:white;
-
     width:420px;
-
     padding:40px;
-
     border-radius:25px;
-
-    box-shadow:
-    0 10px 30px rgba(0,0,0,.12);
+    box-shadow:0 10px 30px rgba(0,0,0,.12);
 
 }
 
 .judul{
 
     color:#8e44ad;
-
     font-weight:bold;
-
     text-align:center;
-
     margin-bottom:10px;
 
 }
@@ -127,9 +108,7 @@ body{
 .subjudul{
 
     text-align:center;
-
     color:gray;
-
     margin-bottom:30px;
 
 }
@@ -137,7 +116,6 @@ body{
 .form-control{
 
     height:50px;
-
     border-radius:15px;
 
 }
@@ -145,17 +123,11 @@ body{
 .btn-login{
 
     background:#b57edc;
-
     border:none;
-
     height:50px;
-
     border-radius:15px;
-
     width:100%;
-
     color:white;
-
     font-weight:bold;
 
 }
@@ -163,15 +135,14 @@ body{
 .btn-login:hover{
 
     background:#8e44ad;
+    color:white;
 
 }
 
 .logo{
 
     font-size:60px;
-
     text-align:center;
-
     margin-bottom:10px;
 
 }
@@ -189,23 +160,17 @@ body{
     </div>
 
     <h2 class="judul">
-
         THE FOUR LABEL
-
     </h2>
 
     <p class="subjudul">
-
         Login untuk melanjutkan belanja
-
     </p>
 
     <?php if($error != ""){ ?>
 
         <div class="alert alert-danger">
-
             <?= $error; ?>
-
         </div>
 
     <?php } ?>
@@ -217,11 +182,9 @@ body{
             <label>Email</label>
 
             <input
-            type="email"
+            type="text"
             name="email"
-
             class="form-control"
-
             required>
 
         </div>
@@ -232,21 +195,18 @@ body{
 
             <input
             type="password"
-
             name="password"
-
             class="form-control"
-
             required>
 
         </div>
 
         <button
+        type="submit"
         name="login"
-
         class="btn btn-login">
 
-        Login
+            Login
 
         </button>
 
@@ -258,13 +218,12 @@ body{
 
         <a
         href="register.php"
-
         style="
         color:#8e44ad;
         text-decoration:none;
         font-weight:bold;">
 
-        Daftar disini
+            Daftar disini
 
         </a>
 
