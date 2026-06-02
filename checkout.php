@@ -465,10 +465,9 @@ body {
                         <div class="mb-3">
                             <label class="label">Pilih Metode Pembayaran</label>
 
-                            <select name="metode" class="form-select" required>
-                                <option value="Transfer BCA">Transfer</option>
-                                <option value="Tunai">Tunai</option>
-                            </select>
+    <select name="metode" class="form-select" required>
+        <option value="bca_transfer">Transfer Bank BCA</option>
+    </select>
 
                             <small class="text-muted d-block mt-2">
                                 Transfer ke rekening BCA: <b>1234567890</b> a.n. <b>The Four Label</b>
