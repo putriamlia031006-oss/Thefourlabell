@@ -4,8 +4,6 @@ require "koneksi.php";
 include "navbar.php";
 
 $total = 0;
-
-
 ?>
 
 <!DOCTYPE html>
@@ -59,8 +57,33 @@ body{
     padding:10px 15px;
     border-radius:10px;
 }
-</style>
 
+.qty-box{
+    display:flex;
+    align-items:center;
+    gap:6px;
+}
+
+.qty-btn{
+    width:32px;
+    height:32px;
+    border:none;
+    border-radius:9px;
+    background:#ede9fe;
+    color:#5b21b6;
+    font-weight:800;
+}
+
+.qty-btn:hover{
+    background:#ddd6fe;
+}
+
+.qty-input{
+    width:65px;
+    text-align:center;
+    border-radius:10px;
+}
+</style>
 </head>
 
 <body>
@@ -98,24 +121,55 @@ body{
 <?php foreach ($_SESSION['cart'] as $index => $cart) { ?>
 
 <?php
+$idProduk = mysqli_real_escape_string($koneksi, $cart['idProduk']);
+
 $query = mysqli_query(
     $koneksi,
-    "SELECT * FROM produk WHERE idProduk='{$cart['idProduk']}'"
+    "SELECT * FROM produk WHERE idProduk='$idProduk'"
 );
 
 $data = mysqli_fetch_assoc($query);
 
 if (!$data) continue;
 
-$sub = $data['harga'] * $cart['qty'];
+$qty = $cart['qty'];
+$sub = $data['harga'] * $qty;
 $total += $sub;
 ?>
 
 <tr>
-    <td><?= $data['namaProduk']; ?></td>
-    <td>Rp <?= number_format($data['harga']); ?></td>
-    <td><?= $cart['qty']; ?></td>
-    <td>Rp <?= number_format($sub); ?></td>
+    <td><?= htmlspecialchars($data['namaProduk']); ?></td>
+
+    <td>Rp <?= number_format($data['harga'], 0, ',', '.'); ?></td>
+
+    <td>
+        <div class="qty-box">
+            <button 
+                type="button" 
+                class="qty-btn"
+                onclick="ubahQty(<?= $index; ?>, -1)">
+                -
+            </button>
+
+            <input 
+                type="number" 
+                id="qty-<?= $index; ?>"
+                value="<?= $qty; ?>" 
+                min="1"
+                class="form-control qty-input"
+                onchange="setQty(<?= $index; ?>, this.value)">
+
+            <button 
+                type="button" 
+                class="qty-btn"
+                onclick="ubahQty(<?= $index; ?>, 1)">
+                +
+            </button>
+        </div>
+    </td>
+
+    <td>Rp <?= number_format($sub, 0, ',', '.'); ?></td>
+
     <td>
         <a 
             href="hapus-cart.php?index=<?= $index; ?>" 
@@ -133,10 +187,10 @@ $total += $sub;
 
 <hr>
 
-<div class="d-flex justify-content-between align-items-center">
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
 
     <h4 class="mb-0">
-        Total: <span class="text-primary">Rp <?= number_format($total); ?></span>
+        Total: <span class="text-primary">Rp <?= number_format($total, 0, ',', '.'); ?></span>
     </h4>
 
     <a href="checkout.php" class="btn btn-lavender">
@@ -153,6 +207,37 @@ $total += $sub;
 </div>
 
 <?php include "footer.php"; ?>
+
+<script>
+function ubahQty(index, perubahan) {
+    let input = document.getElementById("qty-" + index);
+    let qty = parseInt(input.value);
+
+    if (isNaN(qty) || qty < 1) {
+        qty = 1;
+    }
+
+    qty += perubahan;
+
+    if (qty < 1) {
+        qty = 1;
+    }
+
+    input.value = qty;
+
+    window.location.href = "update-cart.php?index=" + index + "&qty=" + qty;
+}
+
+function setQty(index, qty) {
+    qty = parseInt(qty);
+
+    if (isNaN(qty) || qty < 1) {
+        qty = 1;
+    }
+
+    window.location.href = "update-cart.php?index=" + index + "&qty=" + qty;
+}
+</script>
 
 </body>
 </html>

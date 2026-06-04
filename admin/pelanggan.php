@@ -77,17 +77,16 @@ body {
     font-family: 'Segoe UI', Arial, sans-serif;
     margin: 0;
     color: #33223f;
+    font-size: 14px;
 }
 
-/* LAYOUT ADMIN */
 .admin-layout {
     display: flex;
 }
 
-/* SIDEBAR FIXED */
 .sidebar-wrapper {
-    width: 16.666667%;
-    min-width: 240px;
+    width: 230px;
+    min-width: 230px;
     height: 100vh;
     position: fixed;
     top: 0;
@@ -95,22 +94,20 @@ body {
     z-index: 1000;
 }
 
-/* CONTENT */
 .main-content {
-    margin-left: 16.666667%;
-    width: 83.333333%;
-    padding: 32px;
+    margin-left: 230px;
+    width: calc(100% - 230px);
+    padding: 22px;
     min-height: 100vh;
 }
 
-/* HEADER */
 .page-header {
     background: linear-gradient(135deg, #b57edc, #8e44ad);
     color: white;
-    padding: 28px;
-    border-radius: 24px;
-    margin-bottom: 28px;
-    box-shadow: 0 12px 28px rgba(111, 66, 193, 0.20);
+    padding: 20px 24px;
+    border-radius: 18px;
+    margin-bottom: 20px;
+    box-shadow: 0 8px 20px rgba(111, 66, 193, 0.18);
     position: relative;
     overflow: hidden;
 }
@@ -118,19 +115,20 @@ body {
 .page-header::before {
     content: "";
     position: absolute;
-    width: 170px;
-    height: 170px;
+    width: 120px;
+    height: 120px;
     border-radius: 50%;
     background: rgba(255,255,255,0.13);
-    top: -60px;
-    right: -40px;
+    top: -45px;
+    right: -30px;
 }
 
 .page-header h3 {
     position: relative;
     z-index: 2;
+    font-size: 22px;
     font-weight: 800;
-    margin-bottom: 6px;
+    margin-bottom: 4px;
 }
 
 .page-header p {
@@ -138,68 +136,117 @@ body {
     z-index: 2;
     margin: 0;
     opacity: 0.92;
+    font-size: 13px;
 }
 
-/* CARD */
 .card-box {
     background: white;
     border: none;
-    border-radius: 24px;
-    padding: 24px;
-    box-shadow: 0 10px 28px rgba(142, 68, 173, 0.12);
+    border-radius: 18px;
+    padding: 18px;
+    box-shadow: 0 8px 20px rgba(142, 68, 173, 0.10);
     border: 1px solid #eadcff;
 }
 
 .summary-card {
     background: white;
-    border-radius: 20px;
-    padding: 20px;
+    border-radius: 16px;
+    padding: 15px;
     border: 1px solid #eadcff;
-    box-shadow: 0 8px 22px rgba(142, 68, 173, 0.10);
-    margin-bottom: 22px;
+    box-shadow: 0 6px 16px rgba(142, 68, 173, 0.09);
+    margin-bottom: 16px;
 }
 
 .summary-icon {
-    width: 48px;
-    height: 48px;
-    border-radius: 16px;
+    width: 40px;
+    height: 40px;
+    border-radius: 13px;
     background: #f1e3ff;
     color: #8e44ad;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 22px;
-    margin-bottom: 12px;
+    font-size: 18px;
+    margin-bottom: 8px;
 }
 
 .summary-card p {
     margin: 0;
     color: #777;
-    font-size: 14px;
+    font-size: 13px;
 }
 
 .summary-card h3 {
-    margin: 6px 0 0;
+    margin: 4px 0 0;
     color: #7b3fb2;
+    font-size: 21px;
     font-weight: 800;
 }
 
-/* TABLE */
+.btn-tambah {
+    background: linear-gradient(135deg, #b57edc, #8e44ad);
+    color: white;
+    border: none;
+    border-radius: 11px;
+    padding: 8px 14px;
+    font-size: 13px;
+    font-weight: 800;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.btn-tambah:hover {
+    color: white;
+    background: linear-gradient(135deg, #a76bd4, #7b3fb2);
+}
+
+.btn-edit,
+.btn-hapus {
+    border: none;
+    border-radius: 10px;
+    padding: 6px 10px;
+    font-size: 12px;
+    font-weight: 700;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.btn-edit {
+    background: #fef3c7;
+    color: #b45309;
+}
+
+.btn-edit:hover {
+    background: #fde68a;
+    color: #92400e;
+}
+
+.btn-hapus {
+    background: #fee2e2;
+    color: #b91c1c;
+}
+
+.btn-hapus:hover {
+    background: #fecaca;
+    color: #991b1b;
+}
+
 .table {
     margin-bottom: 0;
+    font-size: 13px;
 }
 
 .table thead th {
     background: #f1e3ff;
     color: #6f2da8;
     border: none;
-    padding: 14px;
-    font-size: 14px;
+    padding: 10px;
+    font-size: 13px;
     white-space: nowrap;
 }
 
 .table tbody td {
-    padding: 14px;
+    padding: 10px;
     vertical-align: middle;
     border-color: #f0e3ff;
 }
@@ -211,44 +258,38 @@ body {
 .nama {
     font-weight: 800;
     color: #4b2e63;
+    font-size: 13px;
 }
 
 .email {
     color: #777;
-    font-size: 13px;
+    font-size: 12px;
+}
+
+.badge-id,
+.badge-transaksi,
+.badge-diskon {
+    padding: 5px 9px;
+    border-radius: 999px;
+    font-weight: 800;
+    font-size: 12px;
+    display: inline-block;
+    white-space: nowrap;
 }
 
 .badge-id {
     background: #eadcff;
     color: #6f2da8;
-    padding: 7px 12px;
-    border-radius: 999px;
-    font-weight: 800;
-    font-size: 13px;
-    display: inline-block;
-    white-space: nowrap;
 }
 
 .badge-transaksi {
     background: #dcfce7;
     color: #15803d;
-    padding: 7px 12px;
-    border-radius: 999px;
-    font-weight: 800;
-    font-size: 13px;
-    display: inline-block;
-    white-space: nowrap;
 }
 
 .badge-diskon {
     background: #fef3c7;
     color: #b45309;
-    padding: 7px 12px;
-    border-radius: 999px;
-    font-weight: 800;
-    font-size: 13px;
-    display: inline-block;
-    white-space: nowrap;
 }
 
 .total-belanja {
@@ -258,17 +299,23 @@ body {
 }
 
 .alamat {
-    max-width: 360px;
+    max-width: 260px;
     color: #555;
+    font-size: 13px;
 }
 
 .empty-data {
     text-align: center;
     color: #888;
-    padding: 30px;
+    padding: 22px;
 }
 
-/* RESPONSIVE */
+.action-box {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+}
+
 @media (max-width: 768px) {
     .admin-layout {
         display: block;
@@ -284,11 +331,11 @@ body {
     .main-content {
         margin-left: 0;
         width: 100%;
-        padding: 20px;
+        padding: 16px;
     }
 
     .page-header {
-        padding: 22px;
+        padding: 18px;
     }
 }
 </style>
@@ -298,12 +345,10 @@ body {
 
 <div class="admin-layout">
 
-    <!-- SIDEBAR -->
     <div class="sidebar-wrapper">
         <?php include "sidebar.php"; ?>
     </div>
 
-    <!-- CONTENT -->
     <div class="main-content">
 
         <div class="page-header">
@@ -311,7 +356,6 @@ body {
             <p>Kelola data pelanggan, total transaksi, dan total belanja pelanggan The Four Label.</p>
         </div>
 
-        <!-- RINGKASAN -->
         <div class="row g-3">
 
             <div class="col-md-4">
@@ -342,6 +386,16 @@ body {
 
         <div class="card-box">
 
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold mb-0" style="color:#6f2da8; font-size:16px;">
+                    Daftar Pelanggan
+                </h5>
+
+                <a href="tambah-pelanggan.php" class="btn-tambah">
+                    + Tambah Pelanggan
+                </a>
+            </div>
+
             <div class="table-responsive">
                 <table class="table align-middle">
                     <thead>
@@ -356,6 +410,7 @@ body {
                             <th>Total Belanja</th>
                             <th>Diskon</th>
                             <th>ID User</th>
+                            <th>Aksi</th>
                         </tr>
                     </thead>
 
@@ -425,6 +480,23 @@ body {
                                     <td>
                                         <?= $row['idUser'] ? htmlspecialchars($row['idUser']) : "-"; ?>
                                     </td>
+
+                                    <td>
+                                        <div class="action-box">
+                                            <a 
+                                                href="edit-pelanggan.php?id=<?= $row['idPelanggan']; ?>" 
+                                                class="btn-edit">
+                                                Edit
+                                            </a>
+
+                                            <a 
+                                                href="hapus-pelanggan.php?id=<?= $row['idPelanggan']; ?>" 
+                                                class="btn-hapus"
+                                                onclick="return confirm('Yakin ingin menghapus pelanggan ini?')">
+                                                Hapus
+                                            </a>
+                                        </div>
+                                    </td>
                                 </tr>
 
                             <?php } ?>
@@ -432,7 +504,7 @@ body {
                         <?php } else { ?>
 
                             <tr>
-                                <td colspan="10" class="empty-data">
+                                <td colspan="11" class="empty-data">
                                     Belum ada data pelanggan.
                                 </td>
                             </tr>
