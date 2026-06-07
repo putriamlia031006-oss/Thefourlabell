@@ -35,6 +35,9 @@ body {
 
 /* HERO FULL BACKGROUND */
 .hero {
+<<<<<<< HEAD
+    background-image: url('assets/cover4.jpg');
+=======
     width: 100%;
     min-height: 380px;
     background-image:
@@ -44,20 +47,30 @@ body {
             rgba(181, 126, 220, 0.50)
         ),
         url('assets/cover3.jpg');
+>>>>>>> 47de28dfcb0bd49fa574a822e8b94eb741e3c9f0
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
 
+<<<<<<< HEAD
+    color: white;
+    padding: 70px 20px 60px;
+=======
     display: flex;
     align-items: center;
     justify-content: center;
+>>>>>>> 47de28dfcb0bd49fa574a822e8b94eb741e3c9f0
     text-align: center;
 
     color: white;
     position: relative;
     overflow: hidden;
+<<<<<<< HEAD
+}   
+=======
     padding: 70px 20px;
 }
+>>>>>>> 47de28dfcb0bd49fa574a822e8b94eb741e3c9f0
 
 .hero::before {
     content: "";
@@ -362,8 +375,13 @@ body {
     <div class="hero">
         <div class="hero-content">
             
+<<<<<<< HEAD
+            <div class="hero-badge">✨ Custom Apparel by The Four Label</div>
+            <h1>Custom </h1>
+=======
             <div class="hero-badge">Custom Apparel by The Four Label</div>
             <h1>Custom Order</h1>
+>>>>>>> 47de28dfcb0bd49fa574a822e8b94eb741e3c9f0
             <p>Buat hoodie, varsity, polo shirt, atau t-shirt sesuai desainmu sendiri.</p>
         </div>
     </div>

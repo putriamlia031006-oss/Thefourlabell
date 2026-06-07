@@ -1,6 +1,9 @@
 <?php
+if (session_status() === PHP_SESSION_NONE && !headers_sent()) {
+    session_start();
+}
 require "koneksi.php";
-include "navbar.php";
+
 
 $query = mysqli_query(
     $koneksi,
@@ -74,6 +77,11 @@ body {
     padding: 90px 0;
 }
 
+.hero{
+    position: relative;
+    z-index: 1;
+}
+
 .hero::before {
     content: "";
     position: absolute;
@@ -94,6 +102,12 @@ body {
     background: rgba(255,255,255,0.08);
     bottom: -150px;
     right: -100px;
+}
+
+.hero::before,
+.hero::after,
+.cta-section::before {
+    pointer-events: none;
 }
 
 .hero-content {
@@ -490,6 +504,8 @@ body {
 </head>
 
 <body>
+
+<?php include "navbar.php"; ?>
 
 <!-- HERO FULL -->
 <section class="hero">

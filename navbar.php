@@ -13,11 +13,17 @@ if (isset($_SESSION['cart'])) {
 $currentPage = basename($_SERVER['PHP_SELF']);
 
 ?>
+<link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 
 <nav class="navbar navbar-expand-lg navbar-custom sticky-top">
     <div class="container-fluid px-4 px-lg-5">
 
         <a class="navbar-brand logo" href="index.php">
+<<<<<<< HEAD
+            <span class="logo-icon">THE4L</span>
+            <span>THE FOUR LABEL</span>
+=======
             <span class="logo-img-box">
                 <img src="assets/logo.png" alt="Logo The Four Label">
             </span>
@@ -26,6 +32,7 @@ $currentPage = basename($_SERVER['PHP_SELF']);
                 <strong>THE FOUR LABEL</strong>
                 <small>STITCHED WITH STYLE</small>
             </span>
+>>>>>>> 47de28dfcb0bd49fa574a822e8b94eb741e3c9f0
         </a>
 
         <button
@@ -82,6 +89,40 @@ $currentPage = basename($_SERVER['PHP_SELF']);
                         </a>
                     </li>
 
+<<<<<<< HEAD
+                  <li class="nav-item dropdown ms-lg-4 akun-wrapper">
+
+                       <a
+    class="nav-link akun-btn dropdown-toggle"
+    href="javascript:void(0)"
+    id="dropdownAkun"
+    role="button">
+
+    <i class="fas fa-user"></i>
+
+    <span class="nama-user">
+        <?= htmlspecialchars($_SESSION['user']['nama']); ?>
+    </span>
+
+</a>
+ <ul class="dropdown-menu dropdown-menu-end dropdown-custom">
+
+    <li>
+        <a class="dropdown-item" href="pesanan-saya.php">
+            <i class="fas fa-clipboard-list"></i>
+            <span>Pesanan Saya</span>
+        </a>
+    </li>
+
+    <li><hr class="dropdown-divider"></li>
+
+    <li>
+        <a class="dropdown-item text-danger" href="logout.php">
+            <i class="fas fa-right-from-bracket"></i>
+            <span>Logout</span>
+        </a>
+    </li>
+=======
                     <li class="nav-item akun-dropdown ms-lg-2">
 
                         <button type="button" class="akun-btn" id="akunButton">
@@ -104,7 +145,9 @@ $currentPage = basename($_SERVER['PHP_SELF']);
                                 <i class="fa-solid fa-right-from-bracket"></i>
                                 Logout
                             </a>
+>>>>>>> 47de28dfcb0bd49fa574a822e8b94eb741e3c9f0
 
+</ul>
                     </li>
 
                 <?php } else { ?>
@@ -131,15 +174,37 @@ $currentPage = basename($_SERVER['PHP_SELF']);
 </nav>
 
 <style>
+.avatar-user{
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: white;
+    color: #8e44ad;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 8px;
+    font-size: 14px;
+    box-shadow: 0 3px 10px rgba(0,0,0,.1);
+}
+
+.nama-user{
+    font-weight: 700;
+}
 .navbar-custom {
     background: rgba(255, 255, 255, 0.96);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
     box-shadow: 0 4px 22px rgba(142, 68, 173, 0.10);
     padding: 13px 0;
-    z-index: 99999 !important;
     position: sticky;
     top: 0;
+    z-index: 999999 !important;
+}
+
+.navbar-custom,
+.navbar-custom *{
+    pointer-events: auto !important;
 }
 
 .navbar,
@@ -255,6 +320,75 @@ $currentPage = basename($_SERVER['PHP_SELF']);
     color: #7b3fb2 !important;
 }
 
+<<<<<<< HEAD
+.akun-wrapper{
+    border-left: 1px solid #ddd;
+    padding-left: 18px;
+}
+
+.navbar-nav .akun-btn{
+    background: linear-gradient(135deg,#c084fc,#8b5cf6);
+    color: white !important;
+    border: none !important;
+    border-radius: 14px !important;
+
+    padding: 10px 16px !important;
+    min-height: 52px;
+
+    display: flex !important;
+    align-items: center;
+    gap: 10px;
+
+    font-weight: 700;
+    box-shadow: 0 6px 15px rgba(139,92,246,.2);
+}
+
+.akun-btn i{
+    font-size: 20px;
+    color: white;
+}
+
+.nama-user{
+    font-size: 15px;
+    font-weight: 700;
+}
+.akun-btn::after{
+    margin-left: 8px;
+    color: white;
+}
+
+.dropdown {
+    position: relative;
+}
+
+.dropdown-menu{
+    display:none;
+}
+
+.dropdown-menu.show{
+    display:block;
+}
+
+.dropdown-custom{
+    background: #fff;
+    border: none;
+    border-radius: 18px;
+    min-width: 220px;
+    padding: 8px;
+    box-shadow: 0 10px 25px rgba(0,0,0,.12);
+}
+
+.dropdown-custom .dropdown-item{
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    padding: 12px 16px;
+    border-radius: 12px;
+
+    font-size: 15px;
+    font-weight: 600;
+=======
 /* AKUN DROPDOWN CUSTOM */
 .akun-dropdown {
     position: relative;
@@ -316,20 +450,34 @@ $currentPage = basename($_SERVER['PHP_SELF']);
     border-radius: 13px;
     padding: 11px 13px;
     font-weight: 650;
+>>>>>>> 47de28dfcb0bd49fa574a822e8b94eb741e3c9f0
     color: #4d3b5f;
     text-decoration: none;
     transition: 0.2s ease;
     font-size: 14px;
 }
 
+<<<<<<< HEAD
+.dropdown-custom .dropdown-item i{
+    width: 20px;
+    text-align: center;
+}
+
+.dropdown-custom .dropdown-item:hover{
+=======
 .dropdown-item-custom i {
     width: 18px;
     color: #8e44ad;
 }
 
 .dropdown-item-custom:hover {
+>>>>>>> 47de28dfcb0bd49fa574a822e8b94eb741e3c9f0
     background: #f4eaff;
-    color: #7b3fb2;
+    color: #8e44ad;
+}
+
+.dropdown-divider{
+    margin: 6px 0;
 }
 
 .dropdown-line {
@@ -419,23 +567,60 @@ $currentPage = basename($_SERVER['PHP_SELF']);
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
+<<<<<<< HEAD
+
+    const akunBtn = document.getElementById("dropdownAkun");
+
+    if (akunBtn) {
+
+        akunBtn.addEventListener("click", function(e){
+
+=======
     const akunButton = document.getElementById("akunButton");
     const akunDropdown = akunButton ? akunButton.closest(".akun-dropdown") : null;
 
     if (akunButton && akunDropdown) {
         akunButton.addEventListener("click", function (e) {
+>>>>>>> 47de28dfcb0bd49fa574a822e8b94eb741e3c9f0
             e.preventDefault();
             e.stopPropagation();
 
             akunDropdown.classList.toggle("show");
         });
 
+<<<<<<< HEAD
+            if(menu.style.display === "block"){
+                menu.style.display = "none";
+            } else {
+                menu.style.display = "block";
+                menu.style.position = "absolute";
+                menu.style.right = "0";
+                menu.style.top = "100%";
+                menu.style.zIndex = "999999";
+=======
         document.addEventListener("click", function (e) {
             if (!akunDropdown.contains(e.target)) {
                 akunDropdown.classList.remove("show");
+>>>>>>> 47de28dfcb0bd49fa574a822e8b94eb741e3c9f0
             }
+
         });
+
+        document.addEventListener("click", function(e){
+
+            const menu = akunBtn.nextElementSibling;
+
+            if(
+                !akunBtn.contains(e.target) &&
+                !menu.contains(e.target)
+            ){
+                menu.style.display = "none";
+            }
+
+        });
+
     }
+
 });
 </script>
 

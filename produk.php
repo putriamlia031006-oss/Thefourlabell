@@ -1,7 +1,6 @@
 <?php
 
 require "koneksi.php";
-include "navbar.php";
 
 /* =====================
    KATEGORI
@@ -54,7 +53,7 @@ $totalProduk = mysqli_num_rows($queryProduk);
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<title>Produk</title>
+<title>Produk - The Four Label</title>
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
@@ -186,6 +185,8 @@ body{
 </head>
 
 <body>
+
+<?php include "navbar.php"; ?>
 
 <!-- HERO -->
 <div class="container-fluid benner2 d-flex align-items-center">
