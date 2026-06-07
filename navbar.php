@@ -18,8 +18,14 @@ $currentPage = basename($_SERVER['PHP_SELF']);
     <div class="container-fluid px-4 px-lg-5">
 
         <a class="navbar-brand logo" href="index.php">
-            <span class="logo-icon">T4L</span>
-            <span>THE FOUR LABEL</span>
+            <span class="logo-img-box">
+                <img src="assets/logo.png" alt="Logo The Four Label">
+            </span>
+
+            <span class="logo-text">
+                <strong>THE FOUR LABEL</strong>
+                <small>STITCHED WITH STYLE</small>
+            </span>
         </a>
 
         <button
@@ -76,46 +82,28 @@ $currentPage = basename($_SERVER['PHP_SELF']);
                         </a>
                     </li>
 
-                    <li class="nav-item dropdown ms-lg-2">
+                    <li class="nav-item akun-dropdown ms-lg-2">
 
-                        <a
-                            class="nav-link akun-btn dropdown-toggle"
-                            href="#"
-                            id="dropdownAkun"
-                            role="button"
-                            data-bs-toggle="dropdown"
-                            aria-expanded="false">
+                        <button type="button" class="akun-btn" id="akunButton">
+                            <span>
+                                <?= isset($_SESSION['user']['nama']) ? htmlspecialchars($_SESSION['user']['nama']) : 'Akun'; ?>
+                            </span>
+                            <i class="fa-solid fa-chevron-down"></i>
+                        </button>
 
-                            <?= isset($_SESSION['user']['nama']) ? htmlspecialchars($_SESSION['user']['nama']) : 'Akun'; ?>
-                        </a>
-
-                        <ul class="dropdown-menu dropdown-menu-end dropdown-custom" aria-labelledby="dropdownAkun">
-
-                            <li>
-                                <a class="dropdown-item" href="pesanan-saya.php">
-                                    Pesanan Saya
-                                </a>
-                            </li>
+                        <div class="dropdown-custom" id="akunMenu">
 
                             <?php if (isset($_SESSION['user']['role']) && strtolower(trim($_SESSION['user']['role'])) == "admin") { ?>
-                                <li>
-                                    <a class="dropdown-item" href="admin/index.php">
-                                        Dashboard Admin
-                                    </a>
-                                </li>
+                                <a class="dropdown-item-custom" href="admin/index.php">
+                                    <i class="fa-solid fa-gauge"></i>
+                                    Dashboard Admin
+                                </a>
                             <?php } ?>
 
-                            <li>
-                                <hr class="dropdown-divider">
-                            </li>
-
-                            <li>
-                                <a class="dropdown-item text-danger" href="logout.php">
-                                    Logout
-                                </a>
-                            </li>
-
-                        </ul>
+                            <a class="dropdown-item-custom logout-link" href="logout.php">
+                                <i class="fa-solid fa-right-from-bracket"></i>
+                                Logout
+                            </a>
 
                     </li>
 
@@ -144,7 +132,7 @@ $currentPage = basename($_SERVER['PHP_SELF']);
 
 <style>
 .navbar-custom {
-    background: rgba(255, 255, 255, 0.94);
+    background: rgba(255, 255, 255, 0.96);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
     box-shadow: 0 4px 22px rgba(142, 68, 173, 0.10);
@@ -154,37 +142,61 @@ $currentPage = basename($_SERVER['PHP_SELF']);
     top: 0;
 }
 
-.navbar {
-    overflow: visible !important;
-}
-
-.navbar-collapse {
+.navbar,
+.navbar-collapse,
+.navbar-nav,
+.nav-item {
     overflow: visible !important;
 }
 
 .logo {
     display: flex;
     align-items: center;
-    gap: 10px;
-    color: #6f2da8 !important;
-    font-size: 22px;
-    font-weight: 800;
-    letter-spacing: 0.3px;
+    gap: 12px;
     text-decoration: none;
 }
 
-.logo-icon {
-    width: 42px;
-    height: 42px;
-    border-radius: 14px;
-    background: linear-gradient(135deg, #b57edc, #8e44ad);
-    color: white;
-    display: inline-flex;
+.logo-img-box {
+    width: 52px;
+    height: 52px;
+    border-radius: 16px;
+    background: rgba(255,255,255,0.95);
+    border: 1px solid #eadcff;
+    display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 13px;
-    font-weight: 900;
-    box-shadow: 0 8px 18px rgba(142, 68, 173, 0.22);
+    padding: 3px;
+    overflow: hidden;
+    box-shadow: 0 8px 18px rgba(80, 35, 120, 0.16);
+    flex-shrink: 0;
+}
+
+.logo-img-box img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    border-radius: 13px;
+}
+
+.logo-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.1;
+}
+
+.logo-text strong {
+    color: #6f2da8;
+    font-size: 18px;
+    font-weight: 850;
+    letter-spacing: 0.5px;
+}
+
+.logo-text small {
+    color: #6f2da8;
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    margin-top: 3px;
 }
 
 .navbar-nav .nav-link {
@@ -243,40 +255,100 @@ $currentPage = basename($_SERVER['PHP_SELF']);
     color: #7b3fb2 !important;
 }
 
-.akun-btn {
-    background: #f4eaff;
-    color: #7b3fb2 !important;
-    border-radius: 999px !important;
-    padding: 10px 18px !important;
-}
-
-.dropdown {
+/* AKUN DROPDOWN CUSTOM */
+.akun-dropdown {
     position: relative;
 }
 
-.dropdown-menu {
-    z-index: 100000 !important;
+.akun-btn {
+    border: none;
+    outline: none;
+    background: #f4eaff;
+    color: #7b3fb2;
+    border-radius: 999px;
+    padding: 10px 18px;
+    font-weight: 750;
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    cursor: pointer;
+    transition: 0.25s ease;
+    white-space: nowrap;
+}
+
+.akun-btn:hover {
+    background: #eadcff;
+    color: #6f2da8;
+}
+
+.akun-btn i {
+    font-size: 12px;
+    transition: 0.25s;
+}
+
+.akun-dropdown.show .akun-btn i {
+    transform: rotate(180deg);
 }
 
 .dropdown-custom {
-    border: none;
+    position: absolute;
+    top: calc(100% + 12px);
+    right: 0;
+    width: 235px;
+    background: white;
     border-radius: 18px;
     padding: 10px;
-    box-shadow: 0 12px 35px rgba(142, 68, 173, 0.16);
-    margin-top: 12px;
-    min-width: 220px;
+    box-shadow: 0 14px 38px rgba(80, 35, 120, 0.20);
+    border: 1px solid #eadcff;
+    z-index: 999999;
+    display: none;
 }
 
-.dropdown-custom .dropdown-item {
-    border-radius: 12px;
-    padding: 10px 14px;
-    font-weight: 600;
+.akun-dropdown.show .dropdown-custom {
+    display: block;
+}
+
+.dropdown-item-custom {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-radius: 13px;
+    padding: 11px 13px;
+    font-weight: 650;
     color: #4d3b5f;
+    text-decoration: none;
+    transition: 0.2s ease;
+    font-size: 14px;
 }
 
-.dropdown-custom .dropdown-item:hover {
+.dropdown-item-custom i {
+    width: 18px;
+    color: #8e44ad;
+}
+
+.dropdown-item-custom:hover {
     background: #f4eaff;
     color: #7b3fb2;
+}
+
+.dropdown-line {
+    height: 1px;
+    background: #eadcff;
+    margin: 8px 0;
+}
+
+.logout-link {
+    color: #dc3545;
+}
+
+.logout-link i {
+    color: #dc3545;
+}
+
+.logout-link:hover {
+    background: #fff0f3;
+    color: #dc3545;
 }
 
 .custom-toggler {
@@ -313,37 +385,58 @@ $currentPage = basename($_SERVER['PHP_SELF']);
     .akun-btn {
         text-align: center;
         margin-top: 6px;
+        width: 100%;
+        justify-content: center;
     }
 
-    .dropdown-menu {
-        position: static !important;
-        transform: none !important;
-        box-shadow: none;
+    .akun-dropdown {
+        width: 100%;
+    }
+
+    .dropdown-custom {
+        position: static;
+        width: 100%;
         margin-top: 8px;
+        box-shadow: none;
         background: #fbf7ff;
+    }
+
+    .logo-text strong {
+        font-size: 16px;
+    }
+
+    .logo-text small {
+        font-size: 8px;
+        letter-spacing: 1.6px;
+    }
+
+    .logo-img-box {
+        width: 46px;
+        height: 46px;
     }
 }
 </style>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
 <script>
 document.addEventListener("DOMContentLoaded", function () {
-    const dropdownToggle = document.getElementById("dropdownAkun");
+    const akunButton = document.getElementById("akunButton");
+    const akunDropdown = akunButton ? akunButton.closest(".akun-dropdown") : null;
 
-    if (dropdownToggle) {
-        dropdownToggle.addEventListener("click", function (e) {
+    if (akunButton && akunDropdown) {
+        akunButton.addEventListener("click", function (e) {
             e.preventDefault();
+            e.stopPropagation();
 
-            const menu = this.nextElementSibling;
+            akunDropdown.classList.toggle("show");
+        });
 
-            if (typeof bootstrap !== "undefined") {
-                const dropdown = bootstrap.Dropdown.getOrCreateInstance(this);
-                dropdown.toggle();
-            } else {
-                menu.classList.toggle("show");
+        document.addEventListener("click", function (e) {
+            if (!akunDropdown.contains(e.target)) {
+                akunDropdown.classList.remove("show");
             }
         });
     }
 });
 </script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>

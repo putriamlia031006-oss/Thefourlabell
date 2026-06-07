@@ -3,23 +3,41 @@ session_start();
 
 require "koneksi.php";
 
-if (!isset($_GET['id'])) {
-    die("ID Produk tidak ditemukan");
+/* AMBIL ID PRODUK DARI POST / GET */
+if (isset($_POST['idProduk'])) {
+    $idProduk = $_POST['idProduk'];
+} elseif (isset($_GET['id'])) {
+    $idProduk = $_GET['id'];
+} elseif (isset($_GET['idProduk'])) {
+    $idProduk = $_GET['idProduk'];
+} else {
+    die("ID Produk tidak ditemukan.");
 }
 
-$idProduk = $_GET['id'];
-$qty = 1;
+/* AMBIL QTY */
+if (isset($_POST['qty'])) {
+    $qty = (int) $_POST['qty'];
+} else {
+    $qty = 1;
+}
+
+if ($qty < 1) {
+    $qty = 1;
+}
+
+$idProduk = mysqli_real_escape_string($koneksi, $idProduk);
 
 /* CEK PRODUK */
 $qProduk = mysqli_query(
     $koneksi,
     "SELECT 
         p.*,
-        s.jumlahStok
+        COALESCE(s.jumlahStok, 0) AS jumlahStok
     FROM produk p
     LEFT JOIN stok_produk s
         ON p.idProduk = s.idProduk
-    WHERE p.idProduk='$idProduk'"
+    WHERE p.idProduk='$idProduk'
+    LIMIT 1"
 );
 
 if (!$qProduk) {
@@ -32,7 +50,11 @@ if (!$produk) {
     die("Produk tidak ditemukan.");
 }
 
-$stok = isset($produk['jumlahStok']) ? $produk['jumlahStok'] : 0;
+$stok = (int) $produk['jumlahStok'];
+
+if ($stok <= 0) {
+    die("Stok produk sedang kosong.");
+}
 
 if ($qty > $stok) {
     die("Jumlah melebihi stok yang tersedia.");

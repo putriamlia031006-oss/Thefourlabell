@@ -499,7 +499,7 @@ body {
             <div class="col-lg-7">
                 <div class="hero-content">
                     <div class="hero-badge">
-                        ✨ Konveksi Custom & Ready Stock
+                        Konveksi Custom & Ready Stock
                     </div>
 
                     <h1>Wujudkan Desain Pakaianmu Sendiri</h1>

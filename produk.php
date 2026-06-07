@@ -309,5 +309,7 @@ document.querySelectorAll(".add-cart").forEach(btn => {
 
 </script>
 
+<?php include "footer.php"; ?>
+
 </body>
 </html>
