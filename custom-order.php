@@ -35,7 +35,11 @@ body {
 
 /* HERO */
 .hero {
-    background: linear-gradient(135deg, #a56de2, #c7a6f7);
+    background-image: url('assets/cover4.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+
     color: white;
     padding: 70px 20px 60px;
     text-align: center;

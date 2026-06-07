@@ -13,12 +13,14 @@ if (isset($_SESSION['cart'])) {
 $currentPage = basename($_SERVER['PHP_SELF']);
 
 ?>
+<link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 
 <nav class="navbar navbar-expand-lg navbar-custom sticky-top">
     <div class="container-fluid px-4 px-lg-5">
 
         <a class="navbar-brand logo" href="index.php">
-            <span class="logo-icon">T4L</span>
+            <span class="logo-icon">THE4L</span>
             <span>THE FOUR LABEL</span>
         </a>
 
@@ -76,47 +78,40 @@ $currentPage = basename($_SERVER['PHP_SELF']);
                         </a>
                     </li>
 
-                    <li class="nav-item dropdown ms-lg-2">
+                  <li class="nav-item dropdown ms-lg-4 akun-wrapper">
 
-                        <a
-                            class="nav-link akun-btn dropdown-toggle"
-                            href="#"
-                            id="dropdownAkun"
-                            role="button"
-                            data-bs-toggle="dropdown"
-                            aria-expanded="false">
+                       <a
+    class="nav-link akun-btn dropdown-toggle"
+    href="javascript:void(0)"
+    id="dropdownAkun"
+    role="button">
 
-                            <?= isset($_SESSION['user']['nama']) ? htmlspecialchars($_SESSION['user']['nama']) : 'Akun'; ?>
-                        </a>
+    <i class="fas fa-user"></i>
 
-                        <ul class="dropdown-menu dropdown-menu-end dropdown-custom" aria-labelledby="dropdownAkun">
+    <span class="nama-user">
+        <?= htmlspecialchars($_SESSION['user']['nama']); ?>
+    </span>
 
-                            <li>
-                                <a class="dropdown-item" href="pesanan-saya.php">
-                                    Pesanan Saya
-                                </a>
-                            </li>
+</a>
+ <ul class="dropdown-menu dropdown-menu-end dropdown-custom">
 
-                            <?php if (isset($_SESSION['user']['role']) && strtolower(trim($_SESSION['user']['role'])) == "admin") { ?>
-                                <li>
-                                    <a class="dropdown-item" href="admin/index.php">
-                                        Dashboard Admin
-                                    </a>
-                                </li>
-                            <?php } ?>
+    <li>
+        <a class="dropdown-item" href="pesanan-saya.php">
+            <i class="fas fa-clipboard-list"></i>
+            <span>Pesanan Saya</span>
+        </a>
+    </li>
 
-                            <li>
-                                <hr class="dropdown-divider">
-                            </li>
+    <li><hr class="dropdown-divider"></li>
 
-                            <li>
-                                <a class="dropdown-item text-danger" href="logout.php">
-                                    Logout
-                                </a>
-                            </li>
+    <li>
+        <a class="dropdown-item text-danger" href="logout.php">
+            <i class="fas fa-right-from-bracket"></i>
+            <span>Logout</span>
+        </a>
+    </li>
 
-                        </ul>
-
+</ul>
                     </li>
 
                 <?php } else { ?>
@@ -143,15 +138,37 @@ $currentPage = basename($_SERVER['PHP_SELF']);
 </nav>
 
 <style>
+.avatar-user{
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: white;
+    color: #8e44ad;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 8px;
+    font-size: 14px;
+    box-shadow: 0 3px 10px rgba(0,0,0,.1);
+}
+
+.nama-user{
+    font-weight: 700;
+}
 .navbar-custom {
     background: rgba(255, 255, 255, 0.94);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
     box-shadow: 0 4px 22px rgba(142, 68, 173, 0.10);
     padding: 13px 0;
-    z-index: 99999 !important;
     position: sticky;
     top: 0;
+    z-index: 999999 !important;
+}
+
+.navbar-custom,
+.navbar-custom *{
+    pointer-events: auto !important;
 }
 
 .navbar {
@@ -243,40 +260,88 @@ $currentPage = basename($_SERVER['PHP_SELF']);
     color: #7b3fb2 !important;
 }
 
-.akun-btn {
-    background: #f4eaff;
-    color: #7b3fb2 !important;
-    border-radius: 999px !important;
-    padding: 10px 18px !important;
+.akun-wrapper{
+    border-left: 1px solid #ddd;
+    padding-left: 18px;
+}
+
+.navbar-nav .akun-btn{
+    background: linear-gradient(135deg,#c084fc,#8b5cf6);
+    color: white !important;
+    border: none !important;
+    border-radius: 14px !important;
+
+    padding: 10px 16px !important;
+    min-height: 52px;
+
+    display: flex !important;
+    align-items: center;
+    gap: 10px;
+
+    font-weight: 700;
+    box-shadow: 0 6px 15px rgba(139,92,246,.2);
+}
+
+.akun-btn i{
+    font-size: 20px;
+    color: white;
+}
+
+.nama-user{
+    font-size: 15px;
+    font-weight: 700;
+}
+.akun-btn::after{
+    margin-left: 8px;
+    color: white;
 }
 
 .dropdown {
     position: relative;
 }
 
-.dropdown-menu {
-    z-index: 100000 !important;
+.dropdown-menu{
+    display:none;
 }
 
-.dropdown-custom {
+.dropdown-menu.show{
+    display:block;
+}
+
+.dropdown-custom{
+    background: #fff;
     border: none;
     border-radius: 18px;
-    padding: 10px;
-    box-shadow: 0 12px 35px rgba(142, 68, 173, 0.16);
-    margin-top: 12px;
     min-width: 220px;
+    padding: 8px;
+    box-shadow: 0 10px 25px rgba(0,0,0,.12);
 }
 
-.dropdown-custom .dropdown-item {
+.dropdown-custom .dropdown-item{
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    padding: 12px 16px;
     border-radius: 12px;
-    padding: 10px 14px;
+
+    font-size: 15px;
     font-weight: 600;
     color: #4d3b5f;
 }
 
-.dropdown-custom .dropdown-item:hover {
+.dropdown-custom .dropdown-item i{
+    width: 20px;
+    text-align: center;
+}
+
+.dropdown-custom .dropdown-item:hover{
     background: #f4eaff;
-    color: #7b3fb2;
+    color: #8e44ad;
+}
+
+.dropdown-divider{
+    margin: 6px 0;
 }
 
 .custom-toggler {
@@ -325,25 +390,45 @@ $currentPage = basename($_SERVER['PHP_SELF']);
 }
 </style>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
 <script>
 document.addEventListener("DOMContentLoaded", function () {
-    const dropdownToggle = document.getElementById("dropdownAkun");
 
-    if (dropdownToggle) {
-        dropdownToggle.addEventListener("click", function (e) {
+    const akunBtn = document.getElementById("dropdownAkun");
+
+    if (akunBtn) {
+
+        akunBtn.addEventListener("click", function(e){
+
             e.preventDefault();
 
             const menu = this.nextElementSibling;
 
-            if (typeof bootstrap !== "undefined") {
-                const dropdown = bootstrap.Dropdown.getOrCreateInstance(this);
-                dropdown.toggle();
+            if(menu.style.display === "block"){
+                menu.style.display = "none";
             } else {
-                menu.classList.toggle("show");
+                menu.style.display = "block";
+                menu.style.position = "absolute";
+                menu.style.right = "0";
+                menu.style.top = "100%";
+                menu.style.zIndex = "999999";
             }
+
         });
+
+        document.addEventListener("click", function(e){
+
+            const menu = akunBtn.nextElementSibling;
+
+            if(
+                !akunBtn.contains(e.target) &&
+                !menu.contains(e.target)
+            ){
+                menu.style.display = "none";
+            }
+
+        });
+
     }
+
 });
 </script>
