@@ -20,8 +20,19 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
     <div class="container-fluid px-4 px-lg-5">
 
         <a class="navbar-brand logo" href="index.php">
+<<<<<<< HEAD
             <span class="logo-icon">THE4L</span>
             <span>THE FOUR LABEL</span>
+=======
+            <span class="logo-img-box">
+                <img src="assets/logo.png" alt="Logo The Four Label">
+            </span>
+
+            <span class="logo-text">
+                <strong>THE FOUR LABEL</strong>
+                <small>STITCHED WITH STYLE</small>
+            </span>
+>>>>>>> 47de28dfcb0bd49fa574a822e8b94eb741e3c9f0
         </a>
 
         <button
@@ -78,6 +89,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
                         </a>
                     </li>
 
+<<<<<<< HEAD
                   <li class="nav-item dropdown ms-lg-4 akun-wrapper">
 
                        <a
@@ -110,6 +122,30 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
             <span>Logout</span>
         </a>
     </li>
+=======
+                    <li class="nav-item akun-dropdown ms-lg-2">
+
+                        <button type="button" class="akun-btn" id="akunButton">
+                            <span>
+                                <?= isset($_SESSION['user']['nama']) ? htmlspecialchars($_SESSION['user']['nama']) : 'Akun'; ?>
+                            </span>
+                            <i class="fa-solid fa-chevron-down"></i>
+                        </button>
+
+                        <div class="dropdown-custom" id="akunMenu">
+
+                            <?php if (isset($_SESSION['user']['role']) && strtolower(trim($_SESSION['user']['role'])) == "admin") { ?>
+                                <a class="dropdown-item-custom" href="admin/index.php">
+                                    <i class="fa-solid fa-gauge"></i>
+                                    Dashboard Admin
+                                </a>
+                            <?php } ?>
+
+                            <a class="dropdown-item-custom logout-link" href="logout.php">
+                                <i class="fa-solid fa-right-from-bracket"></i>
+                                Logout
+                            </a>
+>>>>>>> 47de28dfcb0bd49fa574a822e8b94eb741e3c9f0
 
 </ul>
                     </li>
@@ -156,7 +192,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
     font-weight: 700;
 }
 .navbar-custom {
-    background: rgba(255, 255, 255, 0.94);
+    background: rgba(255, 255, 255, 0.96);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
     box-shadow: 0 4px 22px rgba(142, 68, 173, 0.10);
@@ -171,37 +207,61 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
     pointer-events: auto !important;
 }
 
-.navbar {
-    overflow: visible !important;
-}
-
-.navbar-collapse {
+.navbar,
+.navbar-collapse,
+.navbar-nav,
+.nav-item {
     overflow: visible !important;
 }
 
 .logo {
     display: flex;
     align-items: center;
-    gap: 10px;
-    color: #6f2da8 !important;
-    font-size: 22px;
-    font-weight: 800;
-    letter-spacing: 0.3px;
+    gap: 12px;
     text-decoration: none;
 }
 
-.logo-icon {
-    width: 42px;
-    height: 42px;
-    border-radius: 14px;
-    background: linear-gradient(135deg, #b57edc, #8e44ad);
-    color: white;
-    display: inline-flex;
+.logo-img-box {
+    width: 52px;
+    height: 52px;
+    border-radius: 16px;
+    background: rgba(255,255,255,0.95);
+    border: 1px solid #eadcff;
+    display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 13px;
-    font-weight: 900;
-    box-shadow: 0 8px 18px rgba(142, 68, 173, 0.22);
+    padding: 3px;
+    overflow: hidden;
+    box-shadow: 0 8px 18px rgba(80, 35, 120, 0.16);
+    flex-shrink: 0;
+}
+
+.logo-img-box img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    border-radius: 13px;
+}
+
+.logo-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.1;
+}
+
+.logo-text strong {
+    color: #6f2da8;
+    font-size: 18px;
+    font-weight: 850;
+    letter-spacing: 0.5px;
+}
+
+.logo-text small {
+    color: #6f2da8;
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    margin-top: 3px;
 }
 
 .navbar-nav .nav-link {
@@ -260,6 +320,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
     color: #7b3fb2 !important;
 }
 
+<<<<<<< HEAD
 .akun-wrapper{
     border-left: 1px solid #ddd;
     padding-left: 18px;
@@ -327,21 +388,115 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
 
     font-size: 15px;
     font-weight: 600;
-    color: #4d3b5f;
+=======
+/* AKUN DROPDOWN CUSTOM */
+.akun-dropdown {
+    position: relative;
 }
 
+.akun-btn {
+    border: none;
+    outline: none;
+    background: #f4eaff;
+    color: #7b3fb2;
+    border-radius: 999px;
+    padding: 10px 18px;
+    font-weight: 750;
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    cursor: pointer;
+    transition: 0.25s ease;
+    white-space: nowrap;
+}
+
+.akun-btn:hover {
+    background: #eadcff;
+    color: #6f2da8;
+}
+
+.akun-btn i {
+    font-size: 12px;
+    transition: 0.25s;
+}
+
+.akun-dropdown.show .akun-btn i {
+    transform: rotate(180deg);
+}
+
+.dropdown-custom {
+    position: absolute;
+    top: calc(100% + 12px);
+    right: 0;
+    width: 235px;
+    background: white;
+    border-radius: 18px;
+    padding: 10px;
+    box-shadow: 0 14px 38px rgba(80, 35, 120, 0.20);
+    border: 1px solid #eadcff;
+    z-index: 999999;
+    display: none;
+}
+
+.akun-dropdown.show .dropdown-custom {
+    display: block;
+}
+
+.dropdown-item-custom {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-radius: 13px;
+    padding: 11px 13px;
+    font-weight: 650;
+>>>>>>> 47de28dfcb0bd49fa574a822e8b94eb741e3c9f0
+    color: #4d3b5f;
+    text-decoration: none;
+    transition: 0.2s ease;
+    font-size: 14px;
+}
+
+<<<<<<< HEAD
 .dropdown-custom .dropdown-item i{
     width: 20px;
     text-align: center;
 }
 
 .dropdown-custom .dropdown-item:hover{
+=======
+.dropdown-item-custom i {
+    width: 18px;
+    color: #8e44ad;
+}
+
+.dropdown-item-custom:hover {
+>>>>>>> 47de28dfcb0bd49fa574a822e8b94eb741e3c9f0
     background: #f4eaff;
     color: #8e44ad;
 }
 
 .dropdown-divider{
     margin: 6px 0;
+}
+
+.dropdown-line {
+    height: 1px;
+    background: #eadcff;
+    margin: 8px 0;
+}
+
+.logout-link {
+    color: #dc3545;
+}
+
+.logout-link i {
+    color: #dc3545;
+}
+
+.logout-link:hover {
+    background: #fff0f3;
+    color: #dc3545;
 }
 
 .custom-toggler {
@@ -378,20 +533,41 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
     .akun-btn {
         text-align: center;
         margin-top: 6px;
+        width: 100%;
+        justify-content: center;
     }
 
-    .dropdown-menu {
-        position: static !important;
-        transform: none !important;
-        box-shadow: none;
+    .akun-dropdown {
+        width: 100%;
+    }
+
+    .dropdown-custom {
+        position: static;
+        width: 100%;
         margin-top: 8px;
+        box-shadow: none;
         background: #fbf7ff;
+    }
+
+    .logo-text strong {
+        font-size: 16px;
+    }
+
+    .logo-text small {
+        font-size: 8px;
+        letter-spacing: 1.6px;
+    }
+
+    .logo-img-box {
+        width: 46px;
+        height: 46px;
     }
 }
 </style>
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
+<<<<<<< HEAD
 
     const akunBtn = document.getElementById("dropdownAkun");
 
@@ -399,10 +575,20 @@ document.addEventListener("DOMContentLoaded", function () {
 
         akunBtn.addEventListener("click", function(e){
 
+=======
+    const akunButton = document.getElementById("akunButton");
+    const akunDropdown = akunButton ? akunButton.closest(".akun-dropdown") : null;
+
+    if (akunButton && akunDropdown) {
+        akunButton.addEventListener("click", function (e) {
+>>>>>>> 47de28dfcb0bd49fa574a822e8b94eb741e3c9f0
             e.preventDefault();
+            e.stopPropagation();
 
-            const menu = this.nextElementSibling;
+            akunDropdown.classList.toggle("show");
+        });
 
+<<<<<<< HEAD
             if(menu.style.display === "block"){
                 menu.style.display = "none";
             } else {
@@ -411,6 +597,11 @@ document.addEventListener("DOMContentLoaded", function () {
                 menu.style.right = "0";
                 menu.style.top = "100%";
                 menu.style.zIndex = "999999";
+=======
+        document.addEventListener("click", function (e) {
+            if (!akunDropdown.contains(e.target)) {
+                akunDropdown.classList.remove("show");
+>>>>>>> 47de28dfcb0bd49fa574a822e8b94eb741e3c9f0
             }
 
         });
@@ -432,3 +623,5 @@ document.addEventListener("DOMContentLoaded", function () {
 
 });
 </script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>

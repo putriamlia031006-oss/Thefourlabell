@@ -26,22 +26,15 @@ if (isset($_POST['login'])) {
         $passwordDb = $data['password'];
         $loginBerhasil = false;
 
-        /*
-            1. Cek password modern dari password_hash()
-            Biasanya diawali $2y$ atau $argon
-        */
+        // Cek password modern dari password_hash()
         if (password_verify($password, $passwordDb)) {
             $loginBerhasil = true;
         }
 
-        /*
-            2. Cek password lama MD5
-            Contoh: 8b6d9f5dd2385331a05b2e2d8a94f5a0
-        */
+        // Cek password lama MD5
         elseif (strlen($passwordDb) == 32 && md5($password) == $passwordDb) {
             $loginBerhasil = true;
 
-            // Update otomatis ke password_hash()
             $passwordBaru = password_hash($password, PASSWORD_DEFAULT);
 
             mysqli_query(
@@ -52,14 +45,10 @@ if (isset($_POST['login'])) {
             );
         }
 
-        /*
-            3. Cek password plain text
-            Contoh di database: putriadmin
-        */
+        // Cek password plain text
         elseif ($password == $passwordDb) {
             $loginBerhasil = true;
 
-            // Update otomatis ke password_hash()
             $passwordBaru = password_hash($password, PASSWORD_DEFAULT);
 
             mysqli_query(
@@ -108,6 +97,7 @@ if (isset($_POST['login'])) {
 <title>Login - The Four Label</title>
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
 
 <style>
 * {
@@ -115,91 +105,151 @@ if (isset($_POST['login'])) {
 }
 
 body {
-    background: linear-gradient(135deg, #f8f4ff, #e7d4ff);
     min-height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    margin: 0;
     font-family: 'Segoe UI', Arial, sans-serif;
-    padding: 20px;
+    background:
+        radial-gradient(circle at top left, #f7edff 0%, transparent 35%),
+        radial-gradient(circle at bottom right, #ead6ff 0%, transparent 35%),
+        linear-gradient(135deg, #f3e8ff, #eadcff, #f9f5ff);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 28px 15px;
 }
 
 .login-box {
-    background: white;
-    width: 430px;
-    padding: 40px;
-    border-radius: 28px;
-    box-shadow: 0 14px 35px rgba(142, 68, 173, 0.16);
-    border: 1px solid #eadcff;
+    width: 100%;
+    max-width: 450px;
+    background:
+        radial-gradient(circle at top center, rgba(185, 132, 224, 0.13), transparent 35%),
+        rgba(255,255,255,0.96);
+    padding: 42px 42px 36px;
+    border-radius: 34px;
+    box-shadow: 0 26px 65px rgba(125, 82, 180, 0.24);
+    border: 1px solid rgba(176, 127, 220, 0.28);
 }
 
 .logo {
-    width: 70px;
-    height: 70px;
-    background: linear-gradient(135deg, #b57edc, #8e44ad);
-    color: white;
-    border-radius: 22px;
+    width: 112px;
+    height: 112px;
+    margin: 0 auto 18px;
+    border-radius: 30px;
+    background: linear-gradient(135deg, #f7f0ff, #ffffff);
     display: flex;
     align-items: center;
     justify-content: center;
-    margin: 0 auto 18px;
-    font-size: 32px;
-    box-shadow: 0 10px 22px rgba(142, 68, 173, 0.22);
+    box-shadow: 0 16px 34px rgba(142, 85, 215, 0.20);
+    border: 1.5px solid #eadcf7;
+    padding: 9px;
+}
+
+.logo img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    border-radius: 24px;
 }
 
 .judul {
-    color: #7b3fb2;
+    color: #7437b8;
     font-weight: 850;
     text-align: center;
-    margin-bottom: 10px;
+    margin-bottom: 7px;
+    font-size: 32px;
+    letter-spacing: -0.5px;
 }
 
 .subjudul {
     text-align: center;
-    color: gray;
-    margin-bottom: 30px;
+    color: #8a7899;
+    margin-bottom: 28px;
+    font-size: 15px;
+}
+
+.alert {
+    border-radius: 16px;
+    font-size: 14px;
+    padding: 13px 16px;
+    border: none;
+    background: #fff0f3;
+    color: #b02a37;
+    margin-bottom: 20px;
 }
 
 .form-label {
     font-weight: 700;
-    color: #4b2e63;
+    color: #3f176b;
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+.input-group-custom {
+    position: relative;
+    margin-bottom: 18px;
+}
+
+.input-group-custom i {
+    position: absolute;
+    top: 50%;
+    left: 17px;
+    transform: translateY(-50%);
+    color: #9c6fd0;
+    font-size: 15px;
 }
 
 .form-control {
-    height: 50px;
-    border-radius: 15px;
-    background: #fcfbff;
-    border: 1px solid #ddd;
+    height: 52px;
+    border-radius: 16px;
+    border: 1.5px solid #e2d8ea;
+    padding: 14px 16px 14px 46px;
+    background: #fbfaff;
+    color: #342344;
+    font-size: 15px;
+    transition: 0.25s;
 }
 
 .form-control:focus {
-    border-color: #b57edc;
-    box-shadow: 0 0 0 4px rgba(181, 126, 220, 0.17);
-    background: white;
+    border-color: #a765d6;
+    background: #fff;
+    box-shadow: 0 0 0 4px rgba(167, 101, 214, 0.14);
+}
+
+.form-control::placeholder {
+    color: #a59aad;
 }
 
 .btn-login {
-    background: linear-gradient(135deg, #b57edc, #8e44ad);
-    border: none;
-    height: 52px;
-    border-radius: 15px;
     width: 100%;
-    color: white;
+    border: none;
+    border-radius: 17px;
+    padding: 15px;
+    margin-top: 8px;
     font-weight: 800;
-    transition: 0.25s ease;
+    color: white;
+    background: linear-gradient(135deg, #b573df, #8e43bd);
+    box-shadow: 0 14px 28px rgba(142, 67, 189, 0.28);
+    transition: 0.25s;
 }
 
 .btn-login:hover {
-    background: linear-gradient(135deg, #a76bd4, #7b3fb2);
-    color: white;
     transform: translateY(-2px);
-    box-shadow: 0 10px 22px rgba(142, 68, 173, 0.22);
+    background: linear-gradient(135deg, #a65bd6, #7c35ac);
+    box-shadow: 0 18px 35px rgba(142, 67, 189, 0.35);
+    color: white;
+}
+
+.register-text {
+    text-align: center;
+    margin-top: 22px;
+    color: #8a7899;
+    font-size: 14px;
 }
 
 .link-register {
-    color: #8e44ad;
+    color: #7b35b4;
+    font-weight: 700;
     text-decoration: none;
-    font-weight: bold;
 }
 
 .link-register:hover {
@@ -208,8 +258,17 @@ body {
 
 @media (max-width: 576px) {
     .login-box {
-        width: 100%;
-        padding: 30px 24px;
+        padding: 36px 26px 32px;
+        border-radius: 28px;
+    }
+
+    .logo {
+        width: 100px;
+        height: 100px;
+    }
+
+    .judul {
+        font-size: 29px;
     }
 }
 </style>
@@ -221,15 +280,15 @@ body {
 <div class="login-box">
 
     <div class="logo">
-        👕
+        <img src="assets/logoT4L.png" alt="Logo The Four Label">
     </div>
 
     <h2 class="judul">
-        THE FOUR LABEL
+        Login Akun
     </h2>
 
     <p class="subjudul">
-        Login untuk melanjutkan belanja
+        Selamat datang kembali di The Four Label
     </p>
 
     <?php if ($error != "") { ?>
@@ -240,38 +299,42 @@ body {
 
     <?php } ?>
 
-    <form method="POST">
+    <form method="POST" autocomplete="off">
 
-        <div class="mb-3">
-            <label class="form-label">Email</label>
+        <label class="form-label">Email</label>
+        <div class="input-group-custom">
+            <i class="fa-solid fa-envelope"></i>
             <input
                 type="email"
                 name="email"
                 class="form-control"
                 placeholder="Masukkan email"
+                autocomplete="new-email"
                 required>
         </div>
 
-        <div class="mb-4">
-            <label class="form-label">Password</label>
+        <label class="form-label">Password</label>
+        <div class="input-group-custom">
+            <i class="fa-solid fa-lock"></i>
             <input
                 type="password"
                 name="password"
                 class="form-control"
                 placeholder="Masukkan password"
+                autocomplete="new-password"
                 required>
         </div>
 
         <button
             type="submit"
             name="login"
-            class="btn btn-login">
+            class="btn-login">
             Login
         </button>
 
     </form>
 
-    <div class="text-center mt-4">
+    <div class="register-text">
         Belum punya akun?
         <a href="register.php" class="link-register">
             Daftar di sini

@@ -33,46 +33,73 @@ body {
     padding-bottom: 50px;
 }
 
-/* HERO */
+/* HERO FULL BACKGROUND */
 .hero {
+<<<<<<< HEAD
     background-image: url('assets/cover4.jpg');
+=======
+    width: 100%;
+    min-height: 380px;
+    background-image:
+        linear-gradient(
+            135deg,
+            rgba(83, 35, 128, 0.72),
+            rgba(181, 126, 220, 0.50)
+        ),
+        url('assets/cover3.jpg');
+>>>>>>> 47de28dfcb0bd49fa574a822e8b94eb741e3c9f0
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
 
+<<<<<<< HEAD
     color: white;
     padding: 70px 20px 60px;
+=======
+    display: flex;
+    align-items: center;
+    justify-content: center;
+>>>>>>> 47de28dfcb0bd49fa574a822e8b94eb741e3c9f0
     text-align: center;
-    border-radius: 0 0 32px 32px;
+
+    color: white;
     position: relative;
     overflow: hidden;
+<<<<<<< HEAD
 }   
+=======
+    padding: 70px 20px;
+}
+>>>>>>> 47de28dfcb0bd49fa574a822e8b94eb741e3c9f0
 
 .hero::before {
     content: "";
     position: absolute;
-    width: 220px;
-    height: 220px;
-    background: rgba(255,255,255,0.12);
+    width: 280px;
+    height: 280px;
     border-radius: 50%;
-    top: -60px;
-    left: -60px;
+    background: rgba(255,255,255,0.10);
+    top: -70px;
+    left: -70px;
 }
 
 .hero::after {
     content: "";
     position: absolute;
-    width: 280px;
-    height: 280px;
-    background: rgba(255,255,255,0.08);
+    width: 320px;
+    height: 320px;
     border-radius: 50%;
-    bottom: -100px;
-    right: -80px;
+    background: rgba(255,255,255,0.08);
+    bottom: -120px;
+    right: -90px;
 }
 
 .hero-content {
     position: relative;
     z-index: 2;
+    max-width: 850px;
+    margin: 0 auto;
+    color: white;
 }
 
 .hero-badge {
@@ -81,21 +108,28 @@ body {
     border-radius: 999px;
     background: rgba(255,255,255,0.18);
     border: 1px solid rgba(255,255,255,0.28);
+    color: white;
     font-size: 14px;
     margin-bottom: 16px;
-    font-weight: 500;
+    font-weight: 700;
+    backdrop-filter: blur(6px);
 }
 
 .hero h1 {
+    color: white;
     font-size: 52px;
     font-weight: 800;
     margin-bottom: 14px;
+    line-height: 1.15;
 }
 
 .hero p {
+    color: white;
     font-size: 18px;
-    margin: 0;
+    margin: 0 auto;
     opacity: 0.95;
+    max-width: 760px;
+    line-height: 1.7;
 }
 
 /* CONTENT */
@@ -341,8 +375,13 @@ body {
     <div class="hero">
         <div class="hero-content">
             
+<<<<<<< HEAD
             <div class="hero-badge">✨ Custom Apparel by The Four Label</div>
             <h1>Custom </h1>
+=======
+            <div class="hero-badge">Custom Apparel by The Four Label</div>
+            <h1>Custom Order</h1>
+>>>>>>> 47de28dfcb0bd49fa574a822e8b94eb741e3c9f0
             <p>Buat hoodie, varsity, polo shirt, atau t-shirt sesuai desainmu sendiri.</p>
         </div>
     </div>
@@ -618,6 +657,8 @@ function ubahOngkir() {
     }
 }
 </script>
+
+<?php include "footer.php"; ?>
 
 </body>
 </html>
