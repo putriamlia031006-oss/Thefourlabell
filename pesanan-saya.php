@@ -12,19 +12,42 @@ include "navbar.php";
 
 $idUser = $_SESSION['user']['idUser'];
 
-/* AMBIL DATA PESANAN + TOTAL PEMBAYARAN */
+/* 
+   AMBIL DATA PESANAN
+   totalBayar = hanya pembayaran yang sudah diverifikasi admin
+   totalPending = bukti yang sudah diupload tapi belum diverifikasi
+   isCashOrder = pesanan cash di toko
+*/
 $query = mysqli_query($koneksi, "
     SELECT 
         p.*,
         pl.idUser,
-        COALESCE(SUM(pb.jumlah), 0) AS totalBayar
+
+        COALESCE((
+            SELECT SUM(pb1.jumlah)
+            FROM pembayaran pb1
+            WHERE pb1.idPesanan = p.idPesanan
+            AND pb1.status IN ('DP Masuk', 'Lunas')
+        ), 0) AS totalBayar,
+
+        COALESCE((
+            SELECT SUM(pb2.jumlah)
+            FROM pembayaran pb2
+            WHERE pb2.idPesanan = p.idPesanan
+            AND pb2.status = 'Pending'
+        ), 0) AS totalPending,
+
+        COALESCE((
+            SELECT COUNT(*)
+            FROM pembayaran pb3
+            WHERE pb3.idPesanan = p.idPesanan
+            AND pb3.metode = 'Cash di Toko'
+        ), 0) AS isCashOrder
+
     FROM pesanan p
     JOIN pelanggan pl 
         ON p.idPelanggan = pl.idPelanggan
-    LEFT JOIN pembayaran pb
-        ON p.idPesanan = pb.idPesanan
     WHERE pl.idUser = '$idUser'
-    GROUP BY p.idPesanan
     ORDER BY p.idPesanan DESC
 ");
 
@@ -45,16 +68,20 @@ function badgeStatusPesanan($status) {
 
     if ($statusLower == "menunggu") {
         return "badge-menunggu";
+    } elseif ($statusLower == "menunggu upload bukti pembayaran") {
+        return "badge-upload";
     } elseif ($statusLower == "menunggu verifikasi pembayaran") {
         return "badge-verifikasi";
+    } elseif ($statusLower == "menunggu pembayaran di toko") {
+        return "badge-tunai";
+    } elseif ($statusLower == "menunggu pembayaran tunai di toko") {
+        return "badge-tunai";
     } elseif ($statusLower == "diproses" || $statusLower == "proses") {
         return "badge-proses";
     } elseif ($statusLower == "selesai") {
         return "badge-selesai";
     } elseif ($statusLower == "batal") {
         return "badge-batal";
-    } elseif ($statusLower == "menunggu pembayaran tunai") {
-        return "badge-tunai";
     } else {
         return "badge-menunggu";
     }
@@ -104,16 +131,18 @@ body {
     right: -40px;
 }
 
-.header-page h3 {
+.header-page h3,
+.header-page p {
     position: relative;
     z-index: 2;
+}
+
+.header-page h3 {
     font-weight: 850;
     margin-bottom: 8px;
 }
 
 .header-page p {
-    position: relative;
-    z-index: 2;
     margin: 0;
     opacity: 0.95;
 }
@@ -126,6 +155,7 @@ body {
     overflow: hidden;
     margin-bottom: 20px;
     transition: 0.25s ease;
+    background: white;
 }
 
 .order-card:hover {
@@ -166,20 +196,21 @@ body {
     color: #333;
 }
 
-.price {
-    color: #7b3fb2;
-    font-weight: 850;
-}
-
 .badge-custom {
     padding: 8px 13px;
     border-radius: 999px;
     font-size: 12px;
     font-weight: 800;
     display: inline-block;
+    line-height: 1.5;
 }
 
 .badge-menunggu {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.badge-upload {
     background: #fff3cd;
     color: #856404;
 }
@@ -217,6 +248,16 @@ body {
 .badge-belum {
     background: #fff3cd;
     color: #856404;
+}
+
+.badge-pending {
+    background: #dbeafe;
+    color: #1d4ed8;
+}
+
+.badge-cash {
+    background: #f1e3ff;
+    color: #7b3fb2;
 }
 
 .payment-box {
@@ -315,6 +356,13 @@ body {
     margin-top: 4px;
 }
 
+.note-payment {
+    font-size: 13px;
+    color: #777;
+    margin-top: 8px;
+    line-height: 1.5;
+}
+
 @media (max-width: 768px) {
     .header-page {
         padding: 26px;
@@ -356,15 +404,18 @@ body {
     <?php while ($row = mysqli_fetch_assoc($query)) { ?>
 
         <?php
-        $totalBayar = $row['totalBayar'] ?? 0;
-        $totalPesanan = $row['total'] ?? 0;
+        $totalBayar = (int) ($row['totalBayar'] ?? 0);
+        $totalPending = (int) ($row['totalPending'] ?? 0);
+        $totalPesanan = (int) ($row['total'] ?? 0);
+        $isCashOrder = (int) ($row['isCashOrder'] ?? 0);
+
         $sisa = $totalPesanan - $totalBayar;
 
         if ($sisa < 0) {
             $sisa = 0;
         }
 
-        $isLunas = ($totalBayar >= $totalPesanan);
+        $isLunas = ($totalBayar >= $totalPesanan && $totalPesanan > 0);
 
         $invoice = $row['nomorInvoice'];
         if ($invoice == "" || $invoice == NULL) {
@@ -395,6 +446,23 @@ body {
             } else {
                 $deadlineInfo = "<div class='deadline-safe'>Estimasi selesai sesuai jadwal</div>";
             }
+        }
+
+        if ($isLunas) {
+            $statusPembayaranText = "Lunas";
+            $statusPembayaranClass = "badge-lunas";
+        } elseif ($totalPending > 0) {
+            $statusPembayaranText = "Menunggu Verifikasi";
+            $statusPembayaranClass = "badge-pending";
+        } elseif ($isCashOrder > 0) {
+            $statusPembayaranText = "Cash di Toko";
+            $statusPembayaranClass = "badge-cash";
+        } elseif ($totalBayar > 0) {
+            $statusPembayaranText = "DP / Belum Lunas";
+            $statusPembayaranClass = "badge-belum";
+        } else {
+            $statusPembayaranText = "Belum Bayar";
+            $statusPembayaranClass = "badge-belum";
         }
         ?>
 
@@ -457,34 +525,37 @@ body {
                                 <strong>Rp <?= number_format($totalBayar, 0, ',', '.'); ?></strong>
                             </div>
 
+                            <?php if ($totalPending > 0) { ?>
+                                <div class="payment-row">
+                                    <span>Pending</span>
+                                    <strong>Rp <?= number_format($totalPending, 0, ',', '.'); ?></strong>
+                                </div>
+                            <?php } ?>
+
                             <div class="payment-row">
                                 <span>Sisa</span>
                                 <strong>Rp <?= number_format($sisa, 0, ',', '.'); ?></strong>
                             </div>
 
                         </div>
+
+                        <?php if ($totalPending > 0) { ?>
+                            <div class="note-payment">
+                                Bukti pembayaran sudah diupload dan sedang menunggu verifikasi admin.
+                            </div>
+                        <?php } ?>
                     </div>
 
                     <div class="col-md-3">
                         <div class="label">Status Pembayaran</div>
 
-                        <?php if ($isLunas) { ?>
-
-                            <span class="badge-custom badge-lunas">
-                                Lunas
-                            </span>
-
-                        <?php } else { ?>
-
-                            <span class="badge-custom badge-belum">
-                                DP / Belum Lunas
-                            </span>
-
-                        <?php } ?>
+                        <span class="badge-custom <?= $statusPembayaranClass; ?>">
+                            <?= htmlspecialchars($statusPembayaranText); ?>
+                        </span>
 
                         <div class="d-flex flex-wrap gap-2 mt-3">
 
-                            <?php if ($totalBayar <= 0) { ?>
+                            <?php if (!$isLunas && $totalPending <= 0 && $isCashOrder <= 0 && $totalBayar <= 0) { ?>
 
                                 <a
                                     href="upload-pembayaran.php?id=<?= $row['idPesanan']; ?>"
@@ -492,7 +563,7 @@ body {
                                     Upload Pembayaran
                                 </a>
 
-                            <?php } elseif (!$isLunas) { ?>
+                            <?php } elseif (!$isLunas && $totalPending <= 0 && $isCashOrder <= 0 && $totalBayar > 0) { ?>
 
                                 <a
                                     href="bayar-sisa.php?id=<?= $row['idPesanan']; ?>"
@@ -509,6 +580,13 @@ body {
                             </a>
 
                         </div>
+
+                        <?php if ($isCashOrder > 0 && !$isLunas) { ?>
+                            <div class="note-payment">
+                                Pembayaran dilakukan langsung di toko saat pengambilan barang.
+                            </div>
+                        <?php } ?>
+
                     </div>
 
                 </div>
@@ -520,6 +598,8 @@ body {
     <?php } ?>
 
 </div>
+
+<?php include "footer.php"; ?>
 
 </body>
 </html>

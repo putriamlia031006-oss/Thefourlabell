@@ -10,7 +10,7 @@ require "../koneksi.php";
 $idPelangganFilter = "";
 
 if (isset($_GET['idPelanggan'])) {
-    $idPelangganFilter = $_GET['idPelanggan'];
+    $idPelangganFilter = mysqli_real_escape_string($koneksi, $_GET['idPelanggan']);
 }
 
 /* =========================
@@ -34,6 +34,14 @@ if (!$dataPelanggan) {
 
 /* =========================
    QUERY PESANAN SESUAI PELANGGAN
+
+   totalBayar:
+   hanya pembayaran yang sudah diverifikasi:
+   DP Masuk / Lunas
+
+   totalPending:
+   pembayaran yang sudah diupload user,
+   tapi belum diverifikasi admin
 ========================= */
 $where = "";
 
@@ -49,16 +57,51 @@ $query = mysqli_query(
         pelanggan.alamat,
         user.nama AS namaPelanggan,
         user.email,
-        COALESCE(SUM(pembayaran.jumlah), 0) AS totalBayar
+
+        COALESCE((
+            SELECT SUM(pb1.jumlah)
+            FROM pembayaran pb1
+            WHERE pb1.idPesanan = pesanan.idPesanan
+            AND pb1.status IN ('DP Masuk', 'Lunas')
+        ), 0) AS totalBayar,
+
+        COALESCE((
+            SELECT SUM(pb2.jumlah)
+            FROM pembayaran pb2
+            WHERE pb2.idPesanan = pesanan.idPesanan
+            AND pb2.status = 'Pending'
+        ), 0) AS totalPending,
+
+        COALESCE((
+            SELECT COUNT(*)
+            FROM pembayaran pb3
+            WHERE pb3.idPesanan = pesanan.idPesanan
+            AND pb3.metode = 'Cash di Toko'
+        ), 0) AS isCashOrder,
+
+        (
+            SELECT pb4.bukti
+            FROM pembayaran pb4
+            WHERE pb4.idPesanan = pesanan.idPesanan
+            AND pb4.status = 'Pending'
+            ORDER BY pb4.idPembayaran DESC
+            LIMIT 1
+        ) AS buktiPending,
+
+        (
+            SELECT pb5.metode
+            FROM pembayaran pb5
+            WHERE pb5.idPesanan = pesanan.idPesanan
+            ORDER BY pb5.idPembayaran DESC
+            LIMIT 1
+        ) AS metodeTerakhir
+
     FROM pesanan
     JOIN pelanggan 
         ON pesanan.idPelanggan = pelanggan.idPelanggan
     JOIN user 
         ON pelanggan.idUser = user.idUser
-    LEFT JOIN pembayaran
-        ON pesanan.idPesanan = pembayaran.idPesanan
     $where
-    GROUP BY pesanan.idPesanan
     ORDER BY pesanan.idPesanan DESC"
 );
 
@@ -81,6 +124,30 @@ function jenisPesananText($jenis) {
         return "Custom";
     } else {
         return $jenis;
+    }
+}
+
+function badgeStatusPesanan($status) {
+    $statusLower = strtolower($status);
+
+    if ($statusLower == "menunggu upload bukti pembayaran") {
+        return "badge-warning-soft";
+    } elseif ($statusLower == "menunggu verifikasi pembayaran") {
+        return "badge-blue-soft";
+    } elseif ($statusLower == "menunggu pembayaran di toko") {
+        return "badge-purple-soft";
+    } elseif ($statusLower == "menunggu pembayaran tunai di toko") {
+        return "badge-purple-soft";
+    } elseif ($statusLower == "diproses" || $statusLower == "proses") {
+        return "badge-purple-soft";
+    } elseif ($statusLower == "selesai") {
+        return "badge-green-soft";
+    } elseif ($statusLower == "batal") {
+        return "badge-red-soft";
+    } elseif ($statusLower == "lunas") {
+        return "badge-green-soft";
+    } else {
+        return "badge-warning-soft";
     }
 }
 ?>
@@ -264,36 +331,37 @@ body {
     color: #333;
 }
 
-.price {
-    color: #7b3fb2;
-    font-weight: 850;
+.badge-main {
+    padding: 8px 13px;
+    border-radius: 999px;
+    font-weight: 800;
+    display: inline-block;
+    line-height: 1.5;
 }
 
-.badge-lavender {
+.badge-purple-soft {
     background: #eadcff;
     color: #4b2a7a;
-    padding: 7px 12px;
-    border-radius: 999px;
-    font-weight: 800;
-    display: inline-block;
 }
 
-.badge-paid {
+.badge-blue-soft {
+    background: #dbeafe;
+    color: #1d4ed8;
+}
+
+.badge-green-soft {
     background: #dcfce7;
     color: #15803d;
-    padding: 7px 12px;
-    border-radius: 999px;
-    font-weight: 800;
-    display: inline-block;
 }
 
-.badge-unpaid {
+.badge-warning-soft {
     background: #fff3cd;
     color: #856404;
-    padding: 7px 12px;
-    border-radius: 999px;
-    font-weight: 800;
-    display: inline-block;
+}
+
+.badge-red-soft {
+    background: #fee2e2;
+    color: #b91c1c;
 }
 
 .payment-box {
@@ -316,6 +384,32 @@ body {
     margin-bottom: 0;
 }
 
+.payment-row strong {
+    color: #120c2e;
+}
+
+.pending-note {
+    background: #eef6ff;
+    border: 1px solid #cfe8ff;
+    color: #1d4ed8;
+    border-radius: 14px;
+    padding: 11px 13px;
+    font-size: 13px;
+    margin-top: 12px;
+    line-height: 1.5;
+}
+
+.cash-note {
+    background: #f6eeff;
+    border: 1px solid #e4d2ff;
+    color: #6e41a8;
+    border-radius: 14px;
+    padding: 11px 13px;
+    font-size: 13px;
+    margin-top: 12px;
+    line-height: 1.5;
+}
+
 .btn-update {
     background: #7c4dff;
     color: white;
@@ -325,6 +419,18 @@ body {
 
 .btn-update:hover {
     background: #5e35b1;
+    color: white;
+}
+
+.btn-verify {
+    background: #16a34a;
+    color: white;
+    border-radius: 12px;
+    font-weight: 700;
+}
+
+.btn-verify:hover {
+    background: #15803d;
     color: white;
 }
 
@@ -384,20 +490,17 @@ body {
 <div class="container-fluid">
     <div class="row">
 
-        <!-- SIDEBAR -->
         <div class="col-md-2 p-0">
             <?php include "sidebar.php"; ?>
         </div>
 
-        <!-- CONTENT -->
         <div class="col-md-10 main-content">
 
             <div class="page-header">
                 <h3>💜 Daftar Pesanan</h3>
-                <p>Kelola pesanan berdasarkan pelanggan, update status, dan lihat detail pembayaran.</p>
+                <p>Kelola pesanan, verifikasi pembayaran, update status, dan lihat detail transaksi.</p>
             </div>
 
-            <!-- FILTER PELANGGAN -->
             <div class="filter-card">
                 <form method="GET">
                     <div class="row g-3 align-items-end">
@@ -434,7 +537,6 @@ body {
                 </form>
             </div>
 
-            <!-- DAFTAR PESANAN -->
             <div class="row g-4">
 
                 <?php if (mysqli_num_rows($query) == 0) { ?>
@@ -459,15 +561,35 @@ body {
                         $invoice = "#" . $row['idPesanan'];
                     }
 
-                    $totalPesanan = $row['total'];
-                    $totalBayar = $row['totalBayar'];
+                    $totalPesanan = (int) $row['total'];
+                    $totalBayar = (int) $row['totalBayar'];
+                    $totalPending = (int) $row['totalPending'];
+                    $isCashOrder = (int) $row['isCashOrder'];
+
                     $sisa = $totalPesanan - $totalBayar;
 
                     if ($sisa < 0) {
                         $sisa = 0;
                     }
 
-                    $isLunas = ($totalBayar >= $totalPesanan);
+                    $isLunas = ($totalBayar >= $totalPesanan && $totalPesanan > 0);
+
+                    if ($isLunas) {
+                        $statusBayarText = "Lunas";
+                        $statusBayarClass = "badge-green-soft";
+                    } elseif ($totalPending > 0) {
+                        $statusBayarText = "Menunggu Verifikasi";
+                        $statusBayarClass = "badge-blue-soft";
+                    } elseif ($isCashOrder > 0) {
+                        $statusBayarText = "Cash di Toko";
+                        $statusBayarClass = "badge-purple-soft";
+                    } elseif ($totalBayar > 0) {
+                        $statusBayarText = "DP / Belum Lunas";
+                        $statusBayarClass = "badge-warning-soft";
+                    } else {
+                        $statusBayarText = "Belum Bayar";
+                        $statusBayarClass = "badge-warning-soft";
+                    }
                     ?>
 
                     <div class="col-md-6 col-lg-4">
@@ -543,7 +665,7 @@ body {
 
                                 <div class="mb-3">
                                     <div class="info-label">Status Pesanan</div>
-                                    <span class="badge-lavender">
+                                    <span class="badge-main <?= badgeStatusPesanan($row['status']); ?>">
                                         <?= htmlspecialchars($row['status']); ?>
                                     </span>
                                 </div>
@@ -559,6 +681,13 @@ body {
                                         <strong>Rp <?= number_format($totalBayar, 0, ',', '.'); ?></strong>
                                     </div>
 
+                                    <?php if ($totalPending > 0) { ?>
+                                        <div class="payment-row">
+                                            <span>Pending</span>
+                                            <strong>Rp <?= number_format($totalPending, 0, ',', '.'); ?></strong>
+                                        </div>
+                                    <?php } ?>
+
                                     <div class="payment-row">
                                         <span>Sisa</span>
                                         <strong>Rp <?= number_format($sisa, 0, ',', '.'); ?></strong>
@@ -566,39 +695,89 @@ body {
                                 </div>
 
                                 <div class="mt-3">
-                                    <?php if ($isLunas) { ?>
-                                        <span class="badge-paid">Lunas</span>
-                                    <?php } else { ?>
-                                        <span class="badge-unpaid">Belum Lunas</span>
-                                    <?php } ?>
+                                    <span class="badge-main <?= $statusBayarClass; ?>">
+                                        <?= htmlspecialchars($statusBayarText); ?>
+                                    </span>
                                 </div>
+
+                                <?php if ($totalPending > 0) { ?>
+                                    <div class="pending-note">
+                                        Customer sudah upload bukti pembayaran.
+                                        Silakan klik <b>Verifikasi</b> setelah bukti dicek.
+                                    </div>
+                                <?php } ?>
+
+                                <?php if ($isCashOrder > 0 && !$isLunas) { ?>
+                                    <div class="cash-note">
+                                        Pesanan ini menggunakan <b>Cash di Toko</b>.
+                                        Pembayaran dikonfirmasi saat customer ambil barang.
+                                    </div>
+                                <?php } ?>
 
                                 <div class="row g-2 mt-3">
 
-                                    <div class="col-4">
-                                        <a 
-                                            href="update-status.php?id=<?= $row['idPesanan']; ?>"
-                                            class="btn btn-update btn-sm w-100">
-                                            Update
-                                        </a>
-                                    </div>
+                                    <?php if ($totalPending > 0) { ?>
+                                        <div class="col-6">
+                                            <a 
+                                                href="verifikasi-pembayaran.php?id=<?= $row['idPesanan']; ?>"
+                                                class="btn btn-verify btn-sm w-100"
+                                                onclick="return confirm('Verifikasi pembayaran pesanan ini?')">
+                                                Verifikasi
+                                            </a>
+                                        </div>
 
-                                    <div class="col-4">
-                                        <a 
-                                            href="detail-pesanan.php?id=<?= $row['idPesanan']; ?>"
-                                            class="btn btn-detail btn-sm w-100">
-                                            Detail
-                                        </a>
-                                    </div>
+                                        <div class="col-6">
+                                            <a 
+                                                href="detail-pesanan.php?id=<?= $row['idPesanan']; ?>"
+                                                class="btn btn-detail btn-sm w-100">
+                                                Detail
+                                            </a>
+                                        </div>
 
-                                    <div class="col-4">
-                                        <a 
-                                            href="hapus-pesanan.php?id=<?= $row['idPesanan']; ?>"
-                                            class="btn btn-delete btn-sm w-100"
-                                            onclick="return confirm('Yakin ingin menghapus pesanan ini? Data pembayaran dan detail pesanan juga akan terhapus.')">
-                                            Hapus
-                                        </a>
-                                    </div>
+                                        <div class="col-6">
+                                            <a 
+                                                href="update-status.php?id=<?= $row['idPesanan']; ?>"
+                                                class="btn btn-update btn-sm w-100">
+                                                Update
+                                            </a>
+                                        </div>
+
+                                        <div class="col-6">
+                                            <a 
+                                                href="hapus-pesanan.php?id=<?= $row['idPesanan']; ?>"
+                                                class="btn btn-delete btn-sm w-100"
+                                                onclick="return confirm('Yakin ingin menghapus pesanan ini? Data pembayaran dan detail pesanan juga akan terhapus.')">
+                                                Hapus
+                                            </a>
+                                        </div>
+                                    <?php } else { ?>
+
+                                        <div class="col-4">
+                                            <a 
+                                                href="update-status.php?id=<?= $row['idPesanan']; ?>"
+                                                class="btn btn-update btn-sm w-100">
+                                                Update
+                                            </a>
+                                        </div>
+
+                                        <div class="col-4">
+                                            <a 
+                                                href="detail-pesanan.php?id=<?= $row['idPesanan']; ?>"
+                                                class="btn btn-detail btn-sm w-100">
+                                                Detail
+                                            </a>
+                                        </div>
+
+                                        <div class="col-4">
+                                            <a 
+                                                href="hapus-pesanan.php?id=<?= $row['idPesanan']; ?>"
+                                                class="btn btn-delete btn-sm w-100"
+                                                onclick="return confirm('Yakin ingin menghapus pesanan ini? Data pembayaran dan detail pesanan juga akan terhapus.')">
+                                                Hapus
+                                            </a>
+                                        </div>
+
+                                    <?php } ?>
 
                                 </div>
 

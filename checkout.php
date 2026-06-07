@@ -48,8 +48,8 @@ $items = [];
 
 foreach ($_SESSION['cart'] as $cart) {
 
-    $idProduk = $cart['idProduk'];
-    $qty = $cart['qty'];
+    $idProduk = mysqli_real_escape_string($koneksi, $cart['idProduk']);
+    $qty = (int) $cart['qty'];
 
     $query = mysqli_query(
         $koneksi,
@@ -106,8 +106,75 @@ if ($jumlahTransaksi >= 5) {
 
 $totalSetelahDiskon = $total - $diskon;
 
-/* ONGKIR DEFAULT */
-$ongkirDefault = 10000;
+/* ONGKIR DEFAULT DARI ALAMAT */
+function hitungOngkirAlamat($alamat) {
+    $alamat = strtolower($alamat);
+
+    if (trim($alamat) == "") {
+        return 5000;
+    }
+
+    // Area sangat dekat toko / Tangerang sekitar
+    if (
+        strpos($alamat, "pasar kemis") !== false ||
+        strpos($alamat, "rajeg") !== false ||
+        strpos($alamat, "cikupa") !== false ||
+        strpos($alamat, "sepatan") !== false ||
+        strpos($alamat, "sindang jaya") !== false ||
+        strpos($alamat, "balaraja") !== false
+    ) {
+        return 3000;
+    }
+
+    // Tangerang umum
+    if (
+        strpos($alamat, "tangerang") !== false ||
+        strpos($alamat, "kabupaten tangerang") !== false ||
+        strpos($alamat, "kota tangerang") !== false ||
+        strpos($alamat, "tangsel") !== false ||
+        strpos($alamat, "tangerang selatan") !== false
+    ) {
+        return 5000;
+    }
+
+    // Jabodetabek
+    if (
+        strpos($alamat, "jakarta") !== false ||
+        strpos($alamat, "bogor") !== false ||
+        strpos($alamat, "depok") !== false ||
+        strpos($alamat, "bekasi") !== false
+    ) {
+        return 8000;
+    }
+
+    // Provinsi dekat
+    if (
+        strpos($alamat, "banten") !== false ||
+        strpos($alamat, "jawa barat") !== false ||
+        strpos($alamat, "jabar") !== false
+    ) {
+        return 12000;
+    }
+
+    // Pulau Jawa
+    if (
+        strpos($alamat, "jawa tengah") !== false ||
+        strpos($alamat, "jateng") !== false ||
+        strpos($alamat, "jawa timur") !== false ||
+        strpos($alamat, "jatim") !== false ||
+        strpos($alamat, "yogyakarta") !== false ||
+        strpos($alamat, "jogja") !== false
+    ) {
+        return 15000;
+    }
+
+    // Luar Jawa
+    return 20000;
+}
+
+$alamatAwal = isset($pelanggan['alamat']) ? $pelanggan['alamat'] : "";
+$ongkirDefault = hitungOngkirAlamat($alamatAwal);
+
 $totalAkhirDefault = $totalSetelahDiskon + $ongkirDefault;
 $dpDefault = $totalAkhirDefault * 0.5;
 
@@ -331,6 +398,16 @@ body {
     font-size: 14px;
 }
 
+.payment-box {
+    background: #f6eeff;
+    border: 1px solid #e4d2ff;
+    color: #6e41a8;
+    padding: 14px 16px;
+    border-radius: 16px;
+    font-size: 14px;
+    margin-top: 12px;
+}
+
 .btn-lavender {
     background: linear-gradient(135deg, #b57edc, #8e44ad);
     color: white;
@@ -387,7 +464,7 @@ body {
     margin-bottom: 12px;
 }
 
-.alamat-textarea{
+.alamat-textarea {
     height: 120px;
     padding: 15px;
     resize: vertical;
@@ -407,13 +484,12 @@ body {
 <div class="container checkout-wrapper">
 
     <h2 class="page-title">Checkout</h2>
-    <p class="page-subtitle">Lengkapi alamat dan metode pengiriman untuk melanjutkan pembayaran.</p>
+    <p class="page-subtitle">Lengkapi pengiriman dan metode pembayaran untuk melanjutkan pesanan.</p>
 
-    <form action="proses-checkout.php" method="POST">
+    <form action="proses-checkout.php" method="POST" id="checkoutForm">
 
         <div class="row g-4">
 
-            <!-- FORM CHECKOUT -->
             <div class="col-lg-7">
 
                 <div class="card-checkout mb-4">
@@ -424,38 +500,57 @@ body {
                     <div class="card-body-custom">
 
                         <div class="note-box">
-                            Pastikan alamat pengiriman sudah benar agar pesanan dapat diproses dengan lancar.
+                            Alamat otomatis terisi dari akun kamu. Ongkir akan dihitung berdasarkan area alamat.
                         </div>
 
-                    <div class="mb-3">
-                        <label class="label">Alamat Pengiriman</label>
+                        <div class="mb-3">
+                            <label class="label">Pilihan Pengiriman</label>
+                            <select name="tipe_pengiriman" id="tipe_pengiriman" class="form-select" required onchange="aturPengiriman()">
+                                <option value="dikirim">Dikirim ke Alamat</option>
+                                <option value="ambil">Ambil di Tempat</option>
+                            </select>
+                        </div>
 
-                        <textarea
-                            name="alamat_kirim"
-                            class="form-control alamat-textarea"
-                            placeholder="Masukkan alamat lengkap pengiriman"
-                            required><?= isset($pelanggan['alamat']) ? htmlspecialchars(trim($pelanggan['alamat'])) : ''; ?></textarea>
-                    </div>
+                        <div class="mb-3" id="alamatBox">
+                            <label class="label">Alamat Pengiriman</label>
+
+                            <textarea
+                                name="alamat_kirim"
+                                id="alamat_kirim"
+                                class="form-control alamat-textarea"
+                                placeholder="Masukkan alamat lengkap pengiriman"
+                                required
+                                oninput="hitungOngkirOtomatis()"><?= isset($pelanggan['alamat']) ? htmlspecialchars(trim($pelanggan['alamat'])) : ''; ?></textarea>
+
+                            <small class="text-muted d-block mt-2">
+                                Contoh: Pasar Kemis, Tangerang / Jakarta / Bekasi / Jawa Barat.
+                            </small>
+                        </div>
 
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label class="label">Jasa Pengiriman</label>
-                                <select name="jasa_kirim" class="form-select" required>
+                                <select name="jasa_kirim" id="jasa_kirim" class="form-select" required>
                                     <option value="JNE">JNE</option>
                                     <option value="J&T">J&T</option>
                                     <option value="SiCepat">SiCepat</option>
-                                    <option value="Ambil di Tempat">Ambil di Tempat</option>
                                 </select>
                             </div>
 
                             <div class="col-md-6 mb-3">
                                 <label class="label">Ongkir</label>
-                                <select name="ongkir" id="ongkir" class="form-select" required onchange="hitungTotal()">
-                                    <option value="10000">Jabodetabek - Rp10.000</option>
-                                    <option value="20000">Luar Kota - Rp20.000</option>
-                                    <option value="30000">Luar Pulau - Rp30.000</option>
-                                    <option value="0">Ambil di Tempat - Rp0</option>
-                                </select>
+                                <input
+                                    type="text"
+                                    id="ongkirLabel"
+                                    class="form-control"
+                                    value="Rp <?= number_format($ongkirDefault, 0, ',', '.'); ?>"
+                                    readonly>
+
+                                <input
+                                    type="hidden"
+                                    name="ongkir"
+                                    id="ongkir"
+                                    value="<?= $ongkirDefault; ?>">
                             </div>
                         </div>
 
@@ -472,17 +567,60 @@ body {
                         <div class="mb-3">
                             <label class="label">Pilih Metode Pembayaran</label>
 
-    <select name="metode" class="form-select" required>
-        <option value="bca_transfer">Transfer Bank BCA</option>
-    </select>
+                            <select name="metode" id="metode" class="form-select" required onchange="aturMetodeBayar()">
+                                <option value="bca_transfer" data-info="Transfer Bank BCA: 1234567890 a.n. The Four Label">
+                                    Transfer Bank BCA
+                                </option>
 
-                            <small class="text-muted d-block mt-2">
-                                Transfer ke rekening BCA: <b>1234567890</b> a.n. <b>The Four Label</b>
-                            </small>
+                                <option value="mandiri_transfer" data-info="Transfer Bank BCA: 1234567890 a.n. The Four Label">
+                                    Transfer Bank MANDIRI
+                                </option>
+
+                                <option value="bni_transfer" data-info="Transfer Bank BCA: 1234567890 a.n. The Four Label">
+                                    Transfer Bank BNI
+                                </option>
+
+                                <option value="bri_transfer" data-info="Transfer Bank BCA: 1234567890 a.n. The Four Label">
+                                    Transfer Bank BRI
+                                </option>
+
+                                <option value="seabank_transfer" data-info="Transfer Bank BCA: 1234567890 a.n. The Four Label">
+                                </option>
+
+                                <option value="dana" data-info="Transfer Bank BCA: 1234567890 a.n. The Four Label">
+                                    DANA
+                                </option>
+
+                                <option value="ovo" data-info="Transfer Bank BCA: 1234567890 a.n. The Four Label">
+                                    OVO
+                                </option>
+
+                                <option value="gopay" data-info="Transfer Bank BCA: 1234567890 a.n. The Four Label">
+                                    GoPay
+                                </option>
+
+                                <option value="shopeepay" data-info="Transfer Bank BCA: 1234567890 a.n. The Four Label">
+                                    ShopeePay
+                                </option>
+
+                                <option value="cash_toko" id="cashOption">
+                                    Cash di Toko
+                                </option>
+                            </select>
+
+                            <div id="paymentInfo" class="payment-box">
+                                <span id="paymentText">
+                                    Transfer Bank BCA: <b>1234567890</b> a.n. <b>The Four Label</b>
+                                </span>
+                            </div>
+
+                            <div id="cashInfo" class="dp-box" style="display:none;">
+                                Kamu memilih <b>Cash di Toko</b>. Pesanan dibayar langsung saat pengambilan barang di toko.
+                            </div>
                         </div>
 
-                        <div class="dp-box">
-                            Setelah checkout, kamu akan diarahkan ke halaman upload bukti pembayaran.
+                        <div class="dp-box" id="dpInfo">
+                            Untuk pembayaran transfer/e-wallet, setelah checkout kamu akan diarahkan ke halaman upload bukti pembayaran.
                             Minimal pembayaran adalah <b>DP 50%</b> dari total pesanan.
                         </div>
 
@@ -491,7 +629,6 @@ body {
 
             </div>
 
-            <!-- RINGKASAN -->
             <div class="col-lg-5">
 
                 <div class="card-checkout">
@@ -568,7 +705,7 @@ body {
                                 </h3>
                             </div>
 
-                            <div class="summary-row mt-3 mb-0">
+                            <div class="summary-row mt-3 mb-0" id="dpRow">
                                 <span>Minimal DP 50%</span>
                                 <strong id="dpText">
                                     Rp <?= number_format($dpDefault, 0, ',', '.'); ?>
@@ -577,7 +714,6 @@ body {
 
                         </div>
 
-                        <!-- HIDDEN -->
                         <input type="hidden" name="subtotal" value="<?= $total; ?>">
                         <input type="hidden" name="diskon" value="<?= $diskon; ?>">
                         <input type="hidden" name="total_setelah_diskon" value="<?= $totalSetelahDiskon; ?>">
@@ -614,19 +750,193 @@ body {
 const totalSetelahDiskon = <?= $totalSetelahDiskon; ?>;
 
 function formatRupiah(angka) {
+    angka = parseInt(angka) || 0;
     return "Rp " + angka.toLocaleString("id-ID");
 }
 
-function hitungTotal() {
-    const ongkir = parseInt(document.getElementById("ongkir").value);
+function tentukanOngkirDariAlamat(alamat) {
+    alamat = alamat.toLowerCase();
+
+    if (alamat.trim() === "") {
+        return 5000;
+    }
+
+    if (
+        alamat.includes("pasar kemis") ||
+        alamat.includes("rajeg") ||
+        alamat.includes("cikupa") ||
+        alamat.includes("sepatan") ||
+        alamat.includes("sindang jaya") ||
+        alamat.includes("balaraja")
+    ) {
+        return 3000;
+    }
+
+    if (
+        alamat.includes("tangerang") ||
+        alamat.includes("kabupaten tangerang") ||
+        alamat.includes("kota tangerang") ||
+        alamat.includes("tangsel") ||
+        alamat.includes("tangerang selatan")
+    ) {
+        return 5000;
+    }
+
+    if (
+        alamat.includes("jakarta") ||
+        alamat.includes("bogor") ||
+        alamat.includes("depok") ||
+        alamat.includes("bekasi")
+    ) {
+        return 8000;
+    }
+
+    if (
+        alamat.includes("banten") ||
+        alamat.includes("jawa barat") ||
+        alamat.includes("jabar")
+    ) {
+        return 12000;
+    }
+
+    if (
+        alamat.includes("jawa tengah") ||
+        alamat.includes("jateng") ||
+        alamat.includes("jawa timur") ||
+        alamat.includes("jatim") ||
+        alamat.includes("yogyakarta") ||
+        alamat.includes("jogja")
+    ) {
+        return 15000;
+    }
+
+    return 20000;
+}
+
+function updateRingkasan(ongkir) {
     const totalAkhir = totalSetelahDiskon + ongkir;
     const dp = totalAkhir * 0.5;
 
+    document.getElementById("ongkir").value = ongkir;
+    document.getElementById("ongkirLabel").value = formatRupiah(ongkir);
     document.getElementById("ongkirText").innerText = formatRupiah(ongkir);
     document.getElementById("totalText").innerText = formatRupiah(totalAkhir);
     document.getElementById("dpText").innerText = formatRupiah(dp);
     document.getElementById("totalInput").value = totalAkhir;
 }
+
+function hitungOngkirOtomatis() {
+    const tipe = document.getElementById("tipe_pengiriman").value;
+    const alamat = document.getElementById("alamat_kirim").value;
+
+    if (tipe === "ambil") {
+        updateRingkasan(0);
+        return;
+    }
+
+    const ongkir = tentukanOngkirDariAlamat(alamat);
+    updateRingkasan(ongkir);
+}
+
+function isiJasaKirimDikirim() {
+    const jasaKirim = document.getElementById("jasa_kirim");
+
+    jasaKirim.innerHTML = `
+        <option value="JNE">JNE</option>
+        <option value="J&T">J&T</option>
+        <option value="SiCepat">SiCepat</option>
+    `;
+
+    jasaKirim.removeAttribute("disabled");
+}
+
+function isiJasaKirimAmbil() {
+    const jasaKirim = document.getElementById("jasa_kirim");
+
+    jasaKirim.innerHTML = `
+        <option value="Ambil di Tempat">Ambil di Tempat</option>
+    `;
+
+    jasaKirim.value = "Ambil di Tempat";
+    jasaKirim.setAttribute("disabled", "disabled");
+}
+
+function aturPengiriman() {
+    const tipe = document.getElementById("tipe_pengiriman").value;
+    const alamatBox = document.getElementById("alamatBox");
+    const alamatKirim = document.getElementById("alamat_kirim");
+    const metode = document.getElementById("metode");
+    const cashOption = document.getElementById("cashOption");
+
+    if (tipe === "ambil") {
+        alamatBox.style.display = "none";
+        alamatKirim.removeAttribute("required");
+
+        isiJasaKirimAmbil();
+
+        cashOption.style.display = "block";
+        metode.value = "cash_toko";
+
+        updateRingkasan(0);
+    } else {
+        alamatBox.style.display = "block";
+        alamatKirim.setAttribute("required", "required");
+
+        isiJasaKirimDikirim();
+
+        if (metode.value === "cash_toko") {
+            metode.value = "bca_transfer";
+        }
+
+        cashOption.style.display = "none";
+
+        hitungOngkirOtomatis();
+    }
+
+    aturMetodeBayar();
+}
+
+function aturMetodeBayar() {
+    const metode = document.getElementById("metode");
+    const selectedOption = metode.options[metode.selectedIndex];
+
+    const paymentInfo = document.getElementById("paymentInfo");
+    const paymentText = document.getElementById("paymentText");
+    const cashInfo = document.getElementById("cashInfo");
+    const dpInfo = document.getElementById("dpInfo");
+    const dpRow = document.getElementById("dpRow");
+
+    if (metode.value === "cash_toko") {
+        paymentInfo.style.display = "none";
+        cashInfo.style.display = "block";
+        dpInfo.style.display = "none";
+        dpRow.style.display = "none";
+    } else {
+        paymentInfo.style.display = "block";
+        cashInfo.style.display = "none";
+        dpInfo.style.display = "block";
+        dpRow.style.display = "flex";
+
+        const info = selectedOption.getAttribute("data-info");
+        paymentText.innerHTML = info;
+    }
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+    aturPengiriman();
+
+    const checkoutForm = document.getElementById("checkoutForm");
+
+    checkoutForm.addEventListener("submit", function () {
+        const tipe = document.getElementById("tipe_pengiriman").value;
+        const jasa = document.getElementById("jasa_kirim");
+
+        if (tipe === "ambil") {
+            jasa.removeAttribute("disabled");
+            jasa.value = "Ambil di Tempat";
+        }
+    });
+});
 </script>
 
 </body>

@@ -16,16 +16,16 @@ if (!isset($_SESSION['cart']) || count($_SESSION['cart']) == 0) {
 }
 
 /* AMBIL DATA PELANGGAN */
-$cari = mysqli_query(
+$qPelanggan = mysqli_query(
     $koneksi,
     "SELECT * FROM pelanggan WHERE idUser='$idUser'"
 );
 
-if (!$cari) {
+if (!$qPelanggan) {
     die("Query pelanggan error: " . mysqli_error($koneksi));
 }
 
-$pelanggan = mysqli_fetch_assoc($cari);
+$pelanggan = mysqli_fetch_assoc($qPelanggan);
 
 if (!$pelanggan) {
     die("Data pelanggan tidak ditemukan.");
@@ -34,18 +34,55 @@ if (!$pelanggan) {
 $idPelanggan = $pelanggan['idPelanggan'];
 
 /* =========================
+   AMBIL DATA DARI FORM CHECKOUT
+========================= */
+$alamatKirim = isset($_POST['alamat_kirim'])
+    ? mysqli_real_escape_string($koneksi, trim($_POST['alamat_kirim']))
+    : "";
+
+$tipePengiriman = isset($_POST['tipe_pengiriman'])
+    ? mysqli_real_escape_string($koneksi, $_POST['tipe_pengiriman'])
+    : "dikirim";
+
+$jasaKirim = isset($_POST['jasa_kirim'])
+    ? mysqli_real_escape_string($koneksi, $_POST['jasa_kirim'])
+    : "";
+
+$ongkir = isset($_POST['ongkir'])
+    ? (int) $_POST['ongkir']
+    : 0;
+
+$metode = isset($_POST['metode'])
+    ? mysqli_real_escape_string($koneksi, $_POST['metode'])
+    : "bca_transfer";
+
+/* =========================
+   VALIDASI PENGIRIMAN
+========================= */
+if ($tipePengiriman == "ambil") {
+    $alamatKirim = "";
+    $jasaKirim = "Ambil di Tempat";
+    $ongkir = 0;
+}
+
+if ($tipePengiriman == "dikirim" && $alamatKirim == "") {
+    die("Alamat pengiriman wajib diisi.");
+}
+
+/* =========================
    HITUNG TOTAL DARI CART
 ========================= */
 $totalAwal = 0;
+$items = [];
 
 foreach ($_SESSION['cart'] as $cart) {
 
-    $idProduk = $cart['idProduk'];
-    $qty = $cart['qty'];
+    $idProduk = mysqli_real_escape_string($koneksi, $cart['idProduk']);
+    $qty = (int) $cart['qty'];
 
     $qProduk = mysqli_query(
         $koneksi,
-        "SELECT harga FROM produk WHERE idProduk='$idProduk'"
+        "SELECT * FROM produk WHERE idProduk='$idProduk'"
     );
 
     if (!$qProduk) {
@@ -60,47 +97,106 @@ foreach ($_SESSION['cart'] as $cart) {
 
     $subtotal = $produk['harga'] * $qty;
     $totalAwal += $subtotal;
+
+    $items[] = [
+        'idProduk' => $produk['idProduk'],
+        'namaProduk' => $produk['namaProduk'],
+        'harga' => $produk['harga'],
+        'qty' => $qty,
+        'subtotal' => $subtotal
+    ];
 }
 
-/* TOTAL */
-$total = isset($_POST['total']) ? $_POST['total'] : 0;
+/* =========================
+   CEK JUMLAH TRANSAKSI UNTUK DISKON
+========================= */
+$qTransaksi = mysqli_query(
+    $koneksi,
+    "SELECT COUNT(*) AS totalTransaksi
+     FROM pesanan
+     WHERE idPelanggan='$idPelanggan'
+     AND status != 'Batal'"
+);
+
+if (!$qTransaksi) {
+    die("Query transaksi error: " . mysqli_error($koneksi));
+}
+
+$dataTransaksi = mysqli_fetch_assoc($qTransaksi);
+$jumlahTransaksi = (int) $dataTransaksi['totalTransaksi'];
+
+$diskonPersen = 0;
+$nominalDiskon = 0;
+
+if ($jumlahTransaksi >= 5) {
+    $diskonPersen = 20;
+    $nominalDiskon = $totalAwal * 0.20;
+}
+
+$totalSetelahDiskon = $totalAwal - $nominalDiskon;
+$totalAkhir = $totalSetelahDiskon + $ongkir;
+
+/* Pakai total hitungan server */
+$total = $totalAkhir;
 
 /* =========================
-   CEK STOK DI stok_produk
+   CEK STOK
 ========================= */
 foreach ($_SESSION['cart'] as $cart) {
 
-    $idProduk = $cart['idProduk'];
-    $qty = $cart['qty'];
+    $idProduk = mysqli_real_escape_string($koneksi, $cart['idProduk']);
+    $qty = (int) $cart['qty'];
 
-    $cek = mysqli_query(
+    $cekStok = mysqli_query(
         $koneksi,
-<<<<<<< HEAD
-        "SELECT jumlahStok FROM stok_produk WHERE idProduk='$idProduk'"
-=======
         "SELECT jumlahStok 
          FROM stok_produk 
          WHERE idProduk='$idProduk'"
->>>>>>> a7b3757ceed1ac8f8f192a9d3f558b0d92437d86
     );
 
-    if (!$cek) {
+    if (!$cekStok) {
         die("Query cek stok error: " . mysqli_error($koneksi));
     }
 
-    $stokData = mysqli_fetch_assoc($cek);
+    $stokData = mysqli_fetch_assoc($cekStok);
 
     if (!$stokData) {
         die("Stok produk tidak ditemukan untuk ID Produk: " . $idProduk);
     }
 
     if ($qty > $stokData['jumlahStok']) {
-<<<<<<< HEAD
-        die("Stok tidak cukup untuk salah satu produk");
-=======
         die("Stok tidak cukup untuk salah satu produk. Stok tersedia: " . $stokData['jumlahStok']);
->>>>>>> a7b3757ceed1ac8f8f192a9d3f558b0d92437d86
     }
+}
+
+/* =========================
+   LABEL METODE PEMBAYARAN
+========================= */
+$labelMetode = "Transfer Bank BCA";
+
+if ($metode == "bca_transfer") {
+    $labelMetode = "Transfer Bank BCA";
+} elseif ($metode == "seabank_transfer") {
+    $labelMetode = "Transfer SeaBank";
+} elseif ($metode == "dana") {
+    $labelMetode = "DANA";
+} elseif ($metode == "ovo") {
+    $labelMetode = "OVO";
+} elseif ($metode == "gopay") {
+    $labelMetode = "GoPay";
+} elseif ($metode == "shopeepay") {
+    $labelMetode = "ShopeePay";
+} elseif ($metode == "cash_toko") {
+    $labelMetode = "Cash di Toko";
+}
+
+/* =========================
+   STATUS PESANAN
+========================= */
+if ($metode == "cash_toko") {
+    $statusPesanan = "Menunggu Pembayaran di Toko";
+} else {
+    $statusPesanan = "Menunggu Upload Bukti Pembayaran";
 }
 
 /* =========================
@@ -117,7 +213,7 @@ $simpanPesanan = mysqli_query(
     ) VALUES (
         '$idPelanggan',
         CURDATE(),
-        'Menunggu',
+        '$statusPesanan',
         'siap_pakai',
         '$total'
     )"
@@ -130,29 +226,41 @@ if (!$simpanPesanan) {
 $idPesanan = mysqli_insert_id($koneksi);
 
 /* =========================
-   SIMPAN DETAIL + KURANGI STOK
+   BUAT INVOICE
+========================= */
+$invoice = "INV-" . date("Ymd") . "-" . $idPesanan;
+
+$updateInvoice = mysqli_query(
+    $koneksi,
+    "UPDATE pesanan 
+     SET nomorInvoice='$invoice'
+     WHERE idPesanan='$idPesanan'"
+);
+
+if (!$updateInvoice) {
+    die("Gagal update invoice: " . mysqli_error($koneksi));
+}
+
+/* =========================
+   SIMPAN DETAIL PESANAN + KURANGI STOK
 ========================= */
 foreach ($_SESSION['cart'] as $cart) {
 
-    $idProduk = $cart['idProduk'];
-    $qty = $cart['qty'];
+    $idProduk = mysqli_real_escape_string($koneksi, $cart['idProduk']);
+    $qty = (int) $cart['qty'];
 
-    $cek = mysqli_query(
+    $cekStok = mysqli_query(
         $koneksi,
-<<<<<<< HEAD
-        "SELECT jumlahStok FROM stok_produk WHERE idProduk='$idProduk'"
-=======
         "SELECT jumlahStok 
          FROM stok_produk 
          WHERE idProduk='$idProduk'"
->>>>>>> a7b3757ceed1ac8f8f192a9d3f558b0d92437d86
     );
 
-    if (!$cek) {
+    if (!$cekStok) {
         die("Query ambil stok error: " . mysqli_error($koneksi));
     }
 
-    $stokData = mysqli_fetch_assoc($cek);
+    $stokData = mysqli_fetch_assoc($cekStok);
 
     if (!$stokData) {
         die("Stok produk tidak ditemukan saat update.");
@@ -171,14 +279,9 @@ foreach ($_SESSION['cart'] as $cart) {
         )"
     );
 
-<<<<<<< HEAD
-    /* UPDATE stok di tabel stok_produk */
-    $stokBaru = $stokData['jumlahStok'] - $qty;
-=======
     if (!$simpanDetail) {
         die("Gagal menyimpan detail pesanan: " . mysqli_error($koneksi));
     }
->>>>>>> a7b3757ceed1ac8f8f192a9d3f558b0d92437d86
 
     $stokBaru = $stokData['jumlahStok'] - $qty;
 
@@ -195,21 +298,15 @@ foreach ($_SESSION['cart'] as $cart) {
 }
 
 /* =========================
-   DP 50% DARI TOTAL SETELAH DISKON
-========================= */
-$dp = $total * 0.5;
-
-/* =========================
    SIMPAN PEMBAYARAN AWAL
+   CATATAN:
+   - Transfer/e-wallet TIDAK langsung insert pembayaran.
+   - Pembayaran baru masuk setelah user upload bukti.
+   - Cash di toko hanya dicatat Rp0 supaya ada jejak metode.
 ========================= */
-<<<<<<< HEAD
-/* =========================
-   5. PEMBAYARAN
-========================= */
+if ($metode == "cash_toko") {
 
-if ($metode == "cash") {
-
-    mysqli_query(
+    $simpanPembayaranCash = mysqli_query(
         $koneksi,
         "INSERT INTO pembayaran (
             idPesanan,
@@ -219,92 +316,52 @@ if ($metode == "cash") {
             status
         ) VALUES (
             '$idPesanan',
-            '$total',
-            '$total',
-            'Cash',
-            'Lunas'
+            '0',
+            '0',
+            '$labelMetode',
+            'Belum Bayar'
         )"
     );
 
-} else {
-
-    $dp = $total * 0.5;
-
-    mysqli_query(
-        $koneksi,
-        "INSERT INTO pembayaran (
-            idPesanan,
-            jumlah,
-            dp,
-            metode,
-            status
-        ) VALUES (
-            '$idPesanan',
-            '$dp',
-            '$dp',
-            'Transfer',
-            'DP Masuk'
-        )"
-    );
-
-}
-=======
-$simpanPembayaran = mysqli_query(
-    $koneksi,
-    "INSERT INTO pembayaran (
-        idPesanan,
-        jumlah,
-        dp,
-        metode,
-        status
-    ) VALUES (
-        '$idPesanan',
-        '$dp',
-        '$dp',
-        'Transfer BCA',
-        'DP Masuk'
-    )"
-);
-
-if (!$simpanPembayaran) {
-    die("Gagal menyimpan pembayaran: " . mysqli_error($koneksi));
-}
-
->>>>>>> a7b3757ceed1ac8f8f192a9d3f558b0d92437d86
-/* =========================
-   INVOICE
-========================= */
-$invoice = "INV-" . date("Ymd") . "-" . $idPesanan;
-
-$updateInvoice = mysqli_query(
-    $koneksi,
-    "UPDATE pesanan 
-     SET nomorInvoice='$invoice'
-     WHERE idPesanan='$idPesanan'"
-);
-
-if (!$updateInvoice) {
-    die("Gagal update invoice: " . mysqli_error($koneksi));
+    if (!$simpanPembayaranCash) {
+        die("Gagal menyimpan pembayaran cash: " . mysqli_error($koneksi));
+    }
 }
 
 /* =========================
-   SIMPAN INFO DISKON KE SESSION
-   untuk ditampilkan di halaman pembayaran
+   SIMPAN INFO CHECKOUT KE SESSION
 ========================= */
 $_SESSION['info_diskon'] = [
     'jumlahTransaksi' => $jumlahTransaksi,
     'diskonPersen' => $diskonPersen,
     'totalAwal' => $totalAwal,
     'nominalDiskon' => $nominalDiskon,
+    'ongkir' => $ongkir,
     'totalAkhir' => $total
+];
+
+$_SESSION['info_checkout'] = [
+    'idPesanan' => $idPesanan,
+    'invoice' => $invoice,
+    'tipePengiriman' => $tipePengiriman,
+    'alamatKirim' => $alamatKirim,
+    'jasaKirim' => $jasaKirim,
+    'ongkir' => $ongkir,
+    'metode' => $labelMetode,
+    'statusPesanan' => $statusPesanan
 ];
 
 /* CLEAR CART */
 unset($_SESSION['cart']);
 
 /* =========================
-   8. REDIRECT
+   REDIRECT
 ========================= */
-header("Location: upload-pembayaran.php?id=$idPesanan");
-exit;
+if ($metode == "cash_toko") {
+    header("Location: pesanan-saya.php");
+    exit;
+} else {
+    header("Location: upload-pembayaran.php?id=$idPesanan");
+    exit;
+}
 ?>

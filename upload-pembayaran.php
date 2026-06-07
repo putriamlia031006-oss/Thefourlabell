@@ -2,12 +2,20 @@
 session_start();
 require "koneksi.php";
 
+/* CEK LOGIN */
+if (!isset($_SESSION['user'])) {
+    header("Location: login.php");
+    exit;
+}
+
+/* CEK ID PESANAN */
 if (!isset($_GET['id'])) {
     header("Location: pesanan-saya.php");
     exit;
 }
 
-$idPesanan = $_GET['id'];
+$idPesanan = mysqli_real_escape_string($koneksi, $_GET['id']);
+$idUser = $_SESSION['user']['idUser'];
 
 /* =========================
    AMBIL DATA PESANAN
@@ -19,7 +27,8 @@ $q = mysqli_query(
         user.nama AS namaPelanggan,
         user.email,
         pelanggan.noHp,
-        pelanggan.alamat
+        pelanggan.alamat,
+        pelanggan.idUser
     FROM pesanan
     JOIN pelanggan 
         ON pesanan.idPelanggan = pelanggan.idPelanggan
@@ -38,35 +47,102 @@ if (!$data) {
     die("Data pesanan tidak ditemukan.");
 }
 
-$total = $data['total'];
+/* CEK AGAR USER TIDAK AKSES PESANAN ORANG LAIN */
+if ($data['idUser'] != $idUser) {
+    die("Akses ditolak.");
+}
+
+$total = (int) $data['total'];
 $minDP = $total * 0.5;
 $error = "";
 
 /* =========================
-   PROSES PEMBAYARAN
+   CEK PEMBAYARAN YANG SUDAH DIVERIFIKASI
+   Pending TIDAK dihitung sebagai dibayar
+========================= */
+$qBayar = mysqli_query(
+    $koneksi,
+    "SELECT COALESCE(SUM(jumlah), 0) AS totalBayar
+     FROM pembayaran
+     WHERE idPesanan='$idPesanan'
+     AND status IN ('DP Masuk', 'Lunas')"
+);
+
+if (!$qBayar) {
+    die("Query pembayaran error: " . mysqli_error($koneksi));
+}
+
+$dataBayar = mysqli_fetch_assoc($qBayar);
+$totalBayar = (int) $dataBayar['totalBayar'];
+
+$sisa = $total - $totalBayar;
+
+if ($sisa < 0) {
+    $sisa = 0;
+}
+
+/* =========================
+   CEK APA ADA PEMBAYARAN PENDING
+   Supaya user tidak upload berkali-kali
+========================= */
+$qPending = mysqli_query(
+    $koneksi,
+    "SELECT COALESCE(SUM(jumlah), 0) AS totalPending
+     FROM pembayaran
+     WHERE idPesanan='$idPesanan'
+     AND status='Pending'"
+);
+
+if (!$qPending) {
+    die("Query pending error: " . mysqli_error($koneksi));
+}
+
+$dataPending = mysqli_fetch_assoc($qPending);
+$totalPending = (int) $dataPending['totalPending'];
+
+/* =========================
+   JIKA PESANAN CASH, TIDAK PERLU UPLOAD
+========================= */
+$qCash = mysqli_query(
+    $koneksi,
+    "SELECT * FROM pembayaran
+     WHERE idPesanan='$idPesanan'
+     AND metode='Cash di Toko'
+     LIMIT 1"
+);
+
+$isCashOrder = mysqli_num_rows($qCash) > 0;
+
+/* =========================
+   PROSES UPLOAD PEMBAYARAN
 ========================= */
 if (isset($_POST['jumlah'])) {
 
-    $jumlah = $_POST['jumlah'];
-    $metode = $_POST['metode'];
-
-    if ($jumlah < $minDP) {
-
-        $error = "Minimal pembayaran adalah 50% yaitu Rp " . number_format($minDP, 0, ',', '.');
-
+    if ($isCashOrder) {
+        $error = "Pesanan ini menggunakan metode Cash di Toko, jadi tidak perlu upload bukti pembayaran.";
+    } elseif ($sisa <= 0) {
+        $error = "Pesanan ini sudah lunas.";
+    } elseif ($totalPending > 0) {
+        $error = "Kamu sudah mengupload bukti pembayaran. Silakan tunggu verifikasi admin.";
     } else {
 
-        $file = "";
-        $statusPembayaran = "";
-        $statusPesanan = "";
+        $jumlah = (int) $_POST['jumlah'];
+        $metode = mysqli_real_escape_string($koneksi, $_POST['metode']);
 
-        /* =========================
-           TRANSFER BCA
-        ========================= */
-        if ($metode == "Transfer BCA") {
+        if ($jumlah < $minDP) {
+
+            $error = "Minimal pembayaran adalah 50% yaitu Rp " . number_format($minDP, 0, ',', '.');
+
+        } elseif ($jumlah > $sisa) {
+
+            $error = "Jumlah pembayaran tidak boleh melebihi sisa tagihan.";
+
+        } else {
 
             if (empty($_FILES['bukti']['name'])) {
-                $error = "Bukti transfer wajib diupload untuk pembayaran transfer.";
+
+                $error = "Bukti pembayaran wajib diupload.";
+
             } else {
 
                 $namaFile = $_FILES['bukti']['name'];
@@ -76,7 +152,7 @@ if (isset($_POST['jumlah'])) {
                 $allowed = ['jpg', 'jpeg', 'png', 'webp', 'pdf'];
 
                 if (!in_array($ext, $allowed)) {
-                    $error = "Format bukti transfer harus JPG, JPEG, PNG, WEBP, atau PDF.";
+                    $error = "Format bukti pembayaran harus JPG, JPEG, PNG, WEBP, atau PDF.";
                 } else {
 
                     if (!is_dir("upload")) {
@@ -85,66 +161,55 @@ if (isset($_POST['jumlah'])) {
 
                     $file = time() . "_" . preg_replace("/[^a-zA-Z0-9.]/", "_", $namaFile);
 
-                    move_uploaded_file(
+                    $upload = move_uploaded_file(
                         $tmpFile,
                         "upload/" . $file
                     );
 
-                    $statusPembayaran = "Pending";
-                    $statusPesanan = "Menunggu Verifikasi Pembayaran";
+                    if (!$upload) {
+                        $error = "Gagal upload bukti pembayaran.";
+                    } else {
+
+                        $dp = $jumlah;
+
+                        $simpan = mysqli_query(
+                            $koneksi,
+                            "INSERT INTO pembayaran (
+                                idPesanan,
+                                jumlah,
+                                dp,
+                                metode,
+                                status,
+                                bukti
+                            ) VALUES (
+                                '$idPesanan',
+                                '$jumlah',
+                                '$dp',
+                                '$metode',
+                                'Pending',
+                                '$file'
+                            )"
+                        );
+
+                        if (!$simpan) {
+                            die("Gagal menyimpan pembayaran: " . mysqli_error($koneksi));
+                        }
+
+                        $updatePesanan = mysqli_query(
+                            $koneksi,
+                            "UPDATE pesanan 
+                             SET status='Menunggu Verifikasi Pembayaran'
+                             WHERE idPesanan='$idPesanan'"
+                        );
+
+                        if (!$updatePesanan) {
+                            die("Gagal update status pesanan: " . mysqli_error($koneksi));
+                        }
+
+                        header("Location: pesanan-saya.php");
+                        exit;
+                    }
                 }
-            }
-
-        }
-
-        /* =========================
-           TUNAI
-        ========================= */
-        if ($metode == "Tunai") {
-            $file = "";
-            $statusPembayaran = "Tunai";
-            $statusPesanan = "Menunggu Pembayaran Tunai";
-        }
-
-        /* =========================
-           SIMPAN KE DATABASE
-        ========================= */
-        if ($error == "") {
-
-            $simpan = mysqli_query(
-                $koneksi,
-                "INSERT INTO pembayaran (
-                    idPesanan,
-                    jumlah,
-                    metode,
-                    status,
-                    bukti
-                ) VALUES (
-                    '$idPesanan',
-                    '$jumlah',
-                    '$metode',
-                    '$statusPembayaran',
-                    '$file'
-                )"
-            );
-
-            if (!$simpan) {
-                die("Gagal menyimpan pembayaran: " . mysqli_error($koneksi));
-            }
-
-            mysqli_query(
-                $koneksi,
-                "UPDATE pesanan 
-                 SET status='$statusPesanan'
-                 WHERE idPesanan='$idPesanan'"
-            );
-
-            if ($metode == "Tunai") {
-                header("Location: kwitansi-tunai.php?id=$idPesanan");
-                exit;
-            } else {
-                header("Location: pesanan-saya.php");
-                exit;
             }
         }
     }
@@ -157,7 +222,7 @@ if (isset($_POST['jumlah'])) {
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<title>Upload Pembayaran</title>
+<title>Upload Pembayaran - The Four Label</title>
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
@@ -176,7 +241,7 @@ body {
 }
 
 .card-box {
-    max-width: 560px;
+    max-width: 600px;
     margin: auto;
     border: none;
     border-radius: 28px;
@@ -203,6 +268,7 @@ body {
 
 .card-body-custom {
     padding: 28px;
+    background: white;
 }
 
 .info-box {
@@ -230,6 +296,7 @@ body {
 
 .info-row strong {
     color: #4b2e63;
+    text-align: right;
 }
 
 .dp-highlight {
@@ -238,6 +305,36 @@ body {
     color: #7c5a14;
     border-radius: 16px;
     padding: 14px;
+    font-size: 14px;
+    margin-bottom: 20px;
+}
+
+.pending-box {
+    background: #eef6ff;
+    border: 1px solid #cfe8ff;
+    color: #1d4ed8;
+    border-radius: 16px;
+    padding: 16px;
+    font-size: 14px;
+    margin-bottom: 20px;
+}
+
+.lunas-box {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    color: #15803d;
+    border-radius: 16px;
+    padding: 16px;
+    font-size: 14px;
+    margin-bottom: 20px;
+}
+
+.cash-box {
+    background: #f6eeff;
+    border: 1px solid #e4d2ff;
+    color: #6e41a8;
+    border-radius: 16px;
+    padding: 16px;
     font-size: 14px;
     margin-bottom: 20px;
 }
@@ -261,6 +358,16 @@ body {
     box-shadow: 0 0 0 4px rgba(181,126,220,0.17);
 }
 
+.payment-info {
+    background: #eef6ff;
+    border: 1px solid #cfe8ff;
+    color: #1d4ed8;
+    border-radius: 16px;
+    padding: 14px;
+    font-size: 14px;
+    margin-top: 10px;
+}
+
 .btn-lavender {
     background: linear-gradient(135deg, #b57edc, #8e44ad);
     color: white;
@@ -277,25 +384,42 @@ body {
     transform: translateY(-2px);
 }
 
-.transfer-info {
-    background: #eef6ff;
-    border: 1px solid #cfe8ff;
-    color: #1d4ed8;
+.btn-back {
+    background: white;
+    color: #8e44ad;
+    border: 1.5px solid #d9c0f0;
     border-radius: 16px;
     padding: 14px;
-    font-size: 14px;
-    margin-top: 10px;
+    font-weight: 850;
+    text-decoration: none;
+    display: block;
+    text-align: center;
+    transition: 0.25s;
 }
 
-.tunai-info {
-    background: #f0fdf4;
-    border: 1px solid #bbf7d0;
-    color: #15803d;
-    border-radius: 16px;
-    padding: 14px;
-    font-size: 14px;
-    margin-top: 10px;
-    display: none;
+.btn-back:hover {
+    background: #f6eeff;
+    color: #7b3fb2;
+    transform: translateY(-2px);
+}
+
+@media (max-width: 576px) {
+    .payment-wrapper {
+        padding: 24px 12px;
+    }
+
+    .card-body-custom {
+        padding: 22px;
+    }
+
+    .info-row {
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .info-row strong {
+        text-align: left;
+    }
 }
 </style>
 </head>
@@ -309,7 +433,7 @@ body {
 
             <div class="card-header-custom">
                 <h4>Upload Pembayaran</h4>
-                <p>Selesaikan pembayaran pesanan kamu</p>
+                <p>Upload bukti pembayaran untuk pesanan kamu</p>
             </div>
 
             <div class="card-body-custom">
@@ -325,7 +449,7 @@ body {
                     <div class="info-row">
                         <span>Invoice</span>
                         <strong>
-                            <?= $data['nomorInvoice'] ? htmlspecialchars($data['nomorInvoice']) : "#" . $idPesanan; ?>
+                            <?= !empty($data['nomorInvoice']) ? htmlspecialchars($data['nomorInvoice']) : "#" . htmlspecialchars($idPesanan); ?>
                         </strong>
                     </div>
 
@@ -340,62 +464,139 @@ body {
                     </div>
 
                     <div class="info-row">
+                        <span>Sudah Diverifikasi</span>
+                        <strong>Rp <?= number_format($totalBayar, 0, ',', '.'); ?></strong>
+                    </div>
+
+                    <div class="info-row">
+                        <span>Sisa Tagihan</span>
+                        <strong>Rp <?= number_format($sisa, 0, ',', '.'); ?></strong>
+                    </div>
+
+                    <div class="info-row">
                         <span>Minimal DP 50%</span>
                         <strong>Rp <?= number_format($minDP, 0, ',', '.'); ?></strong>
                     </div>
 
                 </div>
 
-                <div class="dp-highlight">
-                    Minimal pembayaran adalah <b>50%</b> dari total pesanan.  
-                    Untuk pembayaran tunai, kwitansi dapat langsung dicetak setelah submit.
-                </div>
+                <?php if ($isCashOrder) { ?>
 
-                <form method="POST" enctype="multipart/form-data">
-
-                    <div class="mb-3">
-                        <label class="form-label">Jumlah Bayar</label>
-                        <input 
-                            type="number" 
-                            name="jumlah" 
-                            class="form-control" 
-                            min="<?= $minDP; ?>"
-                            placeholder="Masukkan jumlah pembayaran"
-                            required>
+                    <div class="cash-box">
+                        Pesanan ini menggunakan metode <b>Cash di Toko</b>, jadi tidak perlu upload bukti pembayaran.
+                        Pembayaran dilakukan langsung saat pengambilan barang.
                     </div>
 
-                    <div class="mb-3">
-                        <label class="form-label">Metode Pembayaran</label>
-                        <select name="metode" id="metode" class="form-select" required onchange="ubahMetode()">
-                            <option value="Transfer BCA">Transfer BCA</option>
-                            <option value="Tunai">Tunai</option>
-                        </select>
+                    <a href="pesanan-saya.php" class="btn-back w-100">
+                        Kembali ke Pesanan Saya
+                    </a>
 
-                        <div class="transfer-info" id="transferInfo">
-                            Transfer ke rekening BCA: <b>1234567890</b> a.n. <b>The Four Label</b>
+                <?php } elseif ($sisa <= 0) { ?>
+
+                    <div class="lunas-box">
+                        Pesanan ini sudah lunas. Tidak ada pembayaran yang perlu diupload.
+                    </div>
+
+                    <a href="pesanan-saya.php" class="btn-back w-100">
+                        Kembali ke Pesanan Saya
+                    </a>
+
+                <?php } elseif ($totalPending > 0) { ?>
+
+                    <div class="pending-box">
+                        Kamu sudah mengupload bukti pembayaran sebesar
+                        <b>Rp <?= number_format($totalPending, 0, ',', '.'); ?></b>.
+                        Silakan tunggu verifikasi admin.
+                    </div>
+
+                    <a href="pesanan-saya.php" class="btn-back w-100">
+                        Kembali ke Pesanan Saya
+                    </a>
+
+                <?php } else { ?>
+
+                    <div class="dp-highlight">
+                        Minimal pembayaran adalah <b>50%</b> dari total pesanan.
+                        Bukti pembayaran akan dicek admin terlebih dahulu, jadi statusnya akan menjadi <b>Pending</b>.
+                    </div>
+
+                    <form method="POST" enctype="multipart/form-data">
+
+                        <div class="mb-3">
+                            <label class="form-label">Jumlah Bayar</label>
+                            <input 
+                                type="number" 
+                                name="jumlah" 
+                                id="jumlah"
+                                class="form-control" 
+                                min="<?= htmlspecialchars($minDP); ?>"
+                                max="<?= htmlspecialchars($sisa); ?>"
+                                value="<?= htmlspecialchars($minDP); ?>"
+                                placeholder="Masukkan jumlah pembayaran"
+                                required>
                         </div>
 
-                        <div class="tunai-info" id="tunaiInfo">
-                            Pembayaran dilakukan secara tunai. Setelah submit, sistem akan membuat kwitansi tunai.
+                        <div class="mb-3">
+                            <label class="form-label">Metode Pembayaran</label>
+                            <select name="metode" id="metode" class="form-select" required onchange="ubahMetode()">
+                                <option value="Transfer Bank BCA" data-info="Transfer BCA: 1234567890 a.n. The Four Label">
+                                    Transfer Bank BCA
+                                </option>
+
+                                <option value="Transfer SeaBank" data-info="Transfer SeaBank: 9876543210 a.n. The Four Label">
+                                    Transfer SeaBank
+                                </option>
+
+                                <option value="DANA" data-info="DANA: 081234567890 a.n. The Four Label">
+                                    DANA
+                                </option>
+
+                                <option value="OVO" data-info="OVO: 081234567890 a.n. The Four Label">
+                                    OVO
+                                </option>
+
+                                <option value="GoPay" data-info="GoPay: 081234567890 a.n. The Four Label">
+                                    GoPay
+                                </option>
+
+                                <option value="ShopeePay" data-info="ShopeePay: 081234567890 a.n. The Four Label">
+                                    ShopeePay
+                                </option>
+                            </select>
+
+                            <div class="payment-info" id="paymentInfo">
+                                Transfer BCA: <b>1234567890</b> a.n. <b>The Four Label</b>
+                            </div>
                         </div>
-                    </div>
 
-                    <div class="mb-4" id="buktiBox">
-                        <label class="form-label">Upload Bukti Transfer</label>
-                        <input 
-                            type="file" 
-                            name="bukti" 
-                            id="bukti"
-                            class="form-control"
-                            accept="image/*,.pdf"
-                            required>
-                    </div>
+                        <div class="mb-4" id="buktiBox">
+                            <label class="form-label">Upload Bukti Pembayaran</label>
+                            <input 
+                                type="file" 
+                                name="bukti" 
+                                id="bukti"
+                                class="form-control"
+                                accept="image/*,.pdf"
+                                required>
+                        </div>
 
-                    <button type="submit" class="btn btn-lavender w-100">
-                        Simpan Pembayaran
-                    </button>
+                        <div class="row g-2">
+                            <div class="col-md-6">
+                                <a href="pesanan-saya.php" class="btn-back w-100">
+                                    Kembali
+                                </a>
+                            </div>
 
-                </form>
+                            <div class="col-md-6">
+                                <button type="submit" class="btn btn-lavender w-100">
+                                    Simpan Pembayaran
+                                </button>
+                            </div>
+                        </div>
+
+                    </form>
+
+                <?php } ?>
 
             </div>
 
@@ -406,25 +607,17 @@ body {
 
 <script>
 function ubahMetode() {
-    const metode = document.getElementById("metode").value;
-    const buktiBox = document.getElementById("buktiBox");
-    const bukti = document.getElementById("bukti");
-    const transferInfo = document.getElementById("transferInfo");
-    const tunaiInfo = document.getElementById("tunaiInfo");
+    const metode = document.getElementById("metode");
+    const selectedOption = metode.options[metode.selectedIndex];
+    const paymentInfo = document.getElementById("paymentInfo");
 
-    if (metode === "Tunai") {
-        buktiBox.style.display = "none";
-        bukti.required = false;
-        bukti.value = "";
-        transferInfo.style.display = "none";
-        tunaiInfo.style.display = "block";
-    } else {
-        buktiBox.style.display = "block";
-        bukti.required = true;
-        transferInfo.style.display = "block";
-        tunaiInfo.style.display = "none";
-    }
+    const info = selectedOption.getAttribute("data-info");
+    paymentInfo.innerHTML = info;
 }
+
+document.addEventListener("DOMContentLoaded", function () {
+    ubahMetode();
+});
 </script>
 
 </body>
