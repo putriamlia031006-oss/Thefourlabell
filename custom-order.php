@@ -46,7 +46,7 @@ body {
     border-radius: 0 0 32px 32px;
     position: relative;
     overflow: hidden;
-}
+}   
 
 .hero::before {
     content: "";
@@ -342,7 +342,7 @@ body {
         <div class="hero-content">
             
             <div class="hero-badge">✨ Custom Apparel by The Four Label</div>
-            <h1>Custom Order</h1>
+            <h1>Custom </h1>
             <p>Buat hoodie, varsity, polo shirt, atau t-shirt sesuai desainmu sendiri.</p>
         </div>
     </div>
