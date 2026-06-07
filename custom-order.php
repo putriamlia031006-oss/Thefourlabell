@@ -35,14 +35,18 @@ body {
 
 /* HERO */
 .hero {
-    background: linear-gradient(135deg, #a56de2, #c7a6f7);
+    background-image: url('assets/cover4.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+
     color: white;
     padding: 70px 20px 60px;
     text-align: center;
     border-radius: 0 0 32px 32px;
     position: relative;
     overflow: hidden;
-}
+}   
 
 .hero::before {
     content: "";
@@ -338,7 +342,7 @@ body {
         <div class="hero-content">
             
             <div class="hero-badge">✨ Custom Apparel by The Four Label</div>
-            <h1>Custom Order</h1>
+            <h1>Custom </h1>
             <p>Buat hoodie, varsity, polo shirt, atau t-shirt sesuai desainmu sendiri.</p>
         </div>
     </div>
