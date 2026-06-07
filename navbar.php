@@ -20,10 +20,6 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
     <div class="container-fluid px-4 px-lg-5">
 
         <a class="navbar-brand logo" href="index.php">
-<<<<<<< HEAD
-            <span class="logo-icon">THE4L</span>
-            <span>THE FOUR LABEL</span>
-=======
             <span class="logo-img-box">
                 <img src="assets/logo.png" alt="Logo The Four Label">
             </span>
@@ -32,7 +28,6 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
                 <strong>THE FOUR LABEL</strong>
                 <small>STITCHED WITH STYLE</small>
             </span>
->>>>>>> 47de28dfcb0bd49fa574a822e8b94eb741e3c9f0
         </a>
 
         <button
@@ -89,7 +84,6 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
                         </a>
                     </li>
 
-<<<<<<< HEAD
                   <li class="nav-item dropdown ms-lg-4 akun-wrapper">
 
                        <a
@@ -122,7 +116,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
             <span>Logout</span>
         </a>
     </li>
-=======
+
                     <li class="nav-item akun-dropdown ms-lg-2">
 
                         <button type="button" class="akun-btn" id="akunButton">
@@ -145,8 +139,6 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
                                 <i class="fa-solid fa-right-from-bracket"></i>
                                 Logout
                             </a>
->>>>>>> 47de28dfcb0bd49fa574a822e8b94eb741e3c9f0
-
 </ul>
                     </li>
 
@@ -320,7 +312,6 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
     color: #7b3fb2 !important;
 }
 
-<<<<<<< HEAD
 .akun-wrapper{
     border-left: 1px solid #ddd;
     padding-left: 18px;
@@ -388,90 +379,18 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
 
     font-size: 15px;
     font-weight: 600;
-=======
-/* AKUN DROPDOWN CUSTOM */
-.akun-dropdown {
-    position: relative;
-}
-
-.akun-btn {
-    border: none;
-    outline: none;
-    background: #f4eaff;
-    color: #7b3fb2;
-    border-radius: 999px;
-    padding: 10px 18px;
-    font-weight: 750;
-    font-size: 15px;
-    display: flex;
-    align-items: center;
-    gap: 9px;
-    cursor: pointer;
-    transition: 0.25s ease;
-    white-space: nowrap;
-}
-
-.akun-btn:hover {
-    background: #eadcff;
-    color: #6f2da8;
-}
-
-.akun-btn i {
-    font-size: 12px;
-    transition: 0.25s;
-}
-
-.akun-dropdown.show .akun-btn i {
-    transform: rotate(180deg);
-}
-
-.dropdown-custom {
-    position: absolute;
-    top: calc(100% + 12px);
-    right: 0;
-    width: 235px;
-    background: white;
-    border-radius: 18px;
-    padding: 10px;
-    box-shadow: 0 14px 38px rgba(80, 35, 120, 0.20);
-    border: 1px solid #eadcff;
-    z-index: 999999;
-    display: none;
-}
-
-.akun-dropdown.show .dropdown-custom {
-    display: block;
-}
-
-.dropdown-item-custom {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    border-radius: 13px;
-    padding: 11px 13px;
-    font-weight: 650;
->>>>>>> 47de28dfcb0bd49fa574a822e8b94eb741e3c9f0
     color: #4d3b5f;
     text-decoration: none;
     transition: 0.2s ease;
     font-size: 14px;
 }
 
-<<<<<<< HEAD
 .dropdown-custom .dropdown-item i{
     width: 20px;
     text-align: center;
 }
 
 .dropdown-custom .dropdown-item:hover{
-=======
-.dropdown-item-custom i {
-    width: 18px;
-    color: #8e44ad;
-}
-
-.dropdown-item-custom:hover {
->>>>>>> 47de28dfcb0bd49fa574a822e8b94eb741e3c9f0
     background: #f4eaff;
     color: #8e44ad;
 }
@@ -567,7 +486,6 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
-<<<<<<< HEAD
 
     const akunBtn = document.getElementById("dropdownAkun");
 
@@ -575,20 +493,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
         akunBtn.addEventListener("click", function(e){
 
-=======
-    const akunButton = document.getElementById("akunButton");
-    const akunDropdown = akunButton ? akunButton.closest(".akun-dropdown") : null;
-
-    if (akunButton && akunDropdown) {
-        akunButton.addEventListener("click", function (e) {
->>>>>>> 47de28dfcb0bd49fa574a822e8b94eb741e3c9f0
             e.preventDefault();
             e.stopPropagation();
 
             akunDropdown.classList.toggle("show");
         });
 
-<<<<<<< HEAD
             if(menu.style.display === "block"){
                 menu.style.display = "none";
             } else {
@@ -597,11 +507,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 menu.style.right = "0";
                 menu.style.top = "100%";
                 menu.style.zIndex = "999999";
-=======
-        document.addEventListener("click", function (e) {
-            if (!akunDropdown.contains(e.target)) {
-                akunDropdown.classList.remove("show");
->>>>>>> 47de28dfcb0bd49fa574a822e8b94eb741e3c9f0
             }
 
         });
