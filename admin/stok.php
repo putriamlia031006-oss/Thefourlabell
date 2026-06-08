@@ -459,7 +459,16 @@ body {
     color: #9a3412;
     transform: translateY(-2px);
 }
+.btn-delete {
+    background: #fef2f2;
+    color: #b91c1c;
+}
 
+.btn-delete:hover {
+    background: #fecaca;
+    color: #991b1b;
+    transform: translateY(-2px);
+}
 /* EMPTY */
 .empty-data {
     text-align: center;
@@ -738,15 +747,23 @@ body {
                                     </td>
 
                                     <td data-label="Aksi">
-                                        <div class="action-box">
-                                            <a 
-                                                href="edit-stok.php?id=<?= $row['idStok']; ?>"
-                                                class="btn-action btn-edit">
-                                                <i class="fa-solid fa-pen-to-square"></i>
-                                                Edit
-                                            </a>
-                                        </div>
-                                    </td>
+    <div class="action-box">
+        <a 
+            href="edit-stok.php?id=<?= $row['idStok']; ?>"
+            class="btn-action btn-edit">
+            <i class="fa-solid fa-pen-to-square"></i>
+            Edit
+        </a>
+
+        <a 
+            href="hapus-stok.php?id=<?= $row['idStok']; ?>"
+            class="btn-action btn-delete"
+            onclick="return confirm('Yakin ingin menghapus data stok produk ini?');">
+            <i class="fa-solid fa-trash"></i>
+            Hapus
+        </a>
+    </div>
+</td>
                                 </tr>
 
                             <?php } ?>
