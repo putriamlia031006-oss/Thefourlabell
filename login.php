@@ -16,8 +16,8 @@ if (isset($_SESSION['user']) && isset($_SESSION['role'])) {
 
 if (isset($_POST['login'])) {
 
-    $email = mysqli_real_escape_string($koneksi, trim($_POST['email']));
-    $password = $_POST['password'];
+    $email = mysqli_real_escape_string($koneksi, trim($_POST['email_pelanggan']));
+    $password = $_POST['password_pelanggan'];
 
     $query = mysqli_query(
         $koneksi,
@@ -216,22 +216,26 @@ body {
     <form method="POST">
 
         <div class="mb-3">
-            <label class="form-label">Email</label>
+            <label class="form-label">Email Pelanggan</label>
             <input 
                 type="email" 
-                name="email" 
+                name="email_pelanggan" 
+                id="email_pelanggan"
                 class="form-control" 
-                placeholder="Masukkan email"
+                placeholder="Masukkan email pelanggan"
+                autocomplete="off"
                 required>
         </div>
 
         <div class="mb-4">
-            <label class="form-label">Password</label>
+            <label class="form-label">Password Pelanggan</label>
             <input 
                 type="password" 
-                name="password" 
+                name="password_pelanggan" 
+                id="password_pelanggan"
                 class="form-control" 
-                placeholder="Masukkan password"
+                placeholder="Masukkan password pelanggan"
+                autocomplete="new-password"
                 required>
         </div>
 
@@ -244,11 +248,6 @@ body {
     <div class="text-center mt-4">
         Belum punya akun?
         <a href="register.php" class="link">Daftar di sini</a>
-    </div>
-
-    <div class="text-center mt-2">
-        Login sebagai admin?
-        <a href="admin/login.php" class="link">Masuk Admin</a>
     </div>
 
 </div>

@@ -1,622 +1,354 @@
 <?php
 session_start();
+include "auth.php";
 require "../koneksi.php";
 
-/* =========================
-   LAPORAN STOK
-========================= */
-$stok = mysqli_query($koneksi, "
-    SELECT 
-        produk.idProduk,
-        produk.namaProduk,
-        produk.harga,
-        kategori.namaKategori,
-        stok_produk.jumlahStok,
-        stok_produk.satuan
-    FROM stok_produk
-    JOIN produk 
-        ON stok_produk.idProduk = produk.idProduk
-    LEFT JOIN kategori
-        ON produk.idKategori = kategori.idKategori
-    ORDER BY produk.namaProduk ASC
-");
-
-if (!$stok) {
-    die("Query stok error: " . mysqli_error($koneksi));
-}
-
-/* =========================
-   LAPORAN PESANAN
-========================= */
-$pesanan = mysqli_query($koneksi, "
-    SELECT 
-        pesanan.idPesanan,
-        pesanan.nomorInvoice,
-        pesanan.tanggal,
-        pesanan.status,
-        pesanan.jenisPesanan,
-        pesanan.total,
-        pesanan.ongkir,
-        pesanan.alamat_kirim,
-        pesanan.jasa_kirim,
-        user.nama AS namaPelanggan,
-        user.email,
-        pelanggan.noHp,
-        pelanggan.alamat
-    FROM pesanan
-    JOIN pelanggan
-        ON pesanan.idPelanggan = pelanggan.idPelanggan
-    JOIN user
-        ON pelanggan.idUser = user.idUser
-    ORDER BY pesanan.idPesanan DESC
-");
-
-if (!$pesanan) {
-    die("Query pesanan error: " . mysqli_error($koneksi));
-}
-
-/* =========================
-   RINGKASAN DATA
-========================= */
 $qProduk = mysqli_query($koneksi, "SELECT COUNT(*) AS total FROM produk");
 $totalProduk = mysqli_fetch_assoc($qProduk)['total'];
 
-$qStok = mysqli_query($koneksi, "SELECT SUM(jumlahStok) AS total FROM stok_produk");
+$qStok = mysqli_query($koneksi, "SELECT COALESCE(SUM(jumlahStok), 0) AS total FROM stok_produk");
 $totalStok = mysqli_fetch_assoc($qStok)['total'];
-if ($totalStok == NULL) {
-    $totalStok = 0;
-}
 
 $qPesanan = mysqli_query($koneksi, "SELECT COUNT(*) AS total FROM pesanan");
 $totalPesanan = mysqli_fetch_assoc($qPesanan)['total'];
 
-$qPendapatan = mysqli_query($koneksi, "SELECT SUM(total) AS total FROM pesanan");
+$qPendapatan = mysqli_query($koneksi, "SELECT COALESCE(SUM(total), 0) AS total FROM pesanan");
 $totalPendapatan = mysqli_fetch_assoc($qPendapatan)['total'];
-if ($totalPendapatan == NULL) {
-    $totalPendapatan = 0;
-}
 ?>
 
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <title>Laporan Sistem Konveksi</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<title>Laporan - Admin The Four Label</title>
 
-    <style>
-        body {
-            background: linear-gradient(135deg, #f8f3ff, #eadbff);
-            min-height: 100vh;
-            font-family: Arial, Helvetica, sans-serif;
-            color: #333;
-        }
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 
-        .container {
-            max-width: 1250px;
-        }
+<style>
+* {
+    box-sizing: border-box;
+}
 
-        .header-laporan {
-            background: linear-gradient(135deg, #b57edc, #8e44ad);
-            color: white;
-            padding: 28px;
-            border-radius: 24px;
-            margin-bottom: 25px;
-            box-shadow: 0 10px 25px rgba(142, 68, 173, 0.25);
-        }
+body {
+    margin: 0;
+    background: #fbf7ff;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    color: #33223f;
+}
 
-        .logo-box {
-            width: 65px;
-            height: 65px;
-            background: rgba(255,255,255,0.2);
-            border-radius: 18px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            font-size: 24px;
-            border: 1px solid rgba(255,255,255,0.3);
-        }
+.main-content {
+    margin-left: 240px;
+    min-height: 100vh;
+    padding: 34px;
+}
 
-        .btn-cetak {
-            background: white;
-            color: #8e44ad;
-            border: none;
-            padding: 10px 18px;
-            border-radius: 14px;
-            font-weight: bold;
-            margin-left: 8px;
-        }
+.page-header {
+    background: linear-gradient(135deg, #b57edc, #9d7ad6, #8e44ad);
+    border-radius: 28px;
+    padding: 30px;
+    color: white;
+    margin-bottom: 28px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 16px 36px rgba(142, 68, 173, 0.18);
+}
 
-        .btn-cetak:hover {
-            background: #f3e8ff;
-            color: #7b3fb2;
-        }
+.page-header::before {
+    content: "";
+    position: absolute;
+    width: 210px;
+    height: 210px;
+    border-radius: 50%;
+    background: rgba(255,255,255,.13);
+    top: -80px;
+    right: -55px;
+}
 
-        .btn-cetak-stok {
-            background: #ffffff;
-            color: #8e44ad;
-        }
+.page-header-content {
+    position: relative;
+    z-index: 2;
+}
 
-        .btn-cetak-pesanan {
-            background: #f3e8ff;
-            color: #7b3fb2;
-        }
+.header-icon {
+    width: 58px;
+    height: 58px;
+    border-radius: 18px;
+    background: rgba(255,255,255,.20);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    margin-bottom: 14px;
+    border: 1px solid rgba(255,255,255,.22);
+}
 
-        .card-ringkasan {
-            background: white;
-            border-radius: 20px;
-            padding: 22px;
-            border: 1px solid #eadcff;
-            box-shadow: 0 8px 20px rgba(142, 68, 173, 0.12);
-            height: 100%;
-        }
+.page-title {
+    font-size: 34px;
+    font-weight: 900;
+    margin: 0 0 8px;
+}
 
-        .card-ringkasan .icon {
-            width: 46px;
-            height: 46px;
-            border-radius: 15px;
-            background: #f1e3ff;
-            color: #8e44ad;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 22px;
-            margin-bottom: 12px;
-        }
+.page-subtitle {
+    margin: 0;
+    font-size: 15px;
+    opacity: .95;
+}
 
-        .card-ringkasan p {
-            margin: 0;
-            color: #777;
-            font-size: 14px;
-        }
+.summary-card,
+.report-card {
+    background: white;
+    border: 1px solid #eadcff;
+    border-radius: 24px;
+    padding: 22px;
+    box-shadow: 0 12px 30px rgba(142, 68, 173, 0.10);
+    height: 100%;
+    transition: .25s ease;
+    position: relative;
+    overflow: hidden;
+}
 
-        .card-ringkasan h3 {
-            margin: 6px 0 0;
-            color: #7b3fb2;
-            font-weight: bold;
-            font-size: 24px;
-        }
+.summary-card::before,
+.report-card::before {
+    content: "";
+    position: absolute;
+    width: 88px;
+    height: 88px;
+    border-radius: 50%;
+    background: #f4eaff;
+    top: -34px;
+    right: -34px;
+}
 
-        .box-laporan {
-            background: white;
-            border-radius: 22px;
-            padding: 24px;
-            margin-top: 26px;
-            border: 1px solid #eadcff;
-            box-shadow: 0 8px 20px rgba(142, 68, 173, 0.12);
-        }
+.summary-card:hover,
+.report-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 18px 38px rgba(142, 68, 173, 0.16);
+}
 
-        .judul-section {
-            color: #7b3fb2;
-            font-weight: bold;
-            margin-bottom: 18px;
-        }
+.card-inner {
+    position: relative;
+    z-index: 2;
+}
 
-        .judul-cetak {
-            display: none;
-            text-align: center;
-            margin-bottom: 20px;
-        }
+.icon-box {
+    width: 54px;
+    height: 54px;
+    border-radius: 18px;
+    background: #f1e3ff;
+    color: #8e44ad;
+    border: 1px solid #eadcff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    margin-bottom: 14px;
+}
 
-        .judul-cetak h2 {
-            font-weight: bold;
-            color: #7b3fb2;
-            margin-bottom: 5px;
-        }
+.summary-label {
+    margin: 0;
+    color: #6b6175;
+    font-size: 14px;
+    font-weight: 700;
+}
 
-        .judul-cetak p {
-            margin: 0;
-            color: #555;
-        }
+.summary-value {
+    margin: 5px 0 0;
+    color: #7b3fb2;
+    font-size: 28px;
+    font-weight: 900;
+}
 
-        .table {
-            margin-bottom: 0;
-        }
+.section-title {
+    color: #6f2da8;
+    font-weight: 850;
+    margin: 30px 0 18px;
+}
 
-        .table thead th {
-            background: #b57edc;
-            color: white;
-            border: none;
-            padding: 13px;
-            text-align: center;
-            white-space: nowrap;
-        }
+.report-card h4 {
+    color: #4b2e63;
+    font-weight: 900;
+    margin-bottom: 10px;
+}
 
-        .table tbody td {
-            padding: 12px;
-            vertical-align: middle;
-            border-color: #f0e3ff;
-        }
+.report-card p {
+    color: #81758d;
+    margin-bottom: 18px;
+    line-height: 1.6;
+}
 
-        .table tbody tr:hover {
-            background: #fbf7ff;
-        }
+.btn-lavender {
+    background: linear-gradient(135deg, #b57edc, #8e44ad);
+    color: white;
+    border: none;
+    border-radius: 15px;
+    padding: 11px 18px;
+    font-weight: 800;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    box-shadow: 0 9px 20px rgba(142, 68, 173, 0.20);
+    transition: .25s ease;
+}
 
-        .badge-status {
-            padding: 7px 12px;
-            border-radius: 999px;
-            font-size: 12px;
-            font-weight: bold;
-            display: inline-block;
-        }
+.btn-lavender:hover {
+    background: linear-gradient(135deg, #a76bd4, #7b3fb2);
+    color: white;
+    transform: translateY(-2px);
+}
 
-        .pending {
-            background: #fff3cd;
-            color: #856404;
-        }
+.btn-outline-lavender {
+    background: white;
+    color: #8e44ad;
+    border: 1px solid #d9c0f0;
+    border-radius: 15px;
+    padding: 11px 18px;
+    font-weight: 800;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    transition: .25s ease;
+}
 
-        .proses {
-            background: #dbeafe;
-            color: #1d4ed8;
-        }
+.btn-outline-lavender:hover {
+    background: #f4eaff;
+    color: #7b3fb2;
+    transform: translateY(-2px);
+}
 
-        .selesai {
-            background: #dcfce7;
-            color: #15803d;
-        }
-
-        .batal {
-            background: #fee2e2;
-            color: #b91c1c;
-        }
-
-        .custom {
-            background: #f3e8ff;
-            color: #7b3fb2;
-        }
-
-        .siap {
-            background: #e0f2fe;
-            color: #0369a1;
-        }
-
-        .kosong {
-            text-align: center;
-            color: #888;
-            padding: 25px;
-        }
-
-        .text-small {
-            font-size: 13px;
-            color: #666;
-        }
-
-        @media print {
-            body {
-                background: white;
-            }
-
-            .no-print,
-            .header-laporan,
-            .card-ringkasan {
-                display: none !important;
-            }
-
-            .box-laporan {
-                display: none;
-                box-shadow: none;
-                border: none;
-                padding: 0;
-                margin: 0;
-            }
-
-            .judul-cetak {
-                display: block;
-            }
-
-            body.print-stok #laporan-stok {
-                display: block !important;
-            }
-
-            body.print-pesanan #laporan-pesanan {
-                display: block !important;
-            }
-
-            body.print-stok #laporan-pesanan {
-                display: none !important;
-            }
-
-            body.print-pesanan #laporan-stok {
-                display: none !important;
-            }
-
-            .table thead th {
-                background: #b57edc !important;
-                color: white !important;
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
-            }
-
-            .table {
-                font-size: 12px;
-            }
-
-            .badge-status {
-                border: 1px solid #999;
-            }
-        }
-    </style>
+@media (max-width: 991px) {
+    .main-content {
+        margin-left: 0;
+        padding: 24px;
+    }
+}
+</style>
 </head>
 
 <body>
 
-<div class="container py-4">
+<?php include "sidebar.php"; ?>
 
-    <!-- HEADER -->
-    <div class="header-laporan">
-        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
-            <div class="d-flex align-items-center gap-3">
-                <div class="logo-box">T4L</div>
-                <div>
-                    <h2 class="mb-1 fw-bold">THE FOUR LABEL</h2>
-                    <p class="mb-0">Laporan Sistem Konveksi</p>
+<main class="main-content">
+
+    <div class="page-header">
+        <div class="page-header-content">
+            <div class="header-icon">
+                <i class="fa-solid fa-file-lines"></i>
+            </div>
+
+            <h2 class="page-title">Laporan</h2>
+            <p class="page-subtitle">
+                Pilih jenis laporan yang ingin dilihat atau dicetak pada sistem The Four Label.
+            </p>
+        </div>
+    </div>
+
+    <div class="row g-4">
+
+        <div class="col-md-3">
+            <div class="summary-card">
+                <div class="card-inner">
+                    <div class="icon-box">
+                        <i class="fa-solid fa-shirt"></i>
+                    </div>
+                    <p class="summary-label">Total Produk</p>
+                    <h3 class="summary-value"><?= $totalProduk; ?></h3>
                 </div>
             </div>
-
-            <div>
-                <button onclick="cetakStok()" class="btn-cetak btn-cetak-stok">
-                    Cetak Stok
-                </button>
-
-                <button onclick="cetakPesanan()" class="btn-cetak btn-cetak-pesanan">
-                    Cetak Pesanan
-                </button>
-            </div>
         </div>
-    </div>
 
-    <!-- RINGKASAN -->
-    <div class="row g-3 no-print">
-
-        <div class="col-md-3 col-sm-6">
-            <div class="card-ringkasan">
-                <div class="icon">👕</div>
-                <p>Total Produk</p>
-                <h3><?= $totalProduk; ?></h3>
+        <div class="col-md-3">
+            <div class="summary-card">
+                <div class="card-inner">
+                    <div class="icon-box">
+                        <i class="fa-solid fa-boxes-stacked"></i>
+                    </div>
+                    <p class="summary-label">Total Stok</p>
+                    <h3 class="summary-value"><?= $totalStok; ?></h3>
+                </div>
             </div>
         </div>
 
-        <div class="col-md-3 col-sm-6">
-            <div class="card-ringkasan">
-                <div class="icon">📦</div>
-                <p>Total Stok</p>
-                <h3><?= $totalStok; ?></h3>
+        <div class="col-md-3">
+            <div class="summary-card">
+                <div class="card-inner">
+                    <div class="icon-box">
+                        <i class="fa-solid fa-receipt"></i>
+                    </div>
+                    <p class="summary-label">Total Pesanan</p>
+                    <h3 class="summary-value"><?= $totalPesanan; ?></h3>
+                </div>
             </div>
         </div>
 
-        <div class="col-md-3 col-sm-6">
-            <div class="card-ringkasan">
-                <div class="icon">🧾</div>
-                <p>Total Pesanan</p>
-                <h3><?= $totalPesanan; ?></h3>
-            </div>
-        </div>
-
-        <div class="col-md-3 col-sm-6">
-            <div class="card-ringkasan">
-                <div class="icon">💰</div>
-                <p>Total Pendapatan</p>
-                <h3>Rp <?= number_format($totalPendapatan, 0, ',', '.'); ?></h3>
+        <div class="col-md-3">
+            <div class="summary-card">
+                <div class="card-inner">
+                    <div class="icon-box">
+                        <i class="fa-solid fa-money-bill-wave"></i>
+                    </div>
+                    <p class="summary-label">Total Pendapatan</p>
+                    <h3 class="summary-value">
+                        Rp <?= number_format($totalPendapatan, 0, ',', '.'); ?>
+                    </h3>
+                </div>
             </div>
         </div>
 
     </div>
 
-    <!-- LAPORAN STOK -->
-    <div class="box-laporan" id="laporan-stok">
+    <h4 class="section-title">Pilih Laporan</h4>
 
-        <div class="judul-cetak">
-            <h2>THE FOUR LABEL</h2>
-            <p>Laporan Stok Produk</p>
-            <p>Tanggal Cetak: <?= date('d-m-Y'); ?></p>
+    <div class="row g-4">
+
+        <div class="col-md-6">
+            <div class="report-card">
+                <div class="card-inner">
+                    <div class="icon-box">
+                        <i class="fa-solid fa-warehouse"></i>
+                    </div>
+
+                    <h4>Laporan Stok Produk</h4>
+                    <p>
+                        Menampilkan daftar stok produk, kategori, harga, jumlah stok, dan satuan produk.
+                    </p>
+
+                    <a href="laporan-stok.php" class="btn-lavender">
+                        <i class="fa-solid fa-eye"></i>
+                        Buka Laporan Stok
+                    </a>
+                </div>
+            </div>
         </div>
 
-        <h4 class="judul-section">📦 Laporan Stok Produk</h4>
+        <div class="col-md-6">
+            <div class="report-card">
+                <div class="card-inner">
+                    <div class="icon-box">
+                        <i class="fa-solid fa-file-invoice-dollar"></i>
+                    </div>
 
-        <div class="table-responsive">
-            <table class="table table-bordered table-striped align-middle">
-                <thead>
-                    <tr>
-                        <th width="5%">No</th>
-                        <th>Nama Produk</th>
-                        <th>Kategori</th>
-                        <th>Harga</th>
-                        <th>Stok</th>
-                        <th>Satuan</th>
-                    </tr>
-                </thead>
+                    <h4>Laporan Transaksi</h4>
+                    <p>
+                        Menampilkan daftar transaksi pesanan, customer, status, pengiriman, dan total pembayaran.
+                    </p>
 
-                <tbody>
-                    <?php 
-                    $no = 1;
-
-                    if (mysqli_num_rows($stok) > 0) {
-                        while ($s = mysqli_fetch_assoc($stok)) { 
-                    ?>
-                        <tr>
-                            <td class="text-center"><?= $no++; ?></td>
-                            <td><?= htmlspecialchars($s['namaProduk']); ?></td>
-                            <td><?= htmlspecialchars($s['namaKategori']); ?></td>
-                            <td class="text-end">
-                                Rp <?= number_format($s['harga'], 0, ',', '.'); ?>
-                            </td>
-                            <td class="text-center"><?= htmlspecialchars($s['jumlahStok']); ?></td>
-                            <td class="text-center"><?= htmlspecialchars($s['satuan']); ?></td>
-                        </tr>
-                    <?php 
-                        }
-                    } else { 
-                    ?>
-                        <tr>
-                            <td colspan="6" class="kosong">
-                                Belum ada data stok produk.
-                            </td>
-                        </tr>
-                    <?php } ?>
-                </tbody>
-            </table>
+                    <a href="laporan-transaksi.php" class="btn-outline-lavender">
+                        <i class="fa-solid fa-eye"></i>
+                        Buka Laporan Transaksi
+                    </a>
+                </div>
+            </div>
         </div>
+
     </div>
 
-    <!-- LAPORAN PESANAN -->
-    <div class="box-laporan" id="laporan-pesanan">
-
-        <div class="judul-cetak">
-            <h2>THE FOUR LABEL</h2>
-            <p>Laporan Pesanan</p>
-            <p>Tanggal Cetak: <?= date('d-m-Y'); ?></p>
-        </div>
-
-        <h4 class="judul-section">🧾 Laporan Pesanan</h4>
-
-        <div class="table-responsive">
-            <table class="table table-bordered table-striped align-middle">
-                <thead>
-                    <tr>
-                        <th>No</th>
-                        <th>Invoice</th>
-                        <th>Customer</th>
-                        <th>Kontak</th>
-                        <th>Tanggal</th>
-                        <th>Jenis</th>
-                        <th>Status</th>
-                        <th>Pengiriman</th>
-                        <th>Total</th>
-                    </tr>
-                </thead>
-
-                <tbody>
-                    <?php 
-                    $no = 1;
-
-                    if (mysqli_num_rows($pesanan) > 0) {
-                        while ($p = mysqli_fetch_assoc($pesanan)) { 
-
-                            $status = strtolower($p['status']);
-
-                            if ($status == "pending") {
-                                $classStatus = "pending";
-                            } elseif ($status == "proses" || $status == "diproses") {
-                                $classStatus = "proses";
-                            } elseif ($status == "selesai") {
-                                $classStatus = "selesai";
-                            } elseif ($status == "batal") {
-                                $classStatus = "batal";
-                            } else {
-                                $classStatus = "pending";
-                            }
-
-                            if ($p['jenisPesanan'] == "custom") {
-                                $classJenis = "custom";
-                                $textJenis = "Custom";
-                            } else {
-                                $classJenis = "siap";
-                                $textJenis = "Siap Pakai";
-                            }
-                    ?>
-                        <tr>
-                            <td class="text-center"><?= $no++; ?></td>
-
-                            <td class="text-center">
-                                <?php if ($p['nomorInvoice'] != "") { ?>
-                                    <?= htmlspecialchars($p['nomorInvoice']); ?>
-                                <?php } else { ?>
-                                    #<?= htmlspecialchars($p['idPesanan']); ?>
-                                <?php } ?>
-                            </td>
-
-                            <td>
-                                <strong><?= htmlspecialchars($p['namaPelanggan']); ?></strong>
-                                <div class="text-small">
-                                    <?= htmlspecialchars($p['email']); ?>
-                                </div>
-                            </td>
-
-                            <td>
-                                <?= htmlspecialchars($p['noHp']); ?>
-                                <div class="text-small">
-                                    <?= htmlspecialchars($p['alamat']); ?>
-                                </div>
-                            </td>
-
-                            <td class="text-center">
-                                <?= htmlspecialchars($p['tanggal']); ?>
-                            </td>
-
-                            <td class="text-center">
-                                <span class="badge-status <?= $classJenis; ?>">
-                                    <?= $textJenis; ?>
-                                </span>
-                            </td>
-
-                            <td class="text-center">
-                                <span class="badge-status <?= $classStatus; ?>">
-                                    <?= htmlspecialchars($p['status']); ?>
-                                </span>
-                            </td>
-
-                            <td>
-                                <?php if ($p['jasa_kirim'] != "") { ?>
-                                    <strong><?= htmlspecialchars($p['jasa_kirim']); ?></strong>
-                                <?php } else { ?>
-                                    <strong>Ambil di tempat</strong>
-                                <?php } ?>
-
-                                <div class="text-small">
-                                    <?= htmlspecialchars($p['alamat_kirim']); ?>
-                                </div>
-
-                                <div class="text-small">
-                                    Ongkir: Rp <?= number_format($p['ongkir'], 0, ',', '.'); ?>
-                                </div>
-                            </td>
-
-                            <td class="text-end">
-                                <strong>
-                                    Rp <?= number_format($p['total'], 0, ',', '.'); ?>
-                                </strong>
-                            </td>
-                        </tr>
-                    <?php 
-                        }
-                    } else { 
-                    ?>
-                        <tr>
-                            <td colspan="9" class="kosong">
-                                Belum ada data pesanan.
-                            </td>
-                        </tr>
-                    <?php } ?>
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-</div>
-
-<script>
-    function cetakStok() {
-        document.body.classList.remove('print-pesanan');
-        document.body.classList.add('print-stok');
-        window.print();
-
-        setTimeout(function() {
-            document.body.classList.remove('print-stok');
-        }, 500);
-    }
-
-    function cetakPesanan() {
-        document.body.classList.remove('print-stok');
-        document.body.classList.add('print-pesanan');
-        window.print();
-
-        setTimeout(function() {
-            document.body.classList.remove('print-pesanan');
-        }, 500);
-    }
-</script>
+</main>
 
 </body>
 </html>

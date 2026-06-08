@@ -1,5 +1,4 @@
 <?php
-
 if (session_status() == PHP_SESSION_NONE) {
     session_start();
 }
@@ -12,14 +11,20 @@ if (isset($_SESSION['cart'])) {
 
 $currentPage = basename($_SERVER['PHP_SELF']);
 
+$login = isset($_SESSION['user']);
+$role = '';
+
+if ($login && isset($_SESSION['user']['role'])) {
+    $role = strtolower(trim($_SESSION['user']['role']));
+}
 ?>
-<link rel="stylesheet"
-href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 
 <nav class="navbar navbar-expand-lg navbar-custom sticky-top">
     <div class="container-fluid px-4 px-lg-5">
 
-        <a class="navbar-brand logo" href="index.php">
+        <a class="navbar-brand logo" href="<?= $role == 'admin' ? 'admin/index.php' : 'index.php'; ?>">
             <span class="logo-img-box">
                 <img src="assets/logo.png" alt="Logo The Four Label">
             </span>
@@ -43,103 +48,95 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
         </button>
 
         <div class="collapse navbar-collapse" id="menu">
-
             <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-1 mt-3 mt-lg-0">
 
-                <li class="nav-item">
-                    <a class="nav-link <?= $currentPage == 'index.php' ? 'active-link' : ''; ?>" href="index.php">
-                        Beranda
-                    </a>
-                </li>
-
-                <li class="nav-item">
-                    <a class="nav-link <?= $currentPage == 'produk.php' ? 'active-link' : ''; ?>" href="produk.php">
-                        Produk
-                    </a>
-                </li>
-
-                <li class="nav-item">
-                    <a class="nav-link <?= $currentPage == 'custom-order.php' ? 'active-link' : ''; ?>" href="custom-order.php">
-                        Custom Order
-                    </a>
-                </li>
-
-                <li class="nav-item">
-                    <a class="nav-link cart-link <?= $currentPage == 'cart.php' ? 'active-link' : ''; ?>" href="cart.php">
-                        Keranjang
-
-                        <?php if ($jumlahCart > 0) { ?>
-                            <span class="badge-cart">
-                                <?= $jumlahCart; ?>
-                            </span>
-                        <?php } ?>
-                    </a>
-                </li>
-
-                <?php if (isset($_SESSION['user'])) { ?>
+                <?php if (!$login || $role == 'pelanggan') { ?>
 
                     <li class="nav-item">
-                        <a class="nav-link <?= $currentPage == 'pesanan-saya.php' ? 'active-link' : ''; ?>" href="pesanan-saya.php">
-                            Pesanan Saya
+                        <a class="nav-link <?= $currentPage == 'index.php' ? 'active-link' : ''; ?>" href="index.php">
+                            Beranda
                         </a>
                     </li>
 
-                  <li class="nav-item dropdown ms-lg-4 akun-wrapper">
+                    <li class="nav-item">
+                        <a class="nav-link <?= $currentPage == 'produk.php' ? 'active-link' : ''; ?>" href="produk.php">
+                            Produk
+                        </a>
+                    </li>
 
-                       <a
-    class="nav-link akun-btn dropdown-toggle"
-    href="javascript:void(0)"
-    id="dropdownAkun"
-    role="button">
+                    <li class="nav-item">
+                        <a class="nav-link <?= $currentPage == 'custom-order.php' ? 'active-link' : ''; ?>" href="custom-order.php">
+                            Custom Order
+                        </a>
+                    </li>
 
-    <i class="fas fa-user"></i>
+                    <li class="nav-item">
+                        <a class="nav-link cart-link <?= $currentPage == 'cart.php' ? 'active-link' : ''; ?>" href="cart.php">
+                            Keranjang
 
-    <span class="nama-user">
-        <?= htmlspecialchars($_SESSION['user']['nama']); ?>
-    </span>
+                            <?php if ($jumlahCart > 0) { ?>
+                                <span class="badge-cart">
+                                    <?= $jumlahCart; ?>
+                                </span>
+                            <?php } ?>
+                        </a>
+                    </li>
 
-</a>
- <ul class="dropdown-menu dropdown-menu-end dropdown-custom">
+                    <?php if ($login) { ?>
+                        <li class="nav-item">
+                            <a class="nav-link <?= $currentPage == 'pesanan-saya.php' ? 'active-link' : ''; ?>" href="pesanan-saya.php">
+                                Pesanan Saya
+                            </a>
+                        </li>
+                    <?php } ?>
 
-    <li>
-        <a class="dropdown-item" href="pesanan-saya.php">
-            <i class="fas fa-clipboard-list"></i>
-            <span>Pesanan Saya</span>
-        </a>
-    </li>
+                <?php } ?>
 
-    <li><hr class="dropdown-divider"></li>
+                <?php if ($login) { ?>
 
-    <li>
-        <a class="dropdown-item text-danger" href="logout.php">
-            <i class="fas fa-right-from-bracket"></i>
-            <span>Logout</span>
-        </a>
-    </li>
+                    <li class="nav-item dropdown ms-lg-4 akun-wrapper">
 
-                    <li class="nav-item akun-dropdown ms-lg-2">
+                        <a
+                            class="nav-link akun-btn dropdown-toggle"
+                            href="#"
+                            id="dropdownAkun"
+                            role="button"
+                            data-bs-toggle="dropdown"
+                            aria-expanded="false">
 
-                        <button type="button" class="akun-btn" id="akunButton">
-                            <span>
-                                <?= isset($_SESSION['user']['nama']) ? htmlspecialchars($_SESSION['user']['nama']) : 'Akun'; ?>
+                            <i class="fas fa-user-circle"></i>
+
+                            <span class="nama-user">
+                                <?= htmlspecialchars($_SESSION['user']['nama']); ?>
                             </span>
-                            <i class="fa-solid fa-chevron-down"></i>
-                        </button>
+                        </a>
 
-                        <div class="dropdown-custom" id="akunMenu">
+                        <ul class="dropdown-menu dropdown-menu-end dropdown-custom" aria-labelledby="dropdownAkun">
 
-                            <?php if (isset($_SESSION['user']['role']) && strtolower(trim($_SESSION['user']['role'])) == "admin") { ?>
-                                <a class="dropdown-item-custom" href="admin/index.php">
-                                    <i class="fa-solid fa-gauge"></i>
-                                    Dashboard Admin
-                                </a>
+                            <?php if ($role == 'admin') { ?>
+                                <li>
+                                    <a class="dropdown-item" href="admin/index.php">
+                                        <i class="fas fa-gauge"></i>
+                                        <span>Dashboard Admin</span>
+                                    </a>
+                                </li>
+
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
                             <?php } ?>
 
-                            <a class="dropdown-item-custom logout-link" href="logout.php">
-                                <i class="fa-solid fa-right-from-bracket"></i>
-                                Logout
-                            </a>
-</ul>
+                            <?php if ($role == 'pelanggan') { ?>
+                            <?php } ?>
+
+                            <li>
+                                <a class="dropdown-item text-danger" href="logout.php">
+                                    <i class="fas fa-right-from-bracket"></i>
+                                    <span>Logout</span>
+                                </a>
+                            </li>
+
+                        </ul>
                     </li>
 
                 <?php } else { ?>
@@ -159,7 +156,6 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
                 <?php } ?>
 
             </ul>
-
         </div>
 
     </div>
@@ -182,7 +178,9 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
 
 .nama-user{
     font-weight: 700;
+    font-size: 15px;
 }
+
 .navbar-custom {
     background: rgba(255, 255, 255, 0.96);
     backdrop-filter: blur(16px);
@@ -322,14 +320,11 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
     color: white !important;
     border: none !important;
     border-radius: 14px !important;
-
     padding: 10px 16px !important;
-    min-height: 52px;
-
+    min-height: 48px;
     display: flex !important;
     align-items: center;
     gap: 10px;
-
     font-weight: 700;
     box-shadow: 0 6px 15px rgba(139,92,246,.2);
 }
@@ -339,25 +334,13 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
     color: white;
 }
 
-.nama-user{
-    font-size: 15px;
-    font-weight: 700;
-}
 .akun-btn::after{
     margin-left: 8px;
     color: white;
 }
 
-.dropdown {
-    position: relative;
-}
-
 .dropdown-menu{
-    display:none;
-}
-
-.dropdown-menu.show{
-    display:block;
+    border: none !important;
 }
 
 .dropdown-custom{
@@ -373,16 +356,13 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
     display: flex;
     align-items: center;
     gap: 12px;
-
     padding: 12px 16px;
     border-radius: 12px;
-
-    font-size: 15px;
+    font-size: 14px;
     font-weight: 600;
     color: #4d3b5f;
     text-decoration: none;
     transition: 0.2s ease;
-    font-size: 14px;
 }
 
 .dropdown-custom .dropdown-item i{
@@ -397,25 +377,6 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
 
 .dropdown-divider{
     margin: 6px 0;
-}
-
-.dropdown-line {
-    height: 1px;
-    background: #eadcff;
-    margin: 8px 0;
-}
-
-.logout-link {
-    color: #dc3545;
-}
-
-.logout-link i {
-    color: #dc3545;
-}
-
-.logout-link:hover {
-    background: #fff0f3;
-    color: #dc3545;
 }
 
 .custom-toggler {
@@ -456,12 +417,13 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
         justify-content: center;
     }
 
-    .akun-dropdown {
+    .akun-wrapper{
+        border-left: none;
+        padding-left: 0;
         width: 100%;
     }
 
     .dropdown-custom {
-        position: static;
         width: 100%;
         margin-top: 8px;
         box-shadow: none;
@@ -483,50 +445,5 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
     }
 }
 </style>
-
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-
-    const akunBtn = document.getElementById("dropdownAkun");
-
-    if (akunBtn) {
-
-        akunBtn.addEventListener("click", function(e){
-
-            e.preventDefault();
-            e.stopPropagation();
-
-            akunDropdown.classList.toggle("show");
-        });
-
-            if(menu.style.display === "block"){
-                menu.style.display = "none";
-            } else {
-                menu.style.display = "block";
-                menu.style.position = "absolute";
-                menu.style.right = "0";
-                menu.style.top = "100%";
-                menu.style.zIndex = "999999";
-            }
-
-        });
-
-        document.addEventListener("click", function(e){
-
-            const menu = akunBtn.nextElementSibling;
-
-            if(
-                !akunBtn.contains(e.target) &&
-                !menu.contains(e.target)
-            ){
-                menu.style.display = "none";
-            }
-
-        });
-
-    }
-
-});
-</script>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>

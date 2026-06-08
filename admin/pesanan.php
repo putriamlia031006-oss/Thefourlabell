@@ -34,14 +34,6 @@ if (!$dataPelanggan) {
 
 /* =========================
    QUERY PESANAN SESUAI PELANGGAN
-
-   totalBayar:
-   hanya pembayaran yang sudah diverifikasi:
-   DP Masuk / Lunas
-
-   totalPending:
-   pembayaran yang sudah diupload user,
-   tapi belum diverifikasi admin
 ========================= */
 $where = "";
 
@@ -133,7 +125,7 @@ function badgeStatusPesanan($status) {
     if ($statusLower == "menunggu upload bukti pembayaran") {
         return "badge-warning-soft";
     } elseif ($statusLower == "menunggu verifikasi pembayaran") {
-        return "badge-blue-soft";
+        return "badge-info-soft";
     } elseif ($statusLower == "menunggu pembayaran di toko") {
         return "badge-purple-soft";
     } elseif ($statusLower == "menunggu pembayaran tunai di toko") {
@@ -154,38 +146,49 @@ function badgeStatusPesanan($status) {
 
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<title>Daftar Pesanan</title>
+<title>Daftar Pesanan - Admin The Four Label</title>
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
 <style>
+* {
+    box-sizing: border-box;
+}
+
 html, body {
     overflow-x: hidden;
 }
 
 body {
-    background: #f6f0ff;
-    font-family: 'Segoe UI', Arial, sans-serif;
     margin: 0;
+    background: #fbf7ff;
+    font-family: 'Segoe UI', Arial, sans-serif;
     color: #33223f;
 }
 
+/* MAIN CONTENT */
 .main-content {
-    padding: 32px;
+    margin-left: 240px;
     min-height: 100vh;
+    padding: 34px;
 }
 
+/* HEADER */
 .page-header {
-    background: linear-gradient(135deg, #b57edc, #8e44ad);
+    background: linear-gradient(135deg, #b57edc, #9d7ad6, #8e44ad);
     color: white;
-    padding: 28px;
-    border-radius: 24px;
+    padding: 30px;
+    border-radius: 28px;
     margin-bottom: 28px;
-    box-shadow: 0 12px 28px rgba(111, 66, 193, 0.20);
+    box-shadow: 0 16px 36px rgba(142, 68, 173, 0.18);
     position: relative;
     overflow: hidden;
 }
@@ -193,49 +196,88 @@ body {
 .page-header::before {
     content: "";
     position: absolute;
-    width: 170px;
-    height: 170px;
+    width: 210px;
+    height: 210px;
     border-radius: 50%;
     background: rgba(255,255,255,0.13);
-    top: -60px;
-    right: -40px;
+    top: -80px;
+    right: -55px;
 }
 
-.page-header h3,
-.page-header p {
+.page-header::after {
+    content: "";
+    position: absolute;
+    width: 130px;
+    height: 130px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.10);
+    bottom: -55px;
+    left: 38%;
+}
+
+.page-header-content {
     position: relative;
     z-index: 2;
 }
 
-.page-header h3 {
-    font-weight: 850;
-    margin-bottom: 6px;
+.header-icon {
+    width: 58px;
+    height: 58px;
+    border-radius: 18px;
+    background: rgba(255,255,255,.20);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    margin-bottom: 14px;
+    border: 1px solid rgba(255,255,255,.22);
 }
 
-.page-header p {
+.page-title {
+    font-size: 34px;
+    font-weight: 900;
+    margin: 0 0 8px;
+}
+
+.page-subtitle {
     margin: 0;
-    opacity: 0.92;
+    font-size: 15px;
+    opacity: .95;
+    font-weight: 500;
 }
 
+/* FILTER */
 .filter-card {
     background: white;
-    border-radius: 22px;
+    border-radius: 24px;
     padding: 22px;
-    margin-bottom: 24px;
+    margin-bottom: 26px;
     border: 1px solid #eadcff;
-    box-shadow: 0 8px 22px rgba(111, 66, 193, 0.12);
+    box-shadow: 0 12px 30px rgba(142, 68, 173, 0.10);
+}
+
+.filter-title {
+    color: #6f2da8;
+    font-weight: 850;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 9px;
 }
 
 .form-label {
-    font-weight: 700;
+    font-weight: 750;
     color: #4b2e63;
+    margin-bottom: 8px;
 }
 
 .form-select {
-    border-radius: 14px;
+    border-radius: 15px;
     padding: 12px 14px;
-    border: 1px solid #ddd;
+    border: 1px solid #eadcff;
     background: #fcfbff;
+    color: #44324f;
+    font-weight: 600;
 }
 
 .form-select:focus {
@@ -243,16 +285,24 @@ body {
     box-shadow: 0 0 0 4px rgba(181, 126, 220, 0.17);
 }
 
+.btn-lavender,
+.btn-reset {
+    border-radius: 15px;
+    font-weight: 800;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: 0.25s ease;
+}
+
 .btn-lavender {
     background: linear-gradient(135deg, #b57edc, #8e44ad);
     color: white;
     border: none;
-    border-radius: 14px;
-    font-weight: 750;
-    padding: 11px 16px;
-    text-decoration: none;
-    display: inline-block;
-    transition: 0.25s ease;
+    box-shadow: 0 9px 20px rgba(142, 68, 173, 0.20);
 }
 
 .btn-lavender:hover {
@@ -265,536 +315,724 @@ body {
     background: white;
     color: #8e44ad;
     border: 1px solid #d9c0f0;
-    border-radius: 14px;
-    font-weight: 750;
-    padding: 11px 16px;
-    text-decoration: none;
-    display: inline-block;
 }
 
 .btn-reset:hover {
     background: #f4eaff;
     color: #7b3fb2;
+    transform: translateY(-2px);
 }
 
+/* ORDER CARD */
 .card-lavender {
-    border: none;
-    border-radius: 22px;
-    background: #ffffff;
-    box-shadow: 0 8px 22px rgba(111, 66, 193, 0.14);
-    transition: 0.3s;
-    height: 100%;
     border: 1px solid #eadcff;
+    border-radius: 24px;
+    background: #ffffff;
+    box-shadow: 0 12px 30px rgba(142, 68, 173, 0.10);
+    transition: 0.28s ease;
+    height: 100%;
     overflow: hidden;
 }
 
 .card-lavender:hover {
     transform: translateY(-5px);
-    box-shadow: 0 12px 28px rgba(111, 66, 193, 0.22);
+    box-shadow: 0 18px 38px rgba(142, 68, 173, 0.16);
 }
 
 .card-top {
-    background: #faf5ff;
-    padding: 18px;
+    background: linear-gradient(135deg, #fbf7ff, #f4eaff);
+    padding: 20px;
     border-bottom: 1px solid #eadcff;
+    position: relative;
+}
+
+.card-top::before {
+    content: "";
+    position: absolute;
+    width: 86px;
+    height: 86px;
+    border-radius: 50%;
+    background: rgba(181, 126, 220, .13);
+    right: -30px;
+    top: -30px;
+}
+
+.card-top-content {
+    position: relative;
+    z-index: 2;
 }
 
 .invoice-title {
-    color: #6f42c1;
-    font-weight: 850;
-    margin-bottom: 6px;
+    color: #6f2da8;
+    font-weight: 900;
+    margin-bottom: 10px;
+    font-size: 18px;
 }
 
 .customer-name {
-    font-weight: 800;
-    color: #4b2e63;
+    font-weight: 850;
+    color: #33223f;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .customer-email {
-    color: #777;
+    color: #81758d;
     font-size: 13px;
+    margin-top: 4px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .card-body-custom {
-    padding: 18px;
+    padding: 20px;
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+}
+
+.info-box {
+    background: #fcfbff;
+    border: 1px solid #f0e3ff;
+    border-radius: 16px;
+    padding: 12px;
 }
 
 .info-label {
-    color: #888;
-    font-size: 13px;
-    margin-bottom: 2px;
-    font-weight: 650;
+    color: #8d7a9b;
+    font-size: 12px;
+    margin-bottom: 4px;
+    font-weight: 750;
+    display: flex;
+    align-items: center;
+    gap: 7px;
 }
 
 .info-value {
-    font-weight: 750;
-    color: #333;
+    font-weight: 800;
+    color: #33223f;
+    line-height: 1.45;
 }
 
+/* BADGE */
 .badge-main {
     padding: 8px 13px;
     border-radius: 999px;
-    font-weight: 800;
-    display: inline-block;
+    font-weight: 850;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
     line-height: 1.5;
+    font-size: 12px;
 }
 
 .badge-purple-soft {
-    background: #eadcff;
-    color: #4b2a7a;
+    background: #f1e3ff;
+    color: #8e44ad;
 }
 
-.badge-blue-soft {
-    background: #dbeafe;
-    color: #1d4ed8;
+.badge-info-soft {
+    background: #f4eaff;
+    color: #7b3fb2;
 }
 
 .badge-green-soft {
-    background: #dcfce7;
-    color: #15803d;
+    background: #ecfdf5;
+    color: #047857;
 }
 
 .badge-warning-soft {
-    background: #fff3cd;
-    color: #856404;
+    background: #fff7ed;
+    color: #c2410c;
 }
 
 .badge-red-soft {
-    background: #fee2e2;
+    background: #fef2f2;
     color: #b91c1c;
 }
 
+/* PAYMENT */
 .payment-box {
-    background: #faf5ff;
+    background: #fbf7ff;
     border: 1px solid #eadcff;
-    border-radius: 16px;
-    padding: 14px;
-    margin-top: 12px;
+    border-radius: 18px;
+    padding: 15px;
+    margin-top: 14px;
+}
+
+.payment-title {
+    font-weight: 850;
+    color: #6f2da8;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .payment-row {
     display: flex;
     justify-content: space-between;
-    gap: 10px;
-    margin-bottom: 8px;
+    gap: 12px;
+    margin-bottom: 9px;
     font-size: 14px;
+    color: #5f526a;
 }
 
 .payment-row:last-child {
     margin-bottom: 0;
+    padding-top: 9px;
+    border-top: 1px dashed #dcc5ef;
 }
 
 .payment-row strong {
-    color: #120c2e;
+    color: #33223f;
+    white-space: nowrap;
+}
+
+.pending-note,
+.cash-note {
+    border-radius: 16px;
+    padding: 12px 13px;
+    font-size: 13px;
+    margin-top: 12px;
+    line-height: 1.55;
+    display: flex;
+    align-items: flex-start;
+    gap: 9px;
 }
 
 .pending-note {
-    background: #eef6ff;
-    border: 1px solid #cfe8ff;
-    color: #1d4ed8;
-    border-radius: 14px;
-    padding: 11px 13px;
-    font-size: 13px;
-    margin-top: 12px;
-    line-height: 1.5;
+    background: #f4eaff;
+    border: 1px solid #eadcff;
+    color: #7b3fb2;
 }
 
 .cash-note {
-    background: #f6eeff;
-    border: 1px solid #e4d2ff;
-    color: #6e41a8;
-    border-radius: 14px;
-    padding: 11px 13px;
+    background: #fff7ed;
+    border: 1px solid #fed7aa;
+    color: #c2410c;
+}
+
+/* BUTTON ACTION */
+.btn-action {
+    border-radius: 13px;
+    font-weight: 800;
+    padding: 8px 10px;
     font-size: 13px;
-    margin-top: 12px;
-    line-height: 1.5;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    text-decoration: none;
+    transition: .25s ease;
+    border: none;
 }
 
 .btn-update {
-    background: #7c4dff;
-    color: white;
-    border-radius: 12px;
-    font-weight: 700;
+    background: #f1e3ff;
+    color: #7b3fb2;
 }
 
 .btn-update:hover {
-    background: #5e35b1;
-    color: white;
+    background: #e4d0ff;
+    color: #6f2da8;
+    transform: translateY(-2px);
 }
 
 .btn-verify {
-    background: #16a34a;
-    color: white;
-    border-radius: 12px;
-    font-weight: 700;
+    background: #ecfdf5;
+    color: #047857;
 }
 
 .btn-verify:hover {
-    background: #15803d;
-    color: white;
+    background: #bbf7d0;
+    color: #065f46;
+    transform: translateY(-2px);
 }
 
 .btn-detail {
     background: white;
     color: #8e44ad;
     border: 1px solid #d9c0f0;
-    border-radius: 12px;
-    font-weight: 700;
 }
 
 .btn-detail:hover {
     background: #f4eaff;
     color: #7b3fb2;
+    transform: translateY(-2px);
 }
 
 .btn-delete {
-    background: #ef4444;
-    color: white;
-    border-radius: 12px;
-    font-weight: 700;
+    background: #fef2f2;
+    color: #b91c1c;
 }
 
 .btn-delete:hover {
-    background: #dc2626;
-    color: white;
+    background: #fecaca;
+    color: #991b1b;
+    transform: translateY(-2px);
 }
 
+/* EMPTY */
 .empty-box {
     background: white;
-    border-radius: 22px;
-    padding: 35px;
+    border-radius: 24px;
+    padding: 42px 24px;
     text-align: center;
-    box-shadow: 0 8px 22px rgba(111, 66, 193, 0.12);
+    box-shadow: 0 12px 30px rgba(142, 68, 173, 0.10);
     border: 1px solid #eadcff;
 }
 
+.empty-icon {
+    width: 62px;
+    height: 62px;
+    border-radius: 20px;
+    background: #f1e3ff;
+    color: #8e44ad;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+    margin-bottom: 16px;
+}
+
 .empty-box h5 {
-    color: #6f42c1;
-    font-weight: 850;
+    color: #6f2da8;
+    font-weight: 900;
+}
+
+.empty-box p {
+    color: #81758d;
+}
+
+/* RESPONSIVE */
+@media (max-width: 991px) {
+    .main-content {
+        margin-left: 0;
+        padding: 24px;
+    }
+
+    .page-title {
+        font-size: 28px;
+    }
 }
 
 @media (max-width: 768px) {
     .main-content {
-        padding: 20px;
+        padding: 18px;
     }
 
     .page-header {
-        padding: 22px;
+        padding: 24px;
+        border-radius: 24px;
+    }
+
+    .page-title {
+        font-size: 26px;
     }
 }
 </style>
+
 </head>
 
 <body>
 
-<div class="container-fluid">
-    <div class="row">
+<?php include "sidebar.php"; ?>
 
-        <div class="col-md-2 p-0">
-            <?php include "sidebar.php"; ?>
+<main class="main-content">
+
+    <!-- HEADER -->
+    <div class="page-header">
+        <div class="page-header-content">
+            <div class="header-icon">
+                <i class="fa-solid fa-box-open"></i>
+            </div>
+
+            <h2 class="page-title">Daftar Pesanan</h2>
+            <p class="page-subtitle">
+                Kelola pesanan, verifikasi pembayaran, update status, dan lihat detail transaksi The Four Label.
+            </p>
+        </div>
+    </div>
+
+    <!-- FILTER -->
+    <div class="filter-card">
+        <div class="filter-title">
+            <i class="fa-solid fa-filter"></i>
+            Filter Pesanan
         </div>
 
-        <div class="col-md-10 main-content">
+        <form method="GET">
+            <div class="row g-3 align-items-end">
 
-            <div class="page-header">
-                <h3>💜 Daftar Pesanan</h3>
-                <p>Kelola pesanan, verifikasi pembayaran, update status, dan lihat detail transaksi.</p>
+                <div class="col-md-8">
+                    <label class="form-label">Filter Berdasarkan Pelanggan</label>
+                    <select name="idPelanggan" class="form-select">
+                        <option value="">Tampilkan Semua Pelanggan</option>
+
+                        <?php while ($p = mysqli_fetch_assoc($dataPelanggan)) { ?>
+                            <option 
+                                value="<?= $p['idPelanggan']; ?>"
+                                <?= $idPelangganFilter == $p['idPelanggan'] ? 'selected' : ''; ?>>
+                                <?= htmlspecialchars($p['nama']); ?> - <?= htmlspecialchars($p['email']); ?>
+                            </option>
+                        <?php } ?>
+
+                    </select>
+                </div>
+
+                <div class="col-md-2">
+                    <button type="submit" class="btn-lavender w-100">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        Filter
+                    </button>
+                </div>
+
+                <div class="col-md-2">
+                    <a href="pesanan.php" class="btn-reset w-100">
+                        <i class="fa-solid fa-rotate-left"></i>
+                        Reset
+                    </a>
+                </div>
+
             </div>
+        </form>
+    </div>
 
-            <div class="filter-card">
-                <form method="GET">
-                    <div class="row g-3 align-items-end">
+    <!-- PESANAN -->
+    <div class="row g-4">
 
-                        <div class="col-md-8">
-                            <label class="form-label">Filter Berdasarkan Pelanggan</label>
-                            <select name="idPelanggan" class="form-select">
-                                <option value="">Tampilkan Semua Pelanggan</option>
+        <?php if (mysqli_num_rows($query) == 0) { ?>
 
-                                <?php while ($p = mysqli_fetch_assoc($dataPelanggan)) { ?>
-                                    <option 
-                                        value="<?= $p['idPelanggan']; ?>"
-                                        <?= $idPelangganFilter == $p['idPelanggan'] ? 'selected' : ''; ?>>
-                                        <?= htmlspecialchars($p['nama']); ?> - <?= htmlspecialchars($p['email']); ?>
-                                    </option>
-                                <?php } ?>
-
-                            </select>
-                        </div>
-
-                        <div class="col-md-2">
-                            <button type="submit" class="btn btn-lavender w-100">
-                                Filter
-                            </button>
-                        </div>
-
-                        <div class="col-md-2">
-                            <a href="pesanan.php" class="btn-reset w-100 text-center">
-                                Reset
-                            </a>
-                        </div>
-
-                    </div>
-                </form>
-            </div>
-
-            <div class="row g-4">
-
-                <?php if (mysqli_num_rows($query) == 0) { ?>
-
-                    <div class="col-12">
-                        <div class="empty-box">
-                            <h5>Belum ada pesanan</h5>
-                            <p class="text-muted mb-0">
-                                Pesanan customer akan muncul di halaman ini.
-                            </p>
-                        </div>
+            <div class="col-12">
+                <div class="empty-box">
+                    <div class="empty-icon">
+                        <i class="fa-regular fa-folder-open"></i>
                     </div>
 
-                <?php } ?>
+                    <h5>Belum ada pesanan</h5>
+                    <p class="mb-0">
+                        Pesanan customer akan muncul di halaman ini setelah pelanggan melakukan checkout.
+                    </p>
+                </div>
+            </div>
 
-                <?php while ($row = mysqli_fetch_assoc($query)) { ?>
+        <?php } ?>
 
-                    <?php
-                    $invoice = $row['nomorInvoice'];
+        <?php while ($row = mysqli_fetch_assoc($query)) { ?>
 
-                    if ($invoice == "" || $invoice == NULL) {
-                        $invoice = "#" . $row['idPesanan'];
-                    }
+            <?php
+            $invoice = $row['nomorInvoice'];
 
-                    $totalPesanan = (int) $row['total'];
-                    $totalBayar = (int) $row['totalBayar'];
-                    $totalPending = (int) $row['totalPending'];
-                    $isCashOrder = (int) $row['isCashOrder'];
+            if ($invoice == "" || $invoice == NULL) {
+                $invoice = "#" . $row['idPesanan'];
+            }
 
-                    $sisa = $totalPesanan - $totalBayar;
+            $totalPesanan = (int) $row['total'];
+            $totalBayar = (int) $row['totalBayar'];
+            $totalPending = (int) $row['totalPending'];
+            $isCashOrder = (int) $row['isCashOrder'];
 
-                    if ($sisa < 0) {
-                        $sisa = 0;
-                    }
+            $sisa = $totalPesanan - $totalBayar;
 
-                    $isLunas = ($totalBayar >= $totalPesanan && $totalPesanan > 0);
+            if ($sisa < 0) {
+                $sisa = 0;
+            }
 
-                    if ($isLunas) {
-                        $statusBayarText = "Lunas";
-                        $statusBayarClass = "badge-green-soft";
-                    } elseif ($totalPending > 0) {
-                        $statusBayarText = "Menunggu Verifikasi";
-                        $statusBayarClass = "badge-blue-soft";
-                    } elseif ($isCashOrder > 0) {
-                        $statusBayarText = "Cash di Toko";
-                        $statusBayarClass = "badge-purple-soft";
-                    } elseif ($totalBayar > 0) {
-                        $statusBayarText = "DP / Belum Lunas";
-                        $statusBayarClass = "badge-warning-soft";
-                    } else {
-                        $statusBayarText = "Belum Bayar";
-                        $statusBayarClass = "badge-warning-soft";
-                    }
-                    ?>
+            $isLunas = ($totalBayar >= $totalPesanan && $totalPesanan > 0);
 
-                    <div class="col-md-6 col-lg-4">
+            if ($isLunas) {
+                $statusBayarText = "Lunas";
+                $statusBayarClass = "badge-green-soft";
+                $statusBayarIcon = "fa-circle-check";
+            } elseif ($totalPending > 0) {
+                $statusBayarText = "Menunggu Verifikasi";
+                $statusBayarClass = "badge-info-soft";
+                $statusBayarIcon = "fa-clock";
+            } elseif ($isCashOrder > 0) {
+                $statusBayarText = "Cash di Toko";
+                $statusBayarClass = "badge-purple-soft";
+                $statusBayarIcon = "fa-store";
+            } elseif ($totalBayar > 0) {
+                $statusBayarText = "DP / Belum Lunas";
+                $statusBayarClass = "badge-warning-soft";
+                $statusBayarIcon = "fa-hourglass-half";
+            } else {
+                $statusBayarText = "Belum Bayar";
+                $statusBayarClass = "badge-warning-soft";
+                $statusBayarIcon = "fa-circle-exclamation";
+            }
+            ?>
 
-                        <div class="card card-lavender">
+            <div class="col-md-6 col-lg-4">
 
-                            <div class="card-top">
-                                <h5 class="invoice-title">
-                                    <?= htmlspecialchars($invoice); ?>
-                                </h5>
+                <div class="card-lavender">
 
-                                <div class="customer-name">
-                                    <?= htmlspecialchars($row['namaPelanggan']); ?>
+                    <div class="card-top">
+                        <div class="card-top-content">
+                            <h5 class="invoice-title">
+                                <i class="fa-solid fa-file-invoice"></i>
+                                <?= htmlspecialchars($invoice); ?>
+                            </h5>
+
+                            <div class="customer-name">
+                                <i class="fa-solid fa-user"></i>
+                                <?= htmlspecialchars($row['namaPelanggan']); ?>
+                            </div>
+
+                            <div class="customer-email">
+                                <i class="fa-solid fa-envelope"></i>
+                                <?= htmlspecialchars($row['email']); ?>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card-body-custom">
+
+                        <div class="info-grid">
+
+                            <div class="info-box">
+                                <div class="info-label">
+                                    <i class="fa-solid fa-phone"></i>
+                                    No HP
                                 </div>
-
-                                <div class="customer-email">
-                                    <?= htmlspecialchars($row['email']); ?>
+                                <div class="info-value">
+                                    <?= !empty($row['noHp']) ? htmlspecialchars($row['noHp']) : "-"; ?>
                                 </div>
                             </div>
 
-                            <div class="card-body-custom">
+                            <div class="info-box">
+                                <div class="info-label">
+                                    <i class="fa-solid fa-shirt"></i>
+                                    Jenis Pesanan
+                                </div>
+                                <div class="info-value">
+                                    <?= htmlspecialchars(jenisPesananText($row['jenisPesanan'])); ?>
+                                </div>
+                            </div>
 
-                                <div class="mb-2">
-                                    <div class="info-label">No HP</div>
-                                    <div class="info-value">
-                                        <?= !empty($row['noHp']) ? htmlspecialchars($row['noHp']) : "-"; ?>
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <div class="info-box h-100">
+                                        <div class="info-label">
+                                            <i class="fa-solid fa-calendar-day"></i>
+                                            Tanggal
+                                        </div>
+                                        <div class="info-value">
+                                            <?= formatTanggal($row['tanggal']); ?>
+                                        </div>
                                     </div>
                                 </div>
 
-                                <div class="mb-2">
-                                    <div class="info-label">Jenis Pesanan</div>
-                                    <div class="info-value">
-                                        <?= htmlspecialchars(jenisPesananText($row['jenisPesanan'])); ?>
+                                <div class="col-6">
+                                    <div class="info-box h-100">
+                                        <div class="info-label">
+                                            <i class="fa-solid fa-calendar-check"></i>
+                                            Deadline
+                                        </div>
+                                        <div class="info-value">
+                                            <?= formatTanggal($row['deadlineSelesai'] ?? null); ?>
+                                        </div>
                                     </div>
                                 </div>
+                            </div>
 
-                                <div class="mb-2">
-                                    <div class="info-label">Tanggal Pesan</div>
-                                    <div class="info-value">
-                                        <?= formatTanggal($row['tanggal']); ?>
-                                    </div>
+                            <div class="info-box">
+                                <div class="info-label">
+                                    <i class="fa-solid fa-location-dot"></i>
+                                    Alamat Kirim
                                 </div>
-
-                                <div class="mb-2">
-                                    <div class="info-label">Deadline Selesai</div>
-                                    <div class="info-value">
-                                        <?= formatTanggal($row['deadlineSelesai'] ?? null); ?>
-                                    </div>
+                                <div class="info-value">
+                                    <?= !empty($row['alamat_kirim']) ? htmlspecialchars($row['alamat_kirim']) : "-"; ?>
                                 </div>
+                            </div>
 
-                                <div class="mb-2">
-                                    <div class="info-label">Alamat Kirim</div>
-                                    <div class="info-value">
-                                        <?= !empty($row['alamat_kirim']) ? htmlspecialchars($row['alamat_kirim']) : "-"; ?>
-                                    </div>
-                                </div>
-
-                                <div class="row">
-                                    <div class="col-6 mb-2">
-                                        <div class="info-label">Jasa Kirim</div>
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <div class="info-box h-100">
+                                        <div class="info-label">
+                                            <i class="fa-solid fa-truck"></i>
+                                            Jasa Kirim
+                                        </div>
                                         <div class="info-value">
                                             <?= !empty($row['jasa_kirim']) ? htmlspecialchars($row['jasa_kirim']) : "-"; ?>
                                         </div>
                                     </div>
+                                </div>
 
-                                    <div class="col-6 mb-2">
-                                        <div class="info-label">Ongkir</div>
+                                <div class="col-6">
+                                    <div class="info-box h-100">
+                                        <div class="info-label">
+                                            <i class="fa-solid fa-money-bill"></i>
+                                            Ongkir
+                                        </div>
                                         <div class="info-value">
                                             Rp <?= number_format($row['ongkir'] ?? 0, 0, ',', '.'); ?>
                                         </div>
                                     </div>
                                 </div>
-
-                                <div class="mb-3">
-                                    <div class="info-label">Status Pesanan</div>
-                                    <span class="badge-main <?= badgeStatusPesanan($row['status']); ?>">
-                                        <?= htmlspecialchars($row['status']); ?>
-                                    </span>
-                                </div>
-
-                                <div class="payment-box">
-                                    <div class="payment-row">
-                                        <span>Total</span>
-                                        <strong>Rp <?= number_format($totalPesanan, 0, ',', '.'); ?></strong>
-                                    </div>
-
-                                    <div class="payment-row">
-                                        <span>Dibayar</span>
-                                        <strong>Rp <?= number_format($totalBayar, 0, ',', '.'); ?></strong>
-                                    </div>
-
-                                    <?php if ($totalPending > 0) { ?>
-                                        <div class="payment-row">
-                                            <span>Pending</span>
-                                            <strong>Rp <?= number_format($totalPending, 0, ',', '.'); ?></strong>
-                                        </div>
-                                    <?php } ?>
-
-                                    <div class="payment-row">
-                                        <span>Sisa</span>
-                                        <strong>Rp <?= number_format($sisa, 0, ',', '.'); ?></strong>
-                                    </div>
-                                </div>
-
-                                <div class="mt-3">
-                                    <span class="badge-main <?= $statusBayarClass; ?>">
-                                        <?= htmlspecialchars($statusBayarText); ?>
-                                    </span>
-                                </div>
-
-                                <?php if ($totalPending > 0) { ?>
-                                    <div class="pending-note">
-                                        Customer sudah upload bukti pembayaran.
-                                        Silakan klik <b>Verifikasi</b> setelah bukti dicek.
-                                    </div>
-                                <?php } ?>
-
-                                <?php if ($isCashOrder > 0 && !$isLunas) { ?>
-                                    <div class="cash-note">
-                                        Pesanan ini menggunakan <b>Cash di Toko</b>.
-                                        Pembayaran dikonfirmasi saat customer ambil barang.
-                                    </div>
-                                <?php } ?>
-
-                                <div class="row g-2 mt-3">
-
-                                    <?php if ($totalPending > 0) { ?>
-                                        <div class="col-6">
-                                            <a 
-                                                href="verifikasi-pembayaran.php?id=<?= $row['idPesanan']; ?>"
-                                                class="btn btn-verify btn-sm w-100"
-                                                onclick="return confirm('Verifikasi pembayaran pesanan ini?')">
-                                                Verifikasi
-                                            </a>
-                                        </div>
-
-                                        <div class="col-6">
-                                            <a 
-                                                href="detail-pesanan.php?id=<?= $row['idPesanan']; ?>"
-                                                class="btn btn-detail btn-sm w-100">
-                                                Detail
-                                            </a>
-                                        </div>
-
-                                        <div class="col-6">
-                                            <a 
-                                                href="update-status.php?id=<?= $row['idPesanan']; ?>"
-                                                class="btn btn-update btn-sm w-100">
-                                                Update
-                                            </a>
-                                        </div>
-
-                                        <div class="col-6">
-                                            <a 
-                                                href="hapus-pesanan.php?id=<?= $row['idPesanan']; ?>"
-                                                class="btn btn-delete btn-sm w-100"
-                                                onclick="return confirm('Yakin ingin menghapus pesanan ini? Data pembayaran dan detail pesanan juga akan terhapus.')">
-                                                Hapus
-                                            </a>
-                                        </div>
-                                    <?php } else { ?>
-
-                                        <div class="col-4">
-                                            <a 
-                                                href="update-status.php?id=<?= $row['idPesanan']; ?>"
-                                                class="btn btn-update btn-sm w-100">
-                                                Update
-                                            </a>
-                                        </div>
-
-                                        <div class="col-4">
-                                            <a 
-                                                href="detail-pesanan.php?id=<?= $row['idPesanan']; ?>"
-                                                class="btn btn-detail btn-sm w-100">
-                                                Detail
-                                            </a>
-                                        </div>
-
-                                        <div class="col-4">
-                                            <a 
-                                                href="hapus-pesanan.php?id=<?= $row['idPesanan']; ?>"
-                                                class="btn btn-delete btn-sm w-100"
-                                                onclick="return confirm('Yakin ingin menghapus pesanan ini? Data pembayaran dan detail pesanan juga akan terhapus.')">
-                                                Hapus
-                                            </a>
-                                        </div>
-
-                                    <?php } ?>
-
-                                </div>
-
                             </div>
+
+                            <div class="info-box">
+                                <div class="info-label">
+                                    <i class="fa-solid fa-circle-info"></i>
+                                    Status Pesanan
+                                </div>
+
+                                <span class="badge-main <?= badgeStatusPesanan($row['status']); ?>">
+                                    <i class="fa-solid fa-circle"></i>
+                                    <?= htmlspecialchars($row['status']); ?>
+                                </span>
+                            </div>
+
+                        </div>
+
+                        <div class="payment-box">
+                            <div class="payment-title">
+                                <i class="fa-solid fa-wallet"></i>
+                                Ringkasan Pembayaran
+                            </div>
+
+                            <div class="payment-row">
+                                <span>Total</span>
+                                <strong>Rp <?= number_format($totalPesanan, 0, ',', '.'); ?></strong>
+                            </div>
+
+                            <div class="payment-row">
+                                <span>Dibayar</span>
+                                <strong>Rp <?= number_format($totalBayar, 0, ',', '.'); ?></strong>
+                            </div>
+
+                            <?php if ($totalPending > 0) { ?>
+                                <div class="payment-row">
+                                    <span>Pending</span>
+                                    <strong>Rp <?= number_format($totalPending, 0, ',', '.'); ?></strong>
+                                </div>
+                            <?php } ?>
+
+                            <div class="payment-row">
+                                <span>Sisa</span>
+                                <strong>Rp <?= number_format($sisa, 0, ',', '.'); ?></strong>
+                            </div>
+                        </div>
+
+                        <div class="mt-3">
+                            <span class="badge-main <?= $statusBayarClass; ?>">
+                                <i class="fa-solid <?= $statusBayarIcon; ?>"></i>
+                                <?= htmlspecialchars($statusBayarText); ?>
+                            </span>
+                        </div>
+
+                        <?php if ($totalPending > 0) { ?>
+                            <div class="pending-note">
+                                <i class="fa-solid fa-circle-info"></i>
+                                <span>
+                                    Customer sudah upload bukti pembayaran. Silakan klik <b>Verifikasi</b> setelah bukti dicek.
+                                </span>
+                            </div>
+                        <?php } ?>
+
+                        <?php if ($isCashOrder > 0 && !$isLunas) { ?>
+                            <div class="cash-note">
+                                <i class="fa-solid fa-store"></i>
+                                <span>
+                                    Pesanan ini menggunakan <b>Cash di Toko</b>. Pembayaran dikonfirmasi saat customer ambil barang.
+                                </span>
+                            </div>
+                        <?php } ?>
+
+                        <div class="row g-2 mt-3">
+
+                            <?php if ($totalPending > 0) { ?>
+
+                                <div class="col-6">
+                                    <a 
+                                        href="verifikasi-pembayaran.php?id=<?= $row['idPesanan']; ?>"
+                                        class="btn-action btn-verify w-100"
+                                        onclick="return confirm('Verifikasi pembayaran pesanan ini?')">
+                                        <i class="fa-solid fa-circle-check"></i>
+                                        Verifikasi
+                                    </a>
+                                </div>
+
+                                <div class="col-6">
+                                    <a 
+                                        href="detail-pesanan.php?id=<?= $row['idPesanan']; ?>"
+                                        class="btn-action btn-detail w-100">
+                                        <i class="fa-solid fa-eye"></i>
+                                        Detail
+                                    </a>
+                                </div>
+
+                                <div class="col-6">
+                                    <a 
+                                        href="update-status.php?id=<?= $row['idPesanan']; ?>"
+                                        class="btn-action btn-update w-100">
+                                        <i class="fa-solid fa-pen-to-square"></i>
+                                        Update
+                                    </a>
+                                </div>
+
+                                <div class="col-6">
+                                    <a 
+                                        href="hapus-pesanan.php?id=<?= $row['idPesanan']; ?>"
+                                        class="btn-action btn-delete w-100"
+                                        onclick="return confirm('Yakin ingin menghapus pesanan ini? Data pembayaran dan detail pesanan juga akan terhapus.')">
+                                        <i class="fa-solid fa-trash"></i>
+                                        Hapus
+                                    </a>
+                                </div>
+
+                            <?php } else { ?>
+
+                                <div class="col-4">
+                                    <a 
+                                        href="update-status.php?id=<?= $row['idPesanan']; ?>"
+                                        class="btn-action btn-update w-100">
+                                        <i class="fa-solid fa-pen-to-square"></i>
+                                        Update
+                                    </a>
+                                </div>
+
+                                <div class="col-4">
+                                    <a 
+                                        href="detail-pesanan.php?id=<?= $row['idPesanan']; ?>"
+                                        class="btn-action btn-detail w-100">
+                                        <i class="fa-solid fa-eye"></i>
+                                        Detail
+                                    </a>
+                                </div>
+
+                                <div class="col-4">
+                                    <a 
+                                        href="hapus-pesanan.php?id=<?= $row['idPesanan']; ?>"
+                                        class="btn-action btn-delete w-100"
+                                        onclick="return confirm('Yakin ingin menghapus pesanan ini? Data pembayaran dan detail pesanan juga akan terhapus.')">
+                                        <i class="fa-solid fa-trash"></i>
+                                        Hapus
+                                    </a>
+                                </div>
+
+                            <?php } ?>
 
                         </div>
 
                     </div>
 
-                <?php } ?>
+                </div>
 
             </div>
 
-        </div>
+        <?php } ?>
 
     </div>
-</div>
+
+</main>
 
 </body>
 </html>

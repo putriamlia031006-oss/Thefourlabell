@@ -543,23 +543,35 @@ body {
                                     Transfer Bank BCA
                                 </option>
 
-                                <option value="Transfer SeaBank" data-info="Transfer SeaBank: 9876543210 a.n. The Four Label">
+                                <option value="Transfer Bank MANDIRI" data-info="Transfer BCA: 1234567890 a.n. The Four Label">
+                                    Transfer Bank MANDIRI
+                                </option>
+
+                                <option value="Transfer Bank BRI" data-info="Transfer BCA: 1234567890 a.n. The Four Label">
+                                    Transfer Bank BRI
+                                </option>
+
+                                <option value="Transfer Bank BNI" data-info="Transfer BCA: 1234567890 a.n. The Four Label">
+                                    Transfer Bank BNI
+                                </option>
+
+                                <option value="Transfer SeaBank" data-info="Transfer BCA: 1234567890 a.n. The Four Label">
                                     Transfer SeaBank
                                 </option>
 
-                                <option value="DANA" data-info="DANA: 081234567890 a.n. The Four Label">
+                                <option value="DANA" data-info="Transfer BCA: 1234567890 a.n. The Four Label">
                                     DANA
                                 </option>
 
-                                <option value="OVO" data-info="OVO: 081234567890 a.n. The Four Label">
+                                <option value="OVO" data-info="Transfer BCA: 1234567890 a.n. The Four Label">
                                     OVO
                                 </option>
 
-                                <option value="GoPay" data-info="GoPay: 081234567890 a.n. The Four Label">
+                                <option value="GoPay" data-info="Transfer BCA: 1234567890 a.n. The Four Label">
                                     GoPay
                                 </option>
 
-                                <option value="ShopeePay" data-info="ShopeePay: 081234567890 a.n. The Four Label">
+                                <option value="ShopeePay" data-info="Transfer BCA: 1234567890 a.n. The Four Label">
                                     ShopeePay
                                 </option>
                             </select>

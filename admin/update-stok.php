@@ -1,5 +1,5 @@
 <?php
-
+include "auth.php";
 require "../koneksi.php";
 
 $id=$_GET['id'];

@@ -1,5 +1,5 @@
 <?php
-
+include "auth.php";
 require "../koneksi.php";
 
 /* ambil kategori */

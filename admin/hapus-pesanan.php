@@ -1,5 +1,6 @@
 <?php
 session_start();
+include "auth.php";
 require "../koneksi.php";
 
 if (!isset($_GET['id'])) {

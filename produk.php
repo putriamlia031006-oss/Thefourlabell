@@ -1,5 +1,5 @@
 <?php
-
+include "auth-pelanggan.php";
 require "koneksi.php";
 
 /* =====================

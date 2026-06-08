@@ -1,5 +1,6 @@
 <?php
 session_start();
+include "auth-pelanggan.php";
 require "koneksi.php";
 
 /* CEK LOGIN */

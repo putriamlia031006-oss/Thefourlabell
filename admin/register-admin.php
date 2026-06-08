@@ -1,5 +1,6 @@
 <?php
 session_start();
+include "auth-pelanggan.php";
 require "../koneksi.php";
 
 if (!isset($_SESSION['idUser']) || $_SESSION['role'] != 'admin') {

@@ -1,7 +1,5 @@
 <?php
-if (session_status() === PHP_SESSION_NONE && !headers_sent()) {
-    session_start();
-}
+include "auth-pelanggan.php";
 require "koneksi.php";
 
 
