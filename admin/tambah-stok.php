@@ -3,24 +3,47 @@ require "auth.php";
 require "../koneksi.php";
 
 /* =========================
-   AMBIL PRODUK YANG BELUM ADA STOK
+   CEK ID STOK
 ========================= */
-$produk = mysqli_query(
+if (!isset($_GET['id'])) {
+    echo "<script>
+        alert('ID stok tidak ditemukan.');
+        window.location='stok.php';
+    </script>";
+    exit;
+}
+
+$idStok = mysqli_real_escape_string($koneksi, $_GET['id']);
+
+/* =========================
+   AMBIL DATA STOK + PRODUK
+========================= */
+$query = mysqli_query(
     $koneksi,
     "SELECT 
-        produk.idProduk,
+        stok_produk.*,
         produk.namaProduk,
         produk.harga,
         produk.gambar
-    FROM produk
-    WHERE produk.idProduk NOT IN (
-        SELECT idProduk FROM stok_produk
-    )
-    ORDER BY produk.namaProduk ASC"
+    FROM stok_produk
+    JOIN produk
+        ON stok_produk.idProduk = produk.idProduk
+    WHERE stok_produk.idStok = '$idStok'
+    LIMIT 1"
 );
 
-if (!$produk) {
-    die("Query produk error: " . mysqli_error($koneksi));
+if (!$query) {
+    die("Query stok error: " . mysqli_error($koneksi));
+}
+
+$data = mysqli_fetch_assoc($query);
+
+if (!$data) {
+    echo "<script>
+        alert('Data stok tidak ditemukan.');
+        window.location='stok.php';
+    </script>";
+    exit;
 }
 
 /* =========================
@@ -48,56 +71,42 @@ function tampilGambarProduk($namaGambar) {
     }
 }
 
+$gambar = tampilGambarProduk($data['gambar']);
+
 $error = "";
 
 /* =========================
-   SIMPAN DATA STOK
+   PROSES TAMBAH STOK
 ========================= */
 if (isset($_POST['simpan'])) {
 
-    $idProduk = mysqli_real_escape_string($koneksi, $_POST['idProduk']);
-    $jumlahStok = mysqli_real_escape_string($koneksi, $_POST['jumlahStok']);
-    $satuan = "pcs";
+    $stokTambah = mysqli_real_escape_string($koneksi, $_POST['stokTambah']);
 
-    if ($idProduk == "" || $jumlahStok === "") {
-        $error = "Produk dan jumlah stok wajib diisi.";
-    } elseif (!is_numeric($jumlahStok) || $jumlahStok < 0) {
-        $error = "Jumlah stok harus berupa angka dan tidak boleh negatif.";
+    if ($stokTambah === "") {
+        $error = "Jumlah stok tambahan wajib diisi.";
+    } elseif (!is_numeric($stokTambah) || $stokTambah <= 0) {
+        $error = "Jumlah stok tambahan harus lebih dari 0.";
     } else {
 
-        /* CEK APAKAH PRODUK SUDAH PUNYA STOK */
-        $cek = mysqli_query(
+        $stokLama = (int) $data['jumlahStok'];
+        $stokTambah = (int) $stokTambah;
+        $stokBaru = $stokLama + $stokTambah;
+
+        $update = mysqli_query(
             $koneksi,
-            "SELECT * FROM stok_produk 
-             WHERE idProduk = '$idProduk' 
-             LIMIT 1"
+            "UPDATE stok_produk SET
+                jumlahStok = '$stokBaru'
+             WHERE idStok = '$idStok'"
         );
 
-        if (!$cek) {
-            die("Query cek stok error: " . mysqli_error($koneksi));
-        }
-
-        if (mysqli_num_rows($cek) > 0) {
-            $error = "Produk ini sudah memiliki data stok. Silakan edit stok produk tersebut.";
+        if ($update) {
+            echo "<script>
+                alert('Stok berhasil ditambahkan.');
+                window.location='stok.php';
+            </script>";
+            exit;
         } else {
-
-            $insert = mysqli_query(
-                $koneksi,
-                "INSERT INTO stok_produk
-                (idProduk, jumlahStok, satuan)
-                VALUES
-                ('$idProduk', '$jumlahStok', '$satuan')"
-            );
-
-            if ($insert) {
-                echo "<script>
-                    alert('Data stok berhasil ditambahkan.');
-                    window.location='stok.php';
-                </script>";
-                exit;
-            } else {
-                $error = "Gagal menambahkan stok: " . mysqli_error($koneksi);
-            }
+            $error = "Gagal menambahkan stok: " . mysqli_error($koneksi);
         }
     }
 }
@@ -133,14 +142,12 @@ body {
     color: #33223f;
 }
 
-/* MAIN CONTENT */
 .main-content {
     margin-left: 240px;
     min-height: 100vh;
     padding: 34px;
 }
 
-/* HEADER */
 .page-header {
     background: linear-gradient(135deg, #b57edc, #9d7ad6, #8e44ad);
     border-radius: 28px;
@@ -205,7 +212,6 @@ body {
     font-weight: 500;
 }
 
-/* FORM CARD */
 .form-card {
     background: white;
     border: 1px solid #eadcff;
@@ -242,8 +248,7 @@ body {
     margin-bottom: 8px;
 }
 
-.form-control,
-.form-select {
+.form-control {
     height: 50px;
     border-radius: 15px;
     border: 1px solid #eadcff;
@@ -252,8 +257,7 @@ body {
     font-weight: 600;
 }
 
-.form-control:focus,
-.form-select:focus {
+.form-control:focus {
     border-color: #b57edc;
     box-shadow: 0 0 0 4px rgba(181, 126, 220, 0.17);
 }
@@ -270,18 +274,7 @@ body {
     margin-top: 6px;
 }
 
-/* PRODUCT SELECT INFO */
-.product-option-note {
-    background: #fbf7ff;
-    border: 1px solid #eadcff;
-    border-radius: 18px;
-    padding: 15px;
-    color: #5f526a;
-    font-size: 14px;
-    line-height: 1.6;
-}
-
-.info-card {
+.preview-card {
     background: #fbf7ff;
     border: 1px solid #eadcff;
     border-radius: 22px;
@@ -289,7 +282,7 @@ body {
     height: 100%;
 }
 
-.info-title {
+.preview-title {
     color: #6f2da8;
     font-weight: 900;
     margin-bottom: 14px;
@@ -298,26 +291,58 @@ body {
     gap: 8px;
 }
 
-.info-list {
+.product-preview {
     display: flex;
-    flex-direction: column;
-    gap: 12px;
+    gap: 14px;
+    align-items: center;
 }
 
-.info-item {
-    display: flex;
-    gap: 10px;
-    color: #5f526a;
-    line-height: 1.5;
-    font-size: 14px;
+.product-image {
+    width: 100px;
+    height: 100px;
+    border-radius: 22px;
+    object-fit: cover;
+    border: 1px solid #eadcff;
+    background: #f4eaff;
+    box-shadow: 0 8px 18px rgba(142, 68, 173, 0.10);
 }
 
-.info-item i {
+.no-image {
+    width: 100px;
+    height: 100px;
+    border-radius: 22px;
+    background: #f4eaff;
     color: #8e44ad;
-    margin-top: 4px;
+    border: 1px dashed #c9a7ec;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
 }
 
-/* BUTTON */
+.product-name {
+    font-weight: 900;
+    color: #33223f;
+    margin-bottom: 4px;
+}
+
+.product-price {
+    color: #7b3fb2;
+    font-weight: 900;
+}
+
+.stock-info {
+    margin-top: 14px;
+    padding: 12px 14px;
+    border-radius: 16px;
+    font-weight: 800;
+    background: #f1e3ff;
+    color: #7b3fb2;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
 .btn-lavender,
 .btn-reset {
     border-radius: 15px;
@@ -360,16 +385,6 @@ body {
     font-weight: 700;
 }
 
-.empty-product-box {
-    background: #fff7ed;
-    color: #c2410c;
-    border: 1px solid #fed7aa;
-    border-radius: 18px;
-    padding: 18px;
-    font-weight: 700;
-}
-
-/* RESPONSIVE */
 @media (max-width: 991px) {
     .main-content {
         margin-left: 0;
@@ -396,6 +411,11 @@ body {
         width: 100%;
         justify-content: center;
     }
+
+    .product-preview {
+        flex-direction: column;
+        align-items: flex-start;
+    }
 }
 </style>
 
@@ -407,7 +427,6 @@ body {
 
 <main class="main-content">
 
-    <!-- HEADER -->
     <div class="page-header">
         <div class="page-header-content">
             <div class="header-icon">
@@ -416,7 +435,7 @@ body {
 
             <h2 class="page-title">Tambah Stok Produk</h2>
             <p class="page-subtitle">
-                Tambahkan data stok untuk produk ready stock yang belum memiliki stok.
+                Tambahkan jumlah stok baru pada produk ready stock yang sudah tersedia.
             </p>
         </div>
     </div>
@@ -425,7 +444,7 @@ body {
 
         <div class="form-card-header">
             <h4>Form Tambah Stok</h4>
-            <p>Pilih produk, masukkan jumlah stok, lalu simpan ke sistem.</p>
+            <p>Jumlah stok baru akan ditambahkan ke stok lama secara otomatis.</p>
         </div>
 
         <div class="form-card-body">
@@ -439,132 +458,118 @@ body {
 
             <div class="row g-4">
 
-                <!-- FORM -->
                 <div class="col-lg-7">
 
-                    <?php if (mysqli_num_rows($produk) > 0) { ?>
+                    <form method="POST">
 
-                        <form method="POST">
+                        <div class="mb-3">
+                            <label class="form-label">Nama Produk</label>
 
-                            <div class="mb-3">
-                                <label class="form-label">Produk</label>
-
-                                <select name="idProduk" class="form-select" required>
-                                    <option value="">Pilih produk</option>
-
-                                    <?php while ($p = mysqli_fetch_assoc($produk)) { ?>
-                                        <option value="<?= $p['idProduk']; ?>">
-                                            <?= htmlspecialchars($p['namaProduk']); ?> - Rp <?= number_format($p['harga'], 0, ',', '.'); ?>
-                                        </option>
-                                    <?php } ?>
-                                </select>
-
-                                <div class="input-note">
-                                    Produk yang muncul adalah produk yang belum memiliki data stok.
-                                </div>
-                            </div>
-
-                            <div class="mb-3">
-                                <label class="form-label">Jumlah Stok</label>
-
-                                <input 
-                                    type="number"
-                                    name="jumlahStok"
-                                    class="form-control"
-                                    min="0"
-                                    placeholder="Masukkan jumlah stok"
-                                    required>
-
-                                <div class="input-note">
-                                    Isi angka stok awal. Contoh: 10, 25, 100.
-                                </div>
-                            </div>
-
-                            <div class="mb-4">
-                                <label class="form-label">Satuan</label>
-
-                                <input 
-                                    type="text"
-                                    class="form-control"
-                                    value="pcs"
-                                    readonly>
-
-                                <div class="input-note">
-                                    Satuan stok otomatis menggunakan pcs dan tidak bisa diedit.
-                                </div>
-                            </div>
-
-                            <div class="d-flex gap-2 flex-wrap">
-                                <button type="submit" name="simpan" class="btn-lavender">
-                                    <i class="fa-solid fa-floppy-disk"></i>
-                                    Simpan Stok
-                                </button>
-
-                                <a href="stok.php" class="btn-reset">
-                                    <i class="fa-solid fa-arrow-left"></i>
-                                    Kembali
-                                </a>
-                            </div>
-
-                        </form>
-
-                    <?php } else { ?>
-
-                        <div class="empty-product-box">
-                            <i class="fa-solid fa-circle-info"></i>
-                            Semua produk sudah memiliki data stok. Silakan gunakan fitur Edit pada halaman Data Stok.
+                            <input 
+                                type="text"
+                                class="form-control"
+                                value="<?= htmlspecialchars($data['namaProduk']); ?>"
+                                readonly>
                         </div>
 
-                        <div class="mt-3">
+                        <div class="mb-3">
+                            <label class="form-label">Stok Saat Ini</label>
+
+                            <input 
+                                type="text"
+                                class="form-control"
+                                value="<?= htmlspecialchars($data['jumlahStok']); ?> <?= htmlspecialchars($data['satuan']); ?>"
+                                readonly>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Jumlah Stok yang Ditambahkan</label>
+
+                            <input 
+                                type="number"
+                                name="stokTambah"
+                                class="form-control"
+                                min="1"
+                                placeholder="Contoh: 10"
+                                required>
+
+                            <div class="input-note">
+                                Masukkan jumlah stok tambahan. Contoh: jika stok saat ini 5 dan ditambah 10, maka stok menjadi 15.
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label">Satuan</label>
+
+                            <input 
+                                type="text"
+                                class="form-control"
+                                value="<?= htmlspecialchars($data['satuan']); ?>"
+                                readonly>
+
+                            <div class="input-note">
+                                Satuan tidak bisa diedit dari halaman ini.
+                            </div>
+                        </div>
+
+                        <div class="d-flex gap-2 flex-wrap">
+                            <button type="submit" name="simpan" class="btn-lavender">
+                                <i class="fa-solid fa-floppy-disk"></i>
+                                Simpan Tambahan Stok
+                            </button>
+
                             <a href="stok.php" class="btn-reset">
                                 <i class="fa-solid fa-arrow-left"></i>
-                                Kembali ke Data Stok
+                                Kembali
                             </a>
                         </div>
 
-                    <?php } ?>
+                    </form>
 
                 </div>
 
-                <!-- INFO -->
                 <div class="col-lg-5">
 
-                    <div class="info-card">
-                        <div class="info-title">
-                            <i class="fa-solid fa-circle-info"></i>
-                            Informasi Tambah Stok
+                    <div class="preview-card">
+                        <div class="preview-title">
+                            <i class="fa-solid fa-box"></i>
+                            Preview Produk
                         </div>
 
-                        <div class="info-list">
+                        <div class="product-preview">
+                            <?php if ($gambar != "") { ?>
+                                <img 
+                                    src="<?= htmlspecialchars($gambar); ?>"
+                                    class="product-image"
+                                    alt="<?= htmlspecialchars($data['namaProduk']); ?>">
+                            <?php } else { ?>
+                                <div class="no-image">
+                                    <i class="fa-regular fa-image"></i>
+                                </div>
+                            <?php } ?>
 
-                            <div class="info-item">
-                                <i class="fa-solid fa-check-circle"></i>
-                                <span>
-                                    Fitur ini hanya menambahkan stok untuk produk yang belum punya data stok.
-                                </span>
+                            <div>
+                                <div class="product-name">
+                                    <?= htmlspecialchars($data['namaProduk']); ?>
+                                </div>
+
+                                <div class="product-price">
+                                    Rp <?= number_format($data['harga'], 0, ',', '.'); ?>
+                                </div>
+
+                                <div class="input-note">
+                                    ID Stok: <?= htmlspecialchars($data['idStok']); ?>
+                                </div>
                             </div>
+                        </div>
 
-                            <div class="info-item">
-                                <i class="fa-solid fa-check-circle"></i>
-                                <span>
-                                    Kalau produk sudah punya stok, gunakan tombol Edit di halaman Data Stok.
-                                </span>
-                            </div>
-
-                            <div class="info-item">
-                                <i class="fa-solid fa-check-circle"></i>
-                                <span>
-                                    Satuan otomatis menggunakan pcs supaya data stok tetap konsisten.
-                                </span>
-                            </div>
-
-                            <div class="info-item">
-                                <i class="fa-solid fa-check-circle"></i>
-                                <span>
-                                    Jumlah stok tidak boleh negatif.
-                                </span>
-                            </div>
-
+                        <div>
+                            <span class="stock-info">
+                                <i class="fa-solid fa-boxes-stacked"></i>
+                                Stok sekarang: 
+                                <?= htmlspecialchars($data['jumlahStok']); ?> 
+                                <?= htmlspecialchars($data['satuan']); ?>
+                            </span>
                         </div>
                     </div>
 
