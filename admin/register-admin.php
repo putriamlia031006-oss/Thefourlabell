@@ -1,15 +1,12 @@
 <?php
 session_start();
-include "auth-pelanggan.php";
 require "../koneksi.php";
-
-if (!isset($_SESSION['idUser']) || $_SESSION['role'] != 'admin') {
-    header("Location: ../login.php");
-    exit;
-}
 
 $pesan = "";
 
+/* =========================
+   PROSES REGISTER ADMIN
+========================= */
 if (isset($_POST['register'])) {
 
     $nama = mysqli_real_escape_string($koneksi, trim($_POST['nama']));
@@ -25,12 +22,16 @@ if (isset($_POST['register'])) {
 
     } else {
 
-        $cek = mysqli_query(
+        $cekEmail = mysqli_query(
             $koneksi,
-            "SELECT * FROM user WHERE email='$email'"
+            "SELECT * FROM user WHERE email='$email' LIMIT 1"
         );
 
-        if (mysqli_num_rows($cek) > 0) {
+        if (!$cekEmail) {
+            die("Query cek email error: " . mysqli_error($koneksi));
+        }
+
+        if (mysqli_num_rows($cekEmail) > 0) {
 
             $pesan = "
             <div class='alert alert-danger'>
@@ -57,14 +58,19 @@ if (isset($_POST['register'])) {
             );
 
             if ($simpan) {
-                $pesan = "
-                <div class='alert alert-success'>
-                    Admin baru berhasil ditambahkan.
-                </div>";
+
+                echo "
+                <script>
+                    alert('Registrasi admin berhasil. Silakan login sebagai admin.');
+                    window.location='login.php';
+                </script>";
+                exit;
+
             } else {
+
                 $pesan = "
                 <div class='alert alert-danger'>
-                    Gagal menambahkan admin: " . mysqli_error($koneksi) . "
+                    Gagal registrasi admin: " . mysqli_error($koneksi) . "
                 </div>";
             }
         }
@@ -78,7 +84,7 @@ if (isset($_POST['register'])) {
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<title>Tambah Admin - The Four Label</title>
+<title>Registrasi Admin - The Four Label</title>
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
 
@@ -103,16 +109,23 @@ body {
 }
 
 .logo {
-    width: 70px;
-    height: 70px;
-    background: linear-gradient(135deg, #b57edc, #8e44ad);
-    color: white;
-    border-radius: 22px;
+    width: 80px;
+    height: 80px;
+    background: #fbf7ff;
+    border: 1px solid #eadcff;
+    border-radius: 24px;
     display: flex;
     align-items: center;
     justify-content: center;
     margin: 0 auto 18px;
-    font-size: 32px;
+    overflow: hidden;
+    box-shadow: 0 10px 24px rgba(142, 68, 173, 0.14);
+}
+
+.logo img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
 }
 
 .judul {
@@ -177,12 +190,14 @@ body {
 
 <div class="register-box">
 
-    <div class="logo">👤</div>
+    <div class="logo">
+        <img src="../assets/logo.png" alt="Logo The Four Label">
+    </div>
 
-    <h2 class="judul">Tambah Admin</h2>
+    <h2 class="judul">Registrasi Admin</h2>
 
     <p class="sub">
-        Halaman ini hanya untuk admin
+        Buat akun admin The Four Label
     </p>
 
     <?= $pesan; ?>
@@ -219,15 +234,15 @@ body {
                 required>
         </div>
 
-        <button name="register" class="btn btn-register">
-            Tambah Admin
+        <button type="submit" name="register" class="btn btn-register">
+            Registrasi Admin
         </button>
 
     </form>
 
     <div class="text-center mt-4">
-        <a href="index.php" class="link-kembali">
-            Kembali ke Dashboard
+        <a href="login.php" class="link-kembali">
+            Kembali ke Login Admin
         </a>
     </div>
 

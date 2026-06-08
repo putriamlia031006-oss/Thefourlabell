@@ -306,7 +306,7 @@ body {
     <div class="text-center mt-4 register-note">
         Belum punya akun admin?
         <a href="register-admin.php" class="link">
-            Registrasi Admin
+    Registrasi Admin
         </a>
     </div>
 
