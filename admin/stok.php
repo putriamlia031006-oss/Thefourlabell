@@ -449,6 +449,17 @@ body {
     transition: .25s ease;
 }
 
+.btn-add {
+    background: #f1e3ff;
+    color: #7b3fb2;
+}
+
+.btn-add:hover {
+    background: #e4d0ff;
+    color: #6f2da8;
+    transform: translateY(-2px);
+}
+
 .btn-edit {
     background: #fff7ed;
     color: #c2410c;
@@ -634,18 +645,13 @@ body {
 
     </div>
 
-    <!-- TOOLBAR -->
-    <div class="toolbar">
-        <div class="toolbar-title">
-            <h4>Daftar Stok</h4>
-            <p>Semua stok produk ditampilkan berdasarkan data terbaru.</p>
-        </div>
-
-        <a href="tambah-stok.php" class="btn-lavender">
-            <i class="fa-solid fa-plus"></i>
-            Tambah Stok
-        </a>
+   <!-- TOOLBAR -->
+<div class="toolbar">
+    <div class="toolbar-title">
+        <h4>Daftar Stok</h4>
+        <p>Semua stok produk ditampilkan berdasarkan data terbaru.</p>
     </div>
+</div>
 
     <!-- TABLE -->
     <div class="card-box">
@@ -748,6 +754,14 @@ body {
 
                                     <td data-label="Aksi">
     <div class="action-box">
+
+        <a 
+            href="tambah-stok.php?id=<?= $row['idStok']; ?>"
+            class="btn-action btn-add">
+            <i class="fa-solid fa-plus"></i>
+            Tambah
+        </a>
+
         <a 
             href="edit-stok.php?id=<?= $row['idStok']; ?>"
             class="btn-action btn-edit">
@@ -762,6 +776,7 @@ body {
             <i class="fa-solid fa-trash"></i>
             Hapus
         </a>
+
     </div>
 </td>
                                 </tr>
