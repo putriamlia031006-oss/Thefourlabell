@@ -62,8 +62,7 @@
                 <div class="footer-contact">
                     <i class="fa-solid fa-location-dot"></i>
                     <span>
-                        Jl. Contoh Alamat No. 12,<br>
-                        Tangerang, Banten
+                        Jl. Siswaraya, Belendung No. 12, Tangerang, Banten
                     </span>
                 </div>
 
