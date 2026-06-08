@@ -338,7 +338,7 @@ body {
                         Menampilkan daftar transaksi pesanan, customer, status, pengiriman, dan total pembayaran.
                     </p>
 
-                    <a href="laporan-transaksi.php" class="btn-outline-lavender">
+                    <a href="laporan-transaksi.php" class="btn-lavender">
                         <i class="fa-solid fa-eye"></i>
                         Buka Laporan Transaksi
                     </a>
