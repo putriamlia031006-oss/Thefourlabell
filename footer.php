@@ -29,10 +29,8 @@
                 </p>
 
                 <div class="social-links">
-                    <a href="#" title="Instagram"><i class="fa-brands fa-instagram"></i></a>
-                    <a href="#" title="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
-                    <a href="#" title="TikTok"><i class="fa-brands fa-tiktok"></i></a>
-                    <a href="#" title="Email"><i class="fa-solid fa-envelope"></i></a>
+                    <a href="https://www.instagram.com/stu_cindy/" title="Instagram"><i class="fa-brands fa-instagram"></i></a>
+                    <a href="https://wa.me/6282119116190" title="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
                 </div>
             </div>
 

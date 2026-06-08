@@ -495,7 +495,8 @@ body {
 }
 
 .pending-note,
-.cash-note {
+.cash-note,
+.receipt-note {
     border-radius: 16px;
     padding: 12px 13px;
     font-size: 13px;
@@ -516,6 +517,12 @@ body {
     background: #fff7ed;
     border: 1px solid #fed7aa;
     color: #c2410c;
+}
+
+.receipt-note {
+    background: #ecfdf5;
+    border: 1px solid #bbf7d0;
+    color: #047857;
 }
 
 /* BUTTON ACTION */
@@ -564,6 +571,18 @@ body {
 .btn-detail:hover {
     background: #f4eaff;
     color: #7b3fb2;
+    transform: translateY(-2px);
+}
+
+.btn-kwitansi {
+    background: #f1e3ff;
+    color: #7b3fb2;
+    border: 1px solid #d9c0f0;
+}
+
+.btn-kwitansi:hover {
+    background: #e4d0ff;
+    color: #6f2da8;
     transform: translateY(-2px);
 }
 
@@ -655,7 +674,7 @@ body {
 
             <h2 class="page-title">Daftar Pesanan</h2>
             <p class="page-subtitle">
-                Kelola pesanan, verifikasi pembayaran, update status, dan lihat detail transaksi The Four Label.
+                Kelola pesanan, verifikasi pembayaran, update status, cetak kwitansi, dan lihat detail transaksi The Four Label.
             </p>
         </div>
     </div>
@@ -946,6 +965,15 @@ body {
                             </div>
                         <?php } ?>
 
+                        <?php if ($totalBayar > 0) { ?>
+                            <div class="receipt-note">
+                                <i class="fa-solid fa-receipt"></i>
+                                <span>
+                                    Kwitansi sudah tersedia karena pembayaran telah diverifikasi oleh admin.
+                                </span>
+                            </div>
+                        <?php } ?>
+
                         <div class="row g-2 mt-3">
 
                             <?php if ($totalPending > 0) { ?>
@@ -969,6 +997,18 @@ body {
                                     </a>
                                 </div>
 
+                                <?php if ($totalBayar > 0) { ?>
+                                    <div class="col-6">
+                                        <a 
+                                            href="cetak-kwitansi.php?id=<?= $row['idPesanan']; ?>"
+                                            target="_blank"
+                                            class="btn-action btn-kwitansi w-100">
+                                            <i class="fa-solid fa-receipt"></i>
+                                            Kwitansi
+                                        </a>
+                                    </div>
+                                <?php } ?>
+
                                 <div class="col-6">
                                     <a 
                                         href="update-status.php?id=<?= $row['idPesanan']; ?>"
@@ -990,7 +1030,7 @@ body {
 
                             <?php } else { ?>
 
-                                <div class="col-4">
+                                <div class="col-6">
                                     <a 
                                         href="update-status.php?id=<?= $row['idPesanan']; ?>"
                                         class="btn-action btn-update w-100">
@@ -999,7 +1039,7 @@ body {
                                     </a>
                                 </div>
 
-                                <div class="col-4">
+                                <div class="col-6">
                                     <a 
                                         href="detail-pesanan.php?id=<?= $row['idPesanan']; ?>"
                                         class="btn-action btn-detail w-100">
@@ -1008,7 +1048,19 @@ body {
                                     </a>
                                 </div>
 
-                                <div class="col-4">
+                                <?php if ($totalBayar > 0) { ?>
+                                    <div class="col-6">
+                                        <a 
+                                            href="cetak-kwitansi.php?id=<?= $row['idPesanan']; ?>"
+                                            target="_blank"
+                                            class="btn-action btn-kwitansi w-100">
+                                            <i class="fa-solid fa-receipt"></i>
+                                            Kwitansi
+                                        </a>
+                                    </div>
+                                <?php } ?>
+
+                                <div class="col-6">
                                     <a 
                                         href="hapus-pesanan.php?id=<?= $row['idPesanan']; ?>"
                                         class="btn-action btn-delete w-100"
@@ -1018,6 +1070,18 @@ body {
                                     </a>
                                 </div>
 
+                            <?php } ?>
+
+                            <?php if ($isCashOrder > 0 && $totalBayar <= 0) { ?>
+                                <div class="col-6">
+                                    <a 
+                                        href="konfirmasi-cash.php?id=<?= $row['idPesanan']; ?>"
+                                        class="btn-action btn-verify w-100"
+                                        onclick="return confirm('Konfirmasi pembayaran cash pesanan ini?')">
+                                        <i class="fa-solid fa-money-bill-wave"></i>
+                                        Konfirmasi Cash
+                                    </a>
+                                </div>
                             <?php } ?>
 
                         </div>

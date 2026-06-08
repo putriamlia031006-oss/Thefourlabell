@@ -580,6 +580,15 @@ body {
                                 Detail
                             </a>
 
+                            <?php if ($totalBayar > 0) { ?>
+                                <a
+                                    href="kwitansi.php?id=<?= $row['idPesanan']; ?>"
+                                    target="_blank"
+                                    class="btn-outline-lavender">
+                                    Lihat Kwitansi
+                                </a>
+                            <?php } ?>
+
                         </div>
 
                         <?php if ($isCashOrder > 0 && !$isLunas) { ?>
