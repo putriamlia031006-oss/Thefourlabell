@@ -59,19 +59,35 @@ if (!$data) {
 }
 
 /* =========================
-   DETAIL PRODUK
-   Kolom jumlah diganti qty
-   Subtotal dihitung manual
+   CEK JENIS PESANAN
 ========================= */
-$detail = mysqli_query($koneksi, "
-    SELECT 
-        detail_pesanan.*,
-        produk.namaProduk,
-        produk.harga
-    FROM detail_pesanan
-    LEFT JOIN produk ON detail_pesanan.idProduk = produk.idProduk
-    WHERE detail_pesanan.idPesanan = '$id'
-");
+$jenisPesanan = isset($data['jenisPesanan']) ? strtolower(trim($data['jenisPesanan'])) : "";
+$isCustom = ($jenisPesanan == "custom");
+
+/* =========================
+   DETAIL PRODUK
+========================= */
+if ($isCustom) {
+
+    $detail = mysqli_query($koneksi, "
+        SELECT *
+        FROM detail_custom
+        WHERE idPesanan = '$id'
+    ");
+
+} else {
+
+    $detail = mysqli_query($koneksi, "
+        SELECT 
+            detail_pesanan.*,
+            produk.namaProduk,
+            produk.harga
+        FROM detail_pesanan
+        LEFT JOIN produk ON detail_pesanan.idProduk = produk.idProduk
+        WHERE detail_pesanan.idPesanan = '$id'
+    ");
+
+}
 
 if (!$detail) {
     die("Query detail produk error: " . mysqli_error($koneksi));
@@ -93,7 +109,6 @@ if (!$pembayaran) {
 
 /* =========================
    PEMBAYARAN PENDING TERBARU
-   Untuk tombol verifikasi
 ========================= */
 $qPending = mysqli_query($koneksi, "
     SELECT * 
@@ -113,15 +128,15 @@ $pending = mysqli_fetch_assoc($qPending);
 $totalPesanan = (int) $data['total'];
 $totalBayar = (int) $data['totalBayar'];
 $totalPending = (int) $data['totalPending'];
-$sisa = $totalPesanan - $totalBayar;
 
+$sisa = $totalPesanan - $totalBayar;
 if ($sisa < 0) {
     $sisa = 0;
 }
 
-$isLunas = ($totalBayar >= $totalPesanan && $totalPesanan > 0);
-$isCashOrder = (int) $data['isCashOrder'];
-
+/* =========================
+   FUNCTION
+========================= */
 function formatTanggal($tanggal) {
     if ($tanggal == "" || $tanggal == NULL || $tanggal == "0000-00-00") {
         return "-";
@@ -154,6 +169,16 @@ function badgePembayaran($status) {
     } else {
         return "badge-purple";
     }
+}
+
+function ambilKolom($array, $listKolom, $default = "-") {
+    foreach ($listKolom as $kolom) {
+        if (isset($array[$kolom]) && $array[$kolom] !== "" && $array[$kolom] !== null) {
+            return $array[$kolom];
+        }
+    }
+
+    return $default;
 }
 ?>
 
@@ -408,6 +433,24 @@ body {
     padding: 8px;
 }
 
+.custom-detail-box {
+    background: #faf5ff;
+    border: 1px solid #eadcff;
+    border-radius: 12px;
+    padding: 10px 12px;
+    margin-top: 6px;
+    font-size: 13px;
+    color: #4b315f;
+}
+
+.custom-detail-box div {
+    margin-bottom: 3px;
+}
+
+.custom-detail-box div:last-child {
+    margin-bottom: 0;
+}
+
 @media (max-width: 768px) {
     .admin-layout {
         display: block;
@@ -528,36 +571,116 @@ body {
                     <div class="table-responsive">
                         <table class="table align-middle">
                             <thead>
-                                <tr>
-                                    <th>No</th>
-                                    <th>Produk</th>
-                                    <th>Harga</th>
-                                    <th>Qty</th>
-                                    <th>Subtotal</th>
-                                </tr>
+                                <?php if ($isCustom) { ?>
+                                    <tr>
+                                        <th style="width: 80px;">No</th>
+                                        <th>Produk</th>
+                                        <th style="width: 120px;">Qty</th>
+                                    </tr>
+                                <?php } else { ?>
+                                    <tr>
+                                        <th>No</th>
+                                        <th>Produk</th>
+                                        <th>Harga</th>
+                                        <th>Qty</th>
+                                        <th>Subtotal</th>
+                                    </tr>
+                                <?php } ?>
                             </thead>
 
                             <tbody>
                                 <?php if ($detail && mysqli_num_rows($detail) > 0) { ?>
                                     <?php $no = 1; while ($d = mysqli_fetch_assoc($detail)) { ?>
 
-                                        <?php
-                                        $qtyProduk = isset($d['qty']) ? (int) $d['qty'] : 0;
-                                        $hargaProduk = isset($d['harga']) ? (int) $d['harga'] : 0;
-                                        $subtotalProduk = $hargaProduk * $qtyProduk;
-                                        ?>
+                                        <?php if ($isCustom) { ?>
 
-                                        <tr>
-                                            <td><?= $no++; ?></td>
-                                            <td><?= !empty($d['namaProduk']) ? htmlspecialchars($d['namaProduk']) : "Produk Custom"; ?></td>
-                                            <td>Rp <?= number_format($hargaProduk, 0, ',', '.'); ?></td>
-                                            <td><?= $qtyProduk; ?></td>
-                                            <td class="price">Rp <?= number_format($subtotalProduk, 0, ',', '.'); ?></td>
-                                        </tr>
+                                            <?php
+                                            $namaCustom = ambilKolom(
+                                                $d,
+                                                ['namaProduk', 'nama_custom', 'produk_custom', 'jenisProduk', 'jenis_baju'],
+                                                'Pesanan Custom'
+                                            );
+
+                                            $jenisBaju = ambilKolom($d, ['jenis_baju', 'jenisBaju', 'model', 'model_baju'], '');
+                                            $bahan = ambilKolom($d, ['bahan', 'jenis_bahan'], '');
+                                            $ukuran = ambilKolom($d, ['ukuran', 'size'], '');
+                                            $warna = ambilKolom($d, ['warna', 'color'], '');
+                                            $desain = ambilKolom($d, ['desain', 'gambar_desain', 'file_desain'], '');
+                                            $catatanCustom = ambilKolom($d, ['catatan', 'keterangan', 'detail', 'request'], '');
+
+                                            $qtyProduk = (int) ambilKolom($d, ['qty', 'jumlah', 'quantity'], 0);
+                                            ?>
+
+                                            <tr>
+                                                <td><?= $no++; ?></td>
+
+                                                <td>
+                                                    <b><?= htmlspecialchars($namaCustom); ?></b>
+
+                                                    <div class="custom-detail-box">
+                                                        <?php if (!empty($jenisBaju)) { ?>
+                                                            <div><b>Jenis:</b> <?= htmlspecialchars($jenisBaju); ?></div>
+                                                        <?php } ?>
+
+                                                        <?php if (!empty($bahan)) { ?>
+                                                            <div><b>Bahan:</b> <?= htmlspecialchars($bahan); ?></div>
+                                                        <?php } ?>
+
+                                                        <?php if (!empty($ukuran)) { ?>
+                                                            <div><b>Ukuran:</b> <?= htmlspecialchars($ukuran); ?></div>
+                                                        <?php } ?>
+
+                                                        <?php if (!empty($warna)) { ?>
+                                                            <div><b>Warna:</b> <?= htmlspecialchars($warna); ?></div>
+                                                        <?php } ?>
+
+                                                        <?php if (!empty($catatanCustom)) { ?>
+                                                            <div><b>Catatan:</b> <?= htmlspecialchars($catatanCustom); ?></div>
+                                                        <?php } ?>
+
+                                                        <?php if (!empty($desain)) { ?>
+                                                            <div>
+                                                                <b>Desain:</b>
+                                                                <a href="../upload/<?= htmlspecialchars($desain); ?>" target="_blank">
+                                                                    Lihat Desain
+                                                                </a>
+                                                            </div>
+                                                        <?php } ?>
+                                                    </div>
+                                                </td>
+
+                                                <td><?= $qtyProduk; ?></td>
+                                            </tr>
+
+                                        <?php } else { ?>
+
+                                            <?php
+                                            $qtyProduk = isset($d['qty']) ? (int) $d['qty'] : 0;
+                                            $hargaProduk = isset($d['harga']) ? (int) $d['harga'] : 0;
+                                            $subtotalProduk = $hargaProduk * $qtyProduk;
+                                            ?>
+
+                                            <tr>
+                                                <td><?= $no++; ?></td>
+
+                                                <td>
+                                                    <?= !empty($d['namaProduk']) 
+                                                        ? htmlspecialchars($d['namaProduk']) 
+                                                        : "Produk"; 
+                                                    ?>
+                                                </td>
+
+                                                <td>Rp <?= number_format($hargaProduk, 0, ',', '.'); ?></td>
+                                                <td><?= $qtyProduk; ?></td>
+                                                <td class="price">Rp <?= number_format($subtotalProduk, 0, ',', '.'); ?></td>
+                                            </tr>
+
+                                        <?php } ?>
+
                                     <?php } ?>
                                 <?php } else { ?>
                                     <tr>
-                                        <td colspan="5" class="empty-data">
+                                        <td colspan="<?= $isCustom ? '3' : '5'; ?>" class="empty-data">
                                             Belum ada detail produk.
                                         </td>
                                     </tr>
