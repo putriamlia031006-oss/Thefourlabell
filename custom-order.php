@@ -364,7 +364,7 @@ body {
             
             <div class="hero-badge">✨ Custom Apparel by The Four Label</div>
             <h1>Custom </h1>
-            <p>Buat hoodie, varsity, polo shirt, atau t-shirt sesuai desainmu sendiri.</p>
+            <p>Buat hoodie, varsity, Long Sleeve T-shirt, atau t-shirt sesuai desainmu sendiri.</p>
         </div>
     </div>
 
@@ -381,7 +381,7 @@ body {
                         <div class="step-number">1</div>
                         <div>
                             <h6>Pilih jenis pakaian</h6>
-                            <p>Pilih produk custom seperti hoodie, varsity, polo shirt, atau t-shirt.</p>
+                            <p>Pilih produk custom seperti hoodie, varsity, Long Sleeve T-shirt, atau t-shirt.</p>
                         </div>
                     </div>
 
@@ -449,7 +449,7 @@ body {
                                     <option value="">Pilih Jenis Pakaian</option>
                                     <option value="Hoodie">Hoodie</option>
                                     <option value="Varsity">Varsity</option>
-                                    <option value="Polo Shirt">Polo Shirt</option>
+                                    <option value="Long Sleeve T-Shirt">Long Sleeve T-Shirt</option>
                                     <option value="T-Shirt">T-Shirt</option>
                                 </select>
                             </div>

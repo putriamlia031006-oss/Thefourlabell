@@ -2,18 +2,23 @@
 session_start();
 require "koneksi.php";
 
+$pesan = "";
+
 if (isset($_POST['register'])) {
 
-    $nama     = mysqli_real_escape_string($koneksi, $_POST['nama']);
-    $email    = mysqli_real_escape_string($koneksi, $_POST['email']);
-    $noHp     = mysqli_real_escape_string($koneksi, $_POST['noHp']);
+    $nama     = mysqli_real_escape_string($koneksi, trim($_POST['nama']));
+    $email    = mysqli_real_escape_string($koneksi, trim($_POST['email']));
+    $noHp     = mysqli_real_escape_string($koneksi, trim($_POST['noHp']));
+    $alamat   = mysqli_real_escape_string($koneksi, trim($_POST['alamat']));
     $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
 
     // Cek email sudah terdaftar atau belum
     $cek = mysqli_query($koneksi, "SELECT * FROM user WHERE email='$email'");
 
-    if (mysqli_num_rows($cek) > 0) {
-        echo "<script>alert('Email sudah terdaftar!');</script>";
+    if (!$cek) {
+        $pesan = "Query cek email error: " . mysqli_error($koneksi);
+    } elseif (mysqli_num_rows($cek) > 0) {
+        $pesan = "Email sudah terdaftar!";
     } else {
 
         // Simpan ke tabel user
@@ -24,20 +29,28 @@ if (isset($_POST['register'])) {
 
         if ($insertUser) {
 
+            // Ambil idUser yang baru dibuat
             $idUser = mysqli_insert_id($koneksi);
 
             // Simpan ke tabel pelanggan
-            mysqli_query($koneksi, "
-                INSERT INTO pelanggan (idUser, namaPelanggan, noHp)
-                VALUES ('$idUser', '$nama', '$noHp')
+            // Sesuai tabel kamu: idPelanggan, idUser, noHp, alamat
+            $insertPelanggan = mysqli_query($koneksi, "
+                INSERT INTO pelanggan (idUser, noHp, alamat)
+                VALUES ('$idUser', '$noHp', '$alamat')
             ");
 
-            echo "<script>
-                alert('Registrasi berhasil! Silakan login.');
-                window.location='login.php';
-            </script>";
+            if ($insertPelanggan) {
+                echo "<script>
+                    alert('Registrasi berhasil! Silakan login.');
+                    window.location='login.php';
+                </script>";
+                exit;
+            } else {
+                $pesan = "User berhasil dibuat, tapi data pelanggan gagal: " . mysqli_error($koneksi);
+            }
+
         } else {
-            echo "<script>alert('Registrasi gagal!');</script>";
+            $pesan = "Registrasi gagal: " . mysqli_error($koneksi);
         }
     }
 }
@@ -86,7 +99,6 @@ body {
     border: 1px solid rgba(176, 127, 220, 0.28);
 }
 
-/* LEFT BRAND AREA */
 .brand-side {
     background:
         radial-gradient(circle at top right, rgba(255,255,255,0.20), transparent 35%),
@@ -209,7 +221,6 @@ body {
     backdrop-filter: blur(8px);
 }
 
-/* RIGHT FORM AREA */
 .form-side {
     padding: 42px 50px;
     background:
@@ -255,6 +266,16 @@ body {
     color: #8a7899;
     margin: 0;
     font-size: 15px;
+}
+
+.alert-custom {
+    border: none;
+    border-radius: 16px;
+    padding: 13px 15px;
+    margin-bottom: 18px;
+    color: #6b2d89;
+    background: #f3e4ff;
+    font-weight: 600;
 }
 
 .form-label {
@@ -416,6 +437,12 @@ body {
             <p>Bergabung dengan The Four Label</p>
         </div>
 
+        <?php if (!empty($pesan)) { ?>
+            <div class="alert-custom">
+                <?= $pesan; ?>
+            </div>
+        <?php } ?>
+
         <form method="POST" autocomplete="off">
 
             <label class="form-label">Nama Lengkap</label>
@@ -449,6 +476,17 @@ body {
                     name="noHp" 
                     class="form-control" 
                     placeholder="Masukkan nomor HP"
+                    required>
+            </div>
+
+            <label class="form-label">Alamat</label>
+            <div class="input-group-custom">
+                <i class="fa-solid fa-location-dot"></i>
+                <input 
+                    type="text" 
+                    name="alamat" 
+                    class="form-control" 
+                    placeholder="Masukkan alamat lengkap"
                     required>
             </div>
 

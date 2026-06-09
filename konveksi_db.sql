@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jun 02, 2026 at 11:28 AM
+-- Generation Time: Jun 09, 2026 at 03:53 AM
 -- Server version: 10.1.38-MariaDB
 -- PHP Version: 7.3.2
 
@@ -63,7 +63,8 @@ CREATE TABLE `detail_custom` (
 
 INSERT INTO `detail_custom` (`idCustom`, `idPesanan`, `jenis`, `ukuran`, `qty`, `catatan`, `desain`) VALUES
 (2, 20, 'T-Shirt', 'L', 10, 'tulisan dibelakang', '1780388508_1780334455_ej6P2o1HHVCeuhR5ovDJ.jpg'),
-(3, 21, 'Varsity', 'M', 100, 'logo dilengan', '1780389012_1780334455_ej6P2o1HHVCeuhR5ovDJ.jpg');
+(3, 21, 'Varsity', 'M', 100, 'logo dilengan', '1780389012_1780334455_ej6P2o1HHVCeuhR5ovDJ.jpg'),
+(4, 25, 'Long Sleeve T-Shirt', 'M', 3, 'nama dikerah', '1780969973_1780915515_panjang1.jpeg');
 
 -- --------------------------------------------------------
 
@@ -101,7 +102,10 @@ INSERT INTO `detail_pesanan` (`idDetail`, `idPesanan`, `idProduk`, `jenis`, `uku
 (13, 13, NULL, 'polo', 's', '1780356295_qBaC8k8RJmK0z0QjTFaH.jpg', 2, 'alsd'),
 (14, 14, NULL, 'Polo Shirt', 's', '1780356580_qBaC8k8RJmK0z0QjTFaH.jpg', 2, 'alsd'),
 (15, 15, 4, NULL, NULL, NULL, 1, NULL),
-(16, 16, 4, NULL, NULL, NULL, 2, NULL);
+(16, 16, 4, NULL, NULL, NULL, 2, NULL),
+(17, 22, 6, NULL, NULL, NULL, 1, NULL),
+(18, 23, 5, NULL, NULL, NULL, 1, NULL),
+(19, 24, 7, NULL, NULL, NULL, 1, NULL);
 
 -- --------------------------------------------------------
 
@@ -122,7 +126,7 @@ INSERT INTO `kategori` (`idKategori`, `namaKategori`) VALUES
 (1, 'T-Shirt'),
 (2, 'Hoodie'),
 (3, 'Varsity'),
-(4, 'Polo Shirt'),
+(4, 'Long Sleeve T-shirt'),
 (5, 'Kemeja');
 
 -- --------------------------------------------------------
@@ -158,7 +162,8 @@ CREATE TABLE `pelanggan` (
 INSERT INTO `pelanggan` (`idPelanggan`, `idUser`, `noHp`, `alamat`) VALUES
 (1, 2, '081211437354', '\r\n            curug'),
 (2, 4, '081234567890', '\r\n        Tangerang    '),
-(3, 5, '089123456789', 'Tangerang');
+(3, 5, '089123456789', 'Tangerang'),
+(4, 13, '08723824949', 'tangerang');
 
 -- --------------------------------------------------------
 
@@ -206,7 +211,12 @@ INSERT INTO `pembayaran` (`idPembayaran`, `idPesanan`, `jumlah`, `metode`, `stat
 (23, 12, 500000, 'Transfer BCA', 'Pending', '1780378706_1780335124_lavender.jpeg', 0),
 (26, 20, 400000, 'Transfer BCA', 'Pending', '1780388524_1780335152_lavender.jpeg', 0),
 (27, 20, 400000, 'Transfer BCA', 'Pending', '1780388553_1780334455_ej6P2o1HHVCeuhR5ovDJ.jpg', 0),
-(28, 21, 10010000, 'Transfer BCA', 'Pending', '1780389036_1780335152_lavender.jpeg', 0);
+(28, 21, 10010000, 'Transfer BCA', 'Pending', '1780389036_1780335152_lavender.jpeg', 0),
+(29, 22, 87000, 'Transfer Bank BCA', 'Pending', '1780968595_WhatsApp_Image_2026_06_09_at_08.14.55.jpeg', 87000),
+(30, 23, 97000, 'Transfer Bank BCA', 'DP Masuk', '1780968739_WhatsApp_Image_2026_06_09_at_08.14.55.jpeg', 97000),
+(31, 24, 102000, 'Transfer Bank BCA', 'Lunas', '1780969423_WhatsApp_Image_2026_06_09_at_08.14.55.jpeg', 102000),
+(32, 24, 102000, 'Transfer BCA', 'DP Masuk', '1780969452_WhatsApp Image 2026-06-09 at 08.14.55.jpeg', 0),
+(33, 25, 155000, 'Transfer Bank BCA', 'Pending', '1780969986_WhatsApp_Image_2026_06_09_at_08.14.55.jpeg', 155000);
 
 -- --------------------------------------------------------
 
@@ -249,7 +259,11 @@ INSERT INTO `pesanan` (`idPesanan`, `idPelanggan`, `tanggal`, `deadlineSelesai`,
 (15, 1, '2026-06-02', NULL, 'Menunggu Verifikasi Pembayaran', 'siap_pakai', 250000, 'INV-20260602-15', 0, NULL, NULL),
 (16, 1, '2026-06-02', NULL, 'Menunggu Pembayaran Tunai', 'siap_pakai', 400000, 'INV-20260602-16', 0, NULL, NULL),
 (20, 3, '2026-06-02', '2026-07-02', 'Lunas', 'custom', 800000, 'INV-CUS-20260602-20', 0, NULL, NULL),
-(21, 3, '2026-06-02', '2026-07-02', 'Menunggu Verifikasi Pembayaran', 'custom', 20020000, 'INV-CUS-20260602-21', 20000, 'Tangerang', 'JNE');
+(21, 3, '2026-06-02', '2026-07-02', 'Menunggu Verifikasi Pembayaran', 'custom', 20020000, 'INV-CUS-20260602-21', 20000, 'Tangerang', 'JNE'),
+(22, 4, '2026-06-09', NULL, 'Menunggu Verifikasi Pembayaran', 'siap_pakai', 174000, 'INV-20260609-22', 0, NULL, NULL),
+(23, 4, '2026-06-09', NULL, 'Diproses', 'siap_pakai', 194000, 'INV-20260609-23', 0, NULL, NULL),
+(24, 4, '2026-06-09', NULL, 'Selesai', 'siap_pakai', 204000, 'INV-20260609-24', 5000, 'tangerang', 'JNE'),
+(25, 4, '2026-06-09', '2026-07-09', 'Menunggu Verifikasi Pembayaran', 'custom', 310000, 'INV-CUS-20260609-25', 10000, 'periuk, tangerang', 'J&T');
 
 -- --------------------------------------------------------
 
@@ -271,7 +285,21 @@ CREATE TABLE `produk` (
 --
 
 INSERT INTO `produk` (`idProduk`, `namaProduk`, `harga`, `gambar`, `deskripsi`, `idKategori`) VALUES
-(4, 'corduroy', 250000, '1780324515_JTHtz8t98ElnrXBM8PIB.jpg', 'bagus', 3);
+(4, 'Jacket Classic Blue White', 250000, '1780324515_JTHtz8t98ElnrXBM8PIB.jpg', 'Varsity Jacket Classic Blue White hadir dengan desain sporty dan timeless yang cocok untuk berbagai aktivitas. Kombinasi warna biru dan putih memberikan tampilan yang elegan sekaligus trendi. Dilengkapi detail bordir huruf pada bagian dada dan lengan yang menambah kesan premium. Terbuat dari bahan berkualitas yang nyaman digunakan, hangat, dan tahan lama. Cocok dipadukan dengan kaos, hoodie, maupun kemeja untuk gaya kasual sehari-hari.', 3),
+(5, 'Polka White Premium', 189000, '1780913066_hoodie1.jpeg', 'Hoodie warna putih dengan desain minimalis dan aksen motif polkadot pada bagian hoodie, lengan, dan pinggang. Terbuat dari bahan fleece premium yang lembut, hangat, dan nyaman digunakan sehari-hari. Cocok untuk gaya kasual maupun semi-formal.', 2),
+(6, 'Zip Pastel Clip Kids', 169000, '1780913125_hoodie2.jpeg', 'Hoodie anak model resleting dengan warna abu-abu dan kombinasi aksen pastel yang unik. Dilengkapi hoodie nyaman dan bahan yang lembut sehingga cocok digunakan untuk aktivitas sehari-hari. Desain lucu dan modern membuat tampilan anak lebih stylish.', 2),
+(7, 'Brooklyn Navy Oversize', 199000, '1780913190_hoodie3.jpeg', 'Hoodie oversize warna navy dengan sablon tulisan \"Brooklyn New York\" pada bagian depan. Menggunakan bahan fleece berkualitas yang tebal, hangat, dan nyaman dipakai. Cocok untuk pria maupun wanita yang menyukai gaya streetwear dan kasual.', 2),
+(8, 'Jacket Heritage Burgundy', 279000, '1780914315_varsity3.jpeg', 'Varsity jacket warna burgundy dengan kombinasi lengan krem dan detail bordir premium. Dilengkapi kancing depan, kantong samping, serta rib striped pada kerah, manset, dan pinggang. Cocok digunakan untuk melengkapi gaya casual maupun streetwear.', 3),
+(9, 'Jacket Authentic Green', 289000, '1780914387_varsity2.jpeg', 'Varsity jacket premium warna hijau dengan detail patch bordir dan kombinasi warna yang elegan. Menggunakan bahan berkualitas yang nyaman, hangat, dan tahan lama. Desain klasik ala kampus Amerika menjadikan jaket ini cocok untuk berbagai aktivitas dan gaya berpakaian modern.', 3),
+(10, 'Oversize AW Spiky Head', 89000, '1780914458_t-shirt3.jpeg', 'Kaos oversize dengan desain sporty dan kombinasi warna merah, hitam, dan krem yang menarik. Dilengkapi print logo pada bagian depan serta potongan longgar yang nyaman digunakan sehari-hari. Cocok untuk gaya streetwear dan casual modern.', 1),
+(11, 'Vintage Classic Car', 95000, '1780914525_t-shirt2.jpeg', 'Kaos oversize warna putih dengan desain mobil klasik bergaya vintage. Menggunakan bahan cotton combed yang lembut, adem, dan nyaman dipakai sepanjang hari. Cocok dipadukan dengan jeans maupun celana cargo untuk tampilan kasual yang trendi.', 1),
+(12, 'Vintage Flower Cow', 99000, '1780914573_t-shirt1.jpeg', 'Kaos oversize washed warna hijau dengan ilustrasi unik berbagai karakter sapi. Desain playful dan estetik membuat kaos ini cocok untuk pecinta fashion vintage dan casual. Terbuat dari bahan premium yang nyaman dan menyerap keringat.', 1),
+(13, 'Polo Shirt Stripe Classic', 149000, '1780915388_panjang3.jpeg', 'Polo shirt lengan panjang dengan motif garis horizontal warna navy, merah, dan putih. Memiliki kerah klasik yang memberikan kesan rapi namun tetap santai. Terbuat dari bahan katun premium yang nyaman, adem, dan cocok digunakan untuk aktivitas sehari-hari maupun acara kasual.', 4),
+(14, 'Long Sleeve Layered Tee Black', 119000, '1780915447_panjang2.jpeg', 'Kaos lengan panjang model layered dengan kombinasi warna hitam dan putih yang modern. Desain minimalis dan potongan loose fit memberikan tampilan streetwear yang stylish. Cocok dipadukan dengan jeans, cargo, maupun jogger.', 4),
+(15, 'Knit Long Sleeve Beige', 139000, '1780915515_panjang1.jpeg', 'Atasan lengan panjang berwarna beige dengan kerah cokelat kontras yang elegan. Menggunakan bahan knit premium yang lembut dan nyaman digunakan. Cocok untuk tampilan casual chic maupun semi formal.', 4),
+(16, 'Stripe Tie Casual', 159000, '1780915577_kemeja3.jpeg', 'Kemeja lengan pendek motif garis vertikal dengan tambahan aksesoris dasi yang memberikan kesan unik dan fashionable. Menggunakan bahan ringan dan nyaman sehingga cocok digunakan untuk hangout, kuliah, maupun acara santai.', 5),
+(17, 'Oversize Stripe Layer', 169000, '1780915632_kemeja2.jpeg', 'Kemeja oversize motif garis vertikal dengan detail sweater layer di bagian bahu yang menciptakan tampilan preppy dan modern. Potongan longgar membuatnya nyaman digunakan sepanjang hari dan mudah dipadukan dengan berbagai outfit.', 5),
+(18, 'Peter Pan Collar White', 2000000, '1780915671_kemeja1.jpeg', 'Kemeja putih lengan panjang dengan kerah peter pan beraksen bordir merah yang manis dan elegan. Terbuat dari bahan katun yang lembut dan nyaman dipakai. Cocok untuk tampilan feminin, formal, maupun semi kasual.', 5);
 
 -- --------------------------------------------------------
 
@@ -291,7 +319,21 @@ CREATE TABLE `stok_produk` (
 --
 
 INSERT INTO `stok_produk` (`idStok`, `idProduk`, `jumlahStok`, `satuan`) VALUES
-(4, 4, 137, 'pcs');
+(4, 4, 137, 'pcs'),
+(5, 5, 107, 'pcs'),
+(6, 6, 99, 'pcs'),
+(7, 7, 19, 'pcs'),
+(8, 8, 18, 'pcs'),
+(9, 9, 15, 'pcs'),
+(10, 10, 40, 'pcs'),
+(11, 11, 35, 'pcs'),
+(12, 12, 12, 'pcs'),
+(13, 13, 25, 'pcs'),
+(14, 14, 30, 'pcs'),
+(15, 15, 22, 'pcs'),
+(16, 16, 20, 'pcs'),
+(17, 17, 71, 'pcs'),
+(18, 18, 99, 'pcs');
 
 -- --------------------------------------------------------
 
@@ -314,9 +356,14 @@ CREATE TABLE `user` (
 INSERT INTO `user` (`idUser`, `nama`, `email`, `password`, `role`) VALUES
 (1, 'putri amalia ramadani', '1224160102@global.ac.id', '8b6d9f5dd2385331a05b2e2d8a94f5a0', 'admin'),
 (2, 'Putri Amalia Ramadani', 'putri.amlia031006@gmail.com', '$2y$10$/FNE0glxsBMkThiEJkUZSuDItebn6grVXxBlRjmT/Fz67qKjCl6Q2', 'pelanggan'),
-(3, 'putri', 'mizum1265@gmail.com', '$2y$10$b7FrDi05OSOO2ETF5HsFAeLuC7RDlRAash918zqmketLs0Q0bUNie', 'admin'),
+(3, 'putri', 'mizum1265@gmail.com', '$2y$10$tIlyi4L2GKzNV0GmTJ.nye1r9UOLrT9/.nUnuwuf/Xp15.Z0GRjDS', 'admin'),
 (4, 'khanza afifah karina putri', 'khanza@gmail.com', '$2y$10$uq.5PcBJ/m91uiwg1vF3AeXpWxHflNwPGoazjd7rT1f.r.cgPqZFS', 'pelanggan'),
-(5, 'putri sofiatun muzofar', 'sofi@gmail.com', '$2y$10$ZZSAUy.1c0ZDMZDOFup98.HGAEC3LSmzXvtZ0NHyqchtvd7Jzixrq', 'pelanggan');
+(5, 'putri sofiatun muzofar', 'sofi@gmail.com', '$2y$10$ZZSAUy.1c0ZDMZDOFup98.HGAEC3LSmzXvtZ0NHyqchtvd7Jzixrq', 'pelanggan'),
+(7, 'Cindy Setio', 'cindi@gmail.com', '6ea31ff746dacf297e333900384cd19e', 'pelanggan'),
+(10, 'Admin The Four Label', 'admin@t4l.com', '0192023a7bbd73250516f069df18b500', 'admin'),
+(11, 'Cindi Setio Rhamadani', 'admincindi@gmail.com', '$2y$10$fDNgOTsTgtOLshPSDmb.ge.nwZ6/IZKhlOaSoMR0jT8As7OOuar4m', 'admin'),
+(12, 'Rara', 'rara@gmail.com', '$2y$10$FNsVcxmR1Pv5zf8kQ.cA0.HWuFq.6XDK4qqUOlw6Un0f1laxd.Bk2', 'pelanggan'),
+(13, 'Nabila', 'nabila@gmail.com', '$2y$10$fZLCZA608wU34NfwoG0YLuhXk72sZNsWE5HyPix35Ju2MhGoNrsF2', 'pelanggan');
 
 --
 -- Indexes for dumped tables
@@ -412,13 +459,13 @@ ALTER TABLE `admin`
 -- AUTO_INCREMENT for table `detail_custom`
 --
 ALTER TABLE `detail_custom`
-  MODIFY `idCustom` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `idCustom` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `detail_pesanan`
 --
 ALTER TABLE `detail_pesanan`
-  MODIFY `idDetail` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
+  MODIFY `idDetail` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
 
 --
 -- AUTO_INCREMENT for table `kategori`
@@ -436,37 +483,37 @@ ALTER TABLE `kwitansi`
 -- AUTO_INCREMENT for table `pelanggan`
 --
 ALTER TABLE `pelanggan`
-  MODIFY `idPelanggan` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `idPelanggan` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `pembayaran`
 --
 ALTER TABLE `pembayaran`
-  MODIFY `idPembayaran` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=29;
+  MODIFY `idPembayaran` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=34;
 
 --
 -- AUTO_INCREMENT for table `pesanan`
 --
 ALTER TABLE `pesanan`
-  MODIFY `idPesanan` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
+  MODIFY `idPesanan` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=26;
 
 --
 -- AUTO_INCREMENT for table `produk`
 --
 ALTER TABLE `produk`
-  MODIFY `idProduk` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `idProduk` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
 
 --
 -- AUTO_INCREMENT for table `stok_produk`
 --
 ALTER TABLE `stok_produk`
-  MODIFY `idStok` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `idStok` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
 
 --
 -- AUTO_INCREMENT for table `user`
 --
 ALTER TABLE `user`
-  MODIFY `idUser` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `idUser` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
 
 --
 -- Constraints for dumped tables

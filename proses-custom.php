@@ -101,7 +101,7 @@ if ($jenis == "Hoodie") {
     $hargaSatuan = 150000;
 } elseif ($jenis == "Varsity") {
     $hargaSatuan = 200000;
-} elseif ($jenis == "Polo Shirt") {
+} elseif ($jenis == "Long Sleeve T-Shirt") {
     $hargaSatuan = 100000;
 } elseif ($jenis == "T-Shirt") {
     $hargaSatuan = 80000;

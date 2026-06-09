@@ -36,16 +36,16 @@ $idPelanggan = $pelanggan['idPelanggan'];
 /* =========================
    AMBIL DATA DARI FORM CHECKOUT
 ========================= */
+$tipePengiriman = isset($_POST['tipe_pengiriman'])
+    ? mysqli_real_escape_string($koneksi, trim($_POST['tipe_pengiriman']))
+    : "dikirim";
+
 $alamatKirim = isset($_POST['alamat_kirim'])
     ? mysqli_real_escape_string($koneksi, trim($_POST['alamat_kirim']))
     : "";
 
-$tipePengiriman = isset($_POST['tipe_pengiriman'])
-    ? mysqli_real_escape_string($koneksi, $_POST['tipe_pengiriman'])
-    : "dikirim";
-
 $jasaKirim = isset($_POST['jasa_kirim'])
-    ? mysqli_real_escape_string($koneksi, $_POST['jasa_kirim'])
+    ? mysqli_real_escape_string($koneksi, trim($_POST['jasa_kirim']))
     : "";
 
 $ongkir = isset($_POST['ongkir'])
@@ -53,20 +53,24 @@ $ongkir = isset($_POST['ongkir'])
     : 0;
 
 $metode = isset($_POST['metode'])
-    ? mysqli_real_escape_string($koneksi, $_POST['metode'])
+    ? mysqli_real_escape_string($koneksi, trim($_POST['metode']))
     : "bca_transfer";
 
 /* =========================
    VALIDASI PENGIRIMAN
 ========================= */
 if ($tipePengiriman == "ambil") {
-    $alamatKirim = "";
+    $alamatKirim = "Ambil di Tempat";
     $jasaKirim = "Ambil di Tempat";
     $ongkir = 0;
 }
 
 if ($tipePengiriman == "dikirim" && $alamatKirim == "") {
     die("Alamat pengiriman wajib diisi.");
+}
+
+if ($tipePengiriman == "dikirim" && $jasaKirim == "") {
+    die("Jasa pengiriman wajib dipilih.");
 }
 
 /* =========================
@@ -176,6 +180,12 @@ $labelMetode = "Transfer Bank BCA";
 
 if ($metode == "bca_transfer") {
     $labelMetode = "Transfer Bank BCA";
+} elseif ($metode == "mandiri_transfer") {
+    $labelMetode = "Transfer Bank Mandiri";
+} elseif ($metode == "bni_transfer") {
+    $labelMetode = "Transfer Bank BNI";
+} elseif ($metode == "bri_transfer") {
+    $labelMetode = "Transfer Bank BRI";
 } elseif ($metode == "seabank_transfer") {
     $labelMetode = "Transfer SeaBank";
 } elseif ($metode == "dana") {
@@ -201,6 +211,8 @@ if ($metode == "cash_toko") {
 
 /* =========================
    SIMPAN PESANAN
+   INI BAGIAN YANG TADI SALAH
+   SEKARANG ONGKIR, ALAMAT, JASA KIRIM IKUT DISIMPAN
 ========================= */
 $simpanPesanan = mysqli_query(
     $koneksi,
@@ -209,13 +221,19 @@ $simpanPesanan = mysqli_query(
         tanggal,
         status,
         jenisPesanan,
-        total
+        total,
+        ongkir,
+        alamat_kirim,
+        jasa_kirim
     ) VALUES (
         '$idPelanggan',
         CURDATE(),
         '$statusPesanan',
         'siap_pakai',
-        '$total'
+        '$total',
+        '$ongkir',
+        '$alamatKirim',
+        '$jasaKirim'
     )"
 );
 
@@ -299,10 +317,9 @@ foreach ($_SESSION['cart'] as $cart) {
 
 /* =========================
    SIMPAN PEMBAYARAN AWAL
-   CATATAN:
-   - Transfer/e-wallet TIDAK langsung insert pembayaran.
+   - Transfer/e-wallet tidak langsung insert pembayaran.
    - Pembayaran baru masuk setelah user upload bukti.
-   - Cash di toko hanya dicatat Rp0 supaya ada jejak metode.
+   - Cash di toko dicatat Rp0 supaya ada jejak metode.
 ========================= */
 if ($metode == "cash_toko") {
 
